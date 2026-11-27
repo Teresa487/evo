@@ -9,20 +9,15 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
-	"sync"
-	"time"
 
 	"charm.land/catwalk/v3/pkg/catwalk"
 	"charm.land/catwalk/v3/pkg/embedded"
 	"github.com/charmbracelet/crush/internal/agent/hyper"
-	"github.com/charmbracelet/crush/internal/csync"
 	"github.com/charmbracelet/x/etag"
 )
 
@@ -30,11 +25,9 @@ type syncer[T any] interface {
 	Get(context.Context) (T, error)
 }
 
-var (
-	providerOnce sync.Once
-	providerList []catwalk.Provider
-	providerErr  error
-)
+// providerList 只缓存 Hyper provider（它的端点与模型列表不在用户配置里，
+// 由 OAuth 流程取得后经 UpdateProviderInList 写入）。
+var providerList []catwalk.Provider
 
 // 文件 到 缓存 提供方 data. 它 resolves through GlobalConfigData 所以
 // catalog follows CRUSH_GLOBAL_DATA like rest 的 data 目录.
@@ -168,80 +161,18 @@ func Providers(cfg *Config) ([]catwalk.Provider, error) {
 	return LoadProviders(context.Background(), cfg, nil)
 }
 
-// LoadProviders 是 Providers 用 上下文 bounding catalog fetch 和
-// Hyper token refresher 为 retrying 在 401. Only first 调用 在 process
-// fetches; later calls return memoized 结果 和 ignore both arguments.
+// LoadProviders 返回可用的 provider 列表。
+//
+// 本仓库只使用用户配置里手写的 provider，不再下载或内置任何 provider 目录，
+// 所以这里永远返回空列表。唯一例外是 Hyper 目录：它的端点与模型列表不在用户
+// 配置里，无法手写，因此仍由 LoadProviders 之外的路径单独提供。
+//
+// 这样 /model 里只会出现用户自己配置的 provider。
 func LoadProviders(ctx context.Context, cfg *Config, refreshHyper HyperTokenRefresher) ([]catwalk.Provider, error) {
-	providerOnce.Do(func() {
-		var wg sync.WaitGroup
-		providers := csync.NewSlice[catwalk.Provider]()
-		autoupdate := !cfg.Options.DisableProviderAutoUpdate
-		customProvidersOnly := cfg.Options.DisableDefaultProviders
-
-		ctx, cancel := context.WithTimeout(ctx, 45*time.Second)
-		defer cancel()
-
-		// Each goroutine owns 它的 own 错误 所以 two can 报告
-		// independently without racing 在 shared slice.
-		var catwalkErr, hyperErr error
-		var hyperProvider catwalk.Provider
-
-		wg.Go(func() {
-			if customProvidersOnly {
-				return
-			}
-			catwalkURL := cmp.Or(os.Getenv("CATWALK_URL"), defaultCatwalkURL)
-			client := catwalk.NewWithURL(catwalkURL)
-			path := cachePathFor("providers")
-			catwalkSyncer.Init(client, path, autoupdate)
-
-			// 一个 failure 到 refresh 或 缓存 catalog 是 worth
-			// reporting, 但 syncer still hands back cached 或
-			// embedded list. Dropping 那 would leave 用户 用 no
-			// providers 在 all over transient disk 或 network problem.
-			items, err := catwalkSyncer.Get(ctx)
-			if err != nil {
-				catwalkURL := fmt.Sprintf("%s/v3/providers", cmp.Or(os.Getenv("CATWALK_URL"), defaultCatwalkURL))
-				catwalkErr = fmt.Errorf("Crush was unable to fetch an updated list of providers from %s. Consider setting CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1 to use the embedded providers bundled at the time of this Crush release. You can also update providers manually. For more info see crush update-providers --help.\n\nCause: %w", catwalkURL, err) //nolint:staticcheck
-			}
-			providers.Append(items...)
-		})
-
-		wg.Go(func() {
-			if customProvidersOnly {
-				return
-			}
-			path := cachePathFor("hyper")
-			cfgSnapshot := cfg
-			hyperSyncer.Init(realHyperClient{
-				baseURL:      hyper.BaseURL(),
-				resolveKey:   func() string { return ResolveHyperAPIKey(cfgSnapshot) },
-				refreshToken: refreshHyper,
-			}, path, autoupdate)
-
-			// As above: keep whatever 提供方 we were handed. syncer
-			// already falls back 到 cached 或 embedded copy, 所以
-			// 错误 here means "could 不 refresh", 不 "no Hyper". 这
-			// matters more than 为 other providers because Hyper's
-			// endpoint 和 模型 list live 在 catalog rather than 在
-			// 用户's 配置: dropping it signs logged-在 用户 out.
-			item, err := hyperSyncer.Get(ctx)
-			if err != nil {
-				hyperErr = fmt.Errorf("Crush was unable to fetch updated information from Hyper: %w", err) //nolint:staticcheck
-			}
-			hyperProvider = item
-		})
-
-		wg.Wait()
-
-		if hyperProvider.ID != "" {
-			providerList = append([]catwalk.Provider{hyperProvider}, slices.Collect(providers.Seq())...)
-		} else {
-			providerList = slices.Collect(providers.Seq())
-		}
-		providerErr = errors.Join(catwalkErr, hyperErr)
-	})
-	return providerList, providerErr
+	_ = ctx
+	_ = cfg
+	_ = refreshHyper
+	return nil, nil
 }
 
 // UpdateProviderInList replaces 提供方 在 memoized 提供方 list

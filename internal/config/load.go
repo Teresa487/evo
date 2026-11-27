@@ -27,7 +27,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
-	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -326,11 +325,8 @@ func Load(ctx context.Context, workingDir, dataDir string, debug bool) (*ConfigS
 		assignIfNil(&cfg.Options.TUI.Transparent, true)
 	}
 
-	// Load known providers, 这 loads 配置 从 catwalk. 一个 failed
-	// refresh still yields cached 或 embedded catalog, 所以 只 empty
-	// list 是 fatal: starting up without providers 是 worse than starting
-	// up 用 slightly stale ones. Pass Hyper token refresher 所以
-	// catalog fetch can 重试 在 401.
+	// 不使用内置/远程 provider 目录，加载结果恒为空；provider 一律来自
+	// 用户在配置文件里的手写定义。
 	providers, err := LoadProviders(ctx, cfg, func(ctx context.Context) error {
 		return store.RefreshOAuthToken(ctx, ScopeGlobal, "hyper")
 	})
@@ -338,10 +334,7 @@ func Load(ctx context.Context, workingDir, dataDir string, debug bool) (*ConfigS
 		return nil, ctxErr
 	}
 	if err != nil {
-		if len(providers) == 0 {
-			return nil, err
-		}
-		slog.Warn("Continuing with the previously known providers", "error", err)
+		return nil, err
 	}
 	store.knownProviders = providers
 
@@ -463,13 +456,10 @@ func (c *Config) configureProviders(ctx context.Context, store *ConfigStore, env
 	restore := PushPopCrushEnv()
 	defer restore()
 
-	// When disable_default_providers 是 enabled, skip all 默认/embedded
-	// providers entirely. Users 必须 fully specify any providers they want.
-	// We skip 到 custom 提供方 validation loop which handles all
-	// 用户-configured providers uniformly.
-	if c.Options.DisableDefaultProviders {
-		knownProviders = nil
-	}
+	// 本仓库不使用任何内置/远程 provider 目录，只认用户在配置里手写的
+	// provider。knownProviders 恒为空，下面的默认 provider 合并循环不会执行，
+	// 所有 provider 都走后面的自定义校验分支。
+	knownProviders = nil
 
 	for _, p := range knownProviders {
 		knownProviderNames[string(p.ID)] = true
@@ -699,8 +689,8 @@ func (c *Config) configureProviders(ctx context.Context, store *ConfigStore, env
 		c.Providers.Set(id, providerConfig)
 	}
 
-	if c.Providers.Len() == 0 && c.Options.DisableDefaultProviders {
-		return fmt.Errorf("default providers are disabled and there are no custom providers are configured")
+	if c.Providers.Len() == 0 {
+		return fmt.Errorf("no providers configured: add at least one provider under providers in the config file")
 	}
 
 	return nil
@@ -810,14 +800,6 @@ func (c *Config) setDefaults(workingDir, dataDir string) {
 
 	// Project specific skills dirs.
 	c.Options.SkillsPaths = append(c.Options.SkillsPaths, ProjectSkillsDir(workingDir)...)
-
-	if str, ok := os.LookupEnv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE"); ok {
-		c.Options.DisableProviderAutoUpdate, _ = strconv.ParseBool(str)
-	}
-
-	if str, ok := os.LookupEnv("CRUSH_DISABLE_DEFAULT_PROVIDERS"); ok {
-		c.Options.DisableDefaultProviders, _ = strconv.ParseBool(str)
-	}
 
 	if c.Options.Attribution == nil {
 		c.Options.Attribution = &Attribution{
