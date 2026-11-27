@@ -252,8 +252,8 @@ type Styles struct {
 		SmallCharm         lipgloss.Style // "Charm™" label in SmallRender
 		SmallDiagonals     lipgloss.Style // Diagonal line fill in SmallRender
 		GradCanvas         lipgloss.Style // Blank canvas for gradient painting
-		SmallGradFromColor color.Color    // Small "Crush" wordmark gradient start
-		SmallGradToColor   color.Color    // Small "Crush" wordmark gradient end
+		SmallGradFromColor color.Color    // 小号 "Evo" 字标渐变起点
+		SmallGradToColor   color.Color    // 小号 "Evo" 字标渐变终点
 	}
 
 	// Working indicator gradient (spinners/shimmers 在 助手 "thinking",

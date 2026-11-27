@@ -66,7 +66,7 @@ func logoSection(t *styles.Styles, contentWidth int) string {
 		t.ExitBanner.Text.Width(contentWidth).Render("Thanks for using Crush! "+randomExitMessage())
 }
 
-// sessionResumeLines returns "会话 <标题>\nContinue crush -s <hash>"
+// sessionResumeLines returns "Session <标题>\nContinue evo -s <hash>"
 // pair used 通过 exit banner.
 func sessionResumeLines(t *styles.Styles, sess *session.Session, contentWidth int) string {
 	title := strings.ReplaceAll(sess.Title, "\n", " ")
@@ -79,7 +79,7 @@ func sessionResumeLines(t *styles.Styles, sess *session.Session, contentWidth in
 
 	hash := session.HashID(sess.ID)[:7]
 	sessionLine := t.ExitBanner.Label.Render("Session  ") + t.ExitBanner.Text.Render(title)
-	continueLine := t.ExitBanner.Label.Render("Continue ") + t.ExitBanner.Text.Render("crush -s "+hash)
+	continueLine := t.ExitBanner.Label.Render("Continue ") + t.ExitBanner.Text.Render("evo -s "+hash)
 	return sessionLine + "\n" + continueLine
 }
 

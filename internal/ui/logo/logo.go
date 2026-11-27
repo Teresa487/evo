@@ -62,11 +62,9 @@ func Render(base lipgloss.Style, version string, compact bool, o Opts) string {
 		}
 	}
 	crushLetterforms := []letterform{
-		LetterC,
-		LetterR,
-		LetterU,
-		LetterSAlt,
-		LetterH,
+		LetterEvoE,
+		LetterEvoV,
+		LetterEvoO,
 	}
 	if o.Hyper && !compact {
 		crushLetterforms = append(hyperLetterforms, crushLetterforms...)
@@ -149,7 +147,7 @@ func Render(base lipgloss.Style, version string, compact bool, o Opts) string {
 // SmallRender renders smaller version 的 Crush logo, suitable 为
 // smaller windows 或 sidebar usage.
 func SmallRender(t *styles.Styles, width int, o Opts) string {
-	name := "Crush"
+	name := "Evo"
 	if o.Hyper {
 		name = "HYPERCRUSH"
 	}
