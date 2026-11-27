@@ -1,0 +1,365 @@
+package chat
+
+import (
+	"cmp"
+	"encoding/json"
+	"fmt"
+	"path/filepath"
+	"slices"
+	"strings"
+	"time"
+
+	"charm.land/lipgloss/v2"
+	"github.com/charmbracelet/crush/internal/agent/tools"
+	"github.com/charmbracelet/crush/internal/message"
+	"github.com/charmbracelet/crush/internal/ui/common"
+	"github.com/charmbracelet/crush/internal/ui/styles"
+	"github.com/charmbracelet/x/ansi"
+)
+
+// -----------------------------------------------------------------------------
+// Bash 工具
+// -----------------------------------------------------------------------------
+
+// BashToolMessageItem 是 消息 item 那 represents bash 工具调用.
+type BashToolMessageItem struct {
+	*baseToolMessageItem
+}
+
+var _ ToolMessageItem = (*BashToolMessageItem)(nil)
+
+// NewBashToolMessageItem creates a new [BashToolMessageItem].
+func NewBashToolMessageItem(
+	sty *styles.Styles,
+	toolCall message.ToolCall,
+	result *message.ToolResult,
+	canceled bool,
+	workingDir string,
+) ToolMessageItem {
+	base := newBaseToolMessageItem(sty, toolCall, result, &BashToolRenderContext{workingDir: workingDir}, canceled)
+	return &BashToolMessageItem{baseToolMessageItem: base}
+}
+
+// BashToolRenderContext renders bash 工具 messages.
+type BashToolRenderContext struct {
+	workingDir string
+}
+
+// RenderTool implements the [ToolRenderer] interface.
+func (b *BashToolRenderContext) RenderTool(sty *styles.Styles, width int, opts *ToolRenderOpts) string {
+	cappedWidth := cappedMessageWidth(width)
+	if opts.IsStreamingInput() {
+		return pendingTool(sty, "Bash", opts.Anim, opts.Compact)
+	}
+
+	var params tools.BashParams
+	if err := json.Unmarshal([]byte(opts.ToolCall.Input), &params); err != nil {
+		params.Command = "failed to parse command"
+	}
+
+	// Check 如果 这 是 background job.
+	var meta tools.BashResponseMetadata
+	if opts.HasResult() {
+		_ = json.Unmarshal([]byte(opts.Result.Metadata), &meta)
+	}
+
+	cwd := cwdHint(b.workingDir, cmp.Or(meta.WorkingDirectory, params.WorkingDir), params.Command)
+
+	if meta.Background {
+		description := withCwd(cmp.Or(meta.Description, params.Command), cwd)
+		content := "Command: " + params.Command + "\n" + opts.Result.Content
+		return renderJobTool(sty, opts, cappedWidth, "Start", meta.ShellID, description, content)
+	}
+
+	cmd := params.Command
+	if opts.Compact {
+		cmd = singleLine(cmd)
+	}
+	cmd = strings.ReplaceAll(cmd, "\t", "    ")
+	cmd = common.StripBashDisplayPrefix(cmd, b.workingDir)
+	if highlighted, err := common.SyntaxHighlightLexerName(sty, cmd, "bash", nil); err == nil {
+		cmd = highlighted
+	}
+
+	var options []string
+	if cwd != "" {
+		options = append(options, "cwd", cwd)
+	}
+	if params.RunInBackground {
+		options = append(options, "background", "true")
+	}
+	// Show how long command ran (或 has been running) beside
+	// command; sub-second runs 是 noise, 所以 they show nothing.
+	if opts.Elapsed >= time.Second {
+		options = append(options, "took", common.FormatDuration(opts.Elapsed))
+	}
+
+	header := bashHeader(sty, opts, cappedWidth, params.Description, cmd, options)
+	if opts.Compact {
+		return header
+	}
+
+	if live, ok := toolLiveOutputContent(sty, opts, cappedWidth); ok {
+		return joinToolParts(header, live)
+	}
+
+	if earlyState, ok := toolEarlyStateContent(sty, opts, cappedWidth); ok {
+		return joinToolParts(header, earlyState)
+	}
+
+	if !opts.HasResult() {
+		return header
+	}
+
+	output := meta.Output
+	if output == "" && opts.Result.Content != tools.BashNoOutput {
+		output = opts.Result.Content
+	}
+	if output == "" {
+		return header
+	}
+
+	bodyWidth := cappedWidth - toolBodyLeftPaddingTotal
+	body := sty.Tool.Body.Render(toolOutputPlainContent(sty, output, bodyWidth, opts.ExpandedContent))
+	return joinToolParts(header, body)
+}
+
+// bashHeader leads 用 模型's description, 当 there 是 one, 和 puts
+// command below it. command always wraps 和 是 never truncated.
+func bashHeader(sty *styles.Styles, opts *ToolRenderOpts, width int, description, cmd string, options []string) string {
+	description = strings.ReplaceAll(strings.TrimSpace(description), "\t", "    ")
+	showDescription := description != "" && !opts.Compact
+
+	cmdOpts := *opts
+	cmdOpts.ExpandedContent = true
+	lead, leadOpts := cmd, &cmdOpts
+	if showDescription {
+		if !opts.ExpandedContent {
+			description, _, _ = strings.Cut(description, "\n")
+		}
+		lead, leadOpts = sty.Tool.Description.Render(description), opts
+	}
+
+	header := toolHeader(sty, opts.Status, "Bash", width, leadOpts, append([]string{lead}, options...)...)
+	if !showDescription {
+		return header
+	}
+	// command sits below description, 在 output's column.
+	indent := toolBodyLeftPaddingTotal
+	return header + "\n\n" + indentLines(toolParamList(sty, []string{cmd}, width-indent, &cmdOpts), indent)
+}
+
+// singleLine joins a multi-line command onto one line, dropping each
+// continuation line's indent. 一个 子代理's 工具 calls 是 one line each,
+// 和 heredoc 或 inline script would otherwise spill 它的 first lines into
+// the tree before the truncation hides the rest.
+func singleLine(s string) string {
+	lines := strings.Split(strings.TrimSpace(s), "\n")
+	for i, line := range lines {
+		lines[i] = strings.TrimSpace(line)
+	}
+	return strings.Join(slices.DeleteFunc(lines, func(l string) bool { return l == "" }), " ")
+}
+
+// cwdHint returns where command ran, relative 到 工作区, 或 "" 当
+// it ran 在 工作区 或 command itself starts 用 cd.
+func cwdHint(workspace, dir, command string) string {
+	if dir == "" || workspace == "" {
+		return ""
+	}
+	if strings.HasPrefix(strings.TrimSpace(common.StripBashDisplayPrefix(command, workspace)), "cd ") {
+		return ""
+	}
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(workspace, dir)
+	}
+	rel, err := filepath.Rel(workspace, dir)
+	if err != nil || rel == "." {
+		return ""
+	}
+	return filepath.ToSlash(rel)
+}
+
+// withCwd appends "(cwd=dir)" hint 到 job description.
+func withCwd(description, cwd string) string {
+	if cwd == "" {
+		return description
+	}
+	return strings.TrimSpace(description + " (cwd=" + cwd + ")")
+}
+
+// -----------------------------------------------------------------------------
+// Job Output 工具
+// -----------------------------------------------------------------------------
+
+// JobOutputToolMessageItem 是 消息 item 为 job_output 工具 calls.
+type JobOutputToolMessageItem struct {
+	*baseToolMessageItem
+}
+
+var _ ToolMessageItem = (*JobOutputToolMessageItem)(nil)
+
+// NewJobOutputToolMessageItem creates a new [JobOutputToolMessageItem].
+func NewJobOutputToolMessageItem(
+	sty *styles.Styles,
+	toolCall message.ToolCall,
+	result *message.ToolResult,
+	canceled bool,
+	workingDir string,
+) ToolMessageItem {
+	return newBaseToolMessageItem(sty, toolCall, result, &JobOutputToolRenderContext{workingDir: workingDir}, canceled)
+}
+
+// JobOutputToolRenderContext renders job_output 工具 messages.
+type JobOutputToolRenderContext struct {
+	workingDir string
+}
+
+// RenderTool implements the [ToolRenderer] interface.
+func (j *JobOutputToolRenderContext) RenderTool(sty *styles.Styles, width int, opts *ToolRenderOpts) string {
+	cappedWidth := cappedMessageWidth(width)
+	if opts.IsStreamingInput() {
+		return pendingTool(sty, "Job", opts.Anim, opts.Compact)
+	}
+
+	var params tools.JobOutputParams
+	if err := json.Unmarshal([]byte(opts.ToolCall.Input), &params); err != nil {
+		return toolErrorContent(sty, &message.ToolResult{Content: "Invalid parameters"}, cappedWidth)
+	}
+
+	var description string
+	if opts.HasResult() && opts.Result.Metadata != "" {
+		var meta tools.JobOutputResponseMetadata
+		if err := json.Unmarshal([]byte(opts.Result.Metadata), &meta); err == nil {
+			cwd := cwdHint(j.workingDir, meta.WorkingDirectory, meta.Command)
+			description = withCwd(cmp.Or(meta.Description, meta.Command), cwd)
+		}
+	}
+
+	content := ""
+	if opts.HasResult() {
+		content = opts.Result.Content
+	}
+	return renderJobTool(sty, opts, cappedWidth, "Output", params.ShellID, description, content)
+}
+
+// -----------------------------------------------------------------------------
+// Job Kill 工具
+// -----------------------------------------------------------------------------
+
+// JobKillToolMessageItem 是 消息 item 为 job_kill 工具 calls.
+type JobKillToolMessageItem struct {
+	*baseToolMessageItem
+}
+
+var _ ToolMessageItem = (*JobKillToolMessageItem)(nil)
+
+// NewJobKillToolMessageItem creates a new [JobKillToolMessageItem].
+func NewJobKillToolMessageItem(
+	sty *styles.Styles,
+	toolCall message.ToolCall,
+	result *message.ToolResult,
+	canceled bool,
+) ToolMessageItem {
+	return newBaseToolMessageItem(sty, toolCall, result, &JobKillToolRenderContext{}, canceled)
+}
+
+// JobKillToolRenderContext renders job_kill 工具 messages.
+type JobKillToolRenderContext struct{}
+
+// RenderTool implements the [ToolRenderer] interface.
+func (j *JobKillToolRenderContext) RenderTool(sty *styles.Styles, width int, opts *ToolRenderOpts) string {
+	cappedWidth := cappedMessageWidth(width)
+	if opts.IsStreamingInput() {
+		return pendingTool(sty, "Job", opts.Anim, opts.Compact)
+	}
+
+	var params tools.JobKillParams
+	if err := json.Unmarshal([]byte(opts.ToolCall.Input), &params); err != nil {
+		return toolErrorContent(sty, &message.ToolResult{Content: "Invalid parameters"}, cappedWidth)
+	}
+
+	var description string
+	if opts.HasResult() && opts.Result.Metadata != "" {
+		var meta tools.JobKillResponseMetadata
+		if err := json.Unmarshal([]byte(opts.Result.Metadata), &meta); err == nil {
+			description = cmp.Or(meta.Description, meta.Command)
+		}
+	}
+
+	content := ""
+	if opts.HasResult() {
+		content = opts.Result.Content
+	}
+	return renderJobTool(sty, opts, cappedWidth, "Kill", params.ShellID, description, content)
+}
+
+// renderJobTool renders job-related 工具 用 common pattern:
+// 请求头 → nested check → early state → 正文.
+func renderJobTool(sty *styles.Styles, opts *ToolRenderOpts, width int, action, shellID, description, content string) string {
+	header := jobHeader(sty, opts.Status, action, shellID, description, width)
+	if opts.Compact {
+		return header
+	}
+
+	if live, ok := toolLiveOutputContent(sty, opts, width); ok {
+		return joinToolParts(header, live)
+	}
+
+	if earlyState, ok := toolEarlyStateContent(sty, opts, width); ok {
+		return joinToolParts(header, earlyState)
+	}
+
+	if content == "" {
+		return header
+	}
+
+	bodyWidth := width - toolBodyLeftPaddingTotal
+	body := sty.Tool.Body.Render(toolOutputPlainContent(sty, content, bodyWidth, opts.ExpandedContent))
+	return joinToolParts(header, body)
+}
+
+// jobHeader builds header 为 job-related tools.
+// Format: "● Job (Action) PID shellID description..."
+func jobHeader(sty *styles.Styles, status ToolStatus, action, shellID, description string, width int) string {
+	icon := toolIcon(sty, status)
+	jobPart := sty.Tool.JobToolName.Render("Job")
+	actionPart := sty.Tool.JobAction.Render("(" + action + ")")
+	pidPart := sty.Tool.JobPID.Render("PID " + shellID)
+
+	prefix := fmt.Sprintf("%s %s %s %s", icon, jobPart, actionPart, pidPart)
+
+	if description == "" {
+		return prefix
+	}
+
+	prefixWidth := lipgloss.Width(prefix)
+	availableWidth := width - prefixWidth - 1
+	if availableWidth < 10 {
+		return prefix
+	}
+
+	truncatedDesc := ansi.Truncate(description, availableWidth, "…")
+	return prefix + " " + sty.Tool.JobDescription.Render(truncatedDesc)
+}
+
+// joinToolParts joins header 和 body 用 blank line separator.
+func joinToolParts(header, body string) string {
+	return strings.Join([]string{header, "", body}, "\n")
+}
+
+// toolLiveOutputContent renders output streamed while 工具 是 still
+// running. When collapsed it shows the newest lines rather than the first,
+// since those 是 ones still changing. Returns false 当 there 是
+// 结果 或 no visible live output yet.
+func toolLiveOutputContent(sty *styles.Styles, opts *ToolRenderOpts, width int) (string, bool) {
+	if opts.HasResult() || opts.LiveOutput == "" || opts.Status != ToolStatusRunning {
+		return "", false
+	}
+	bodyWidth := width - toolBodyLeftPaddingTotal
+	content := renderPlainToolOutput(sty, opts.LiveOutput, bodyWidth, opts.ExpandedContent, true)
+	if content == "" {
+		return "", false
+	}
+	return sty.Tool.Body.Render(content), true
+}

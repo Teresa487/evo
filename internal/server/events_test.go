@@ -1,0 +1,396 @@
+package server
+
+import (
+	"encoding/json"
+	"errors"
+	"testing"
+
+	"github.com/charmbracelet/crush/internal/agent/notify"
+	"github.com/charmbracelet/crush/internal/agent/tools"
+	"github.com/charmbracelet/crush/internal/agent/tools/mcp"
+	"github.com/charmbracelet/crush/internal/app"
+	"github.com/charmbracelet/crush/internal/message"
+	"github.com/charmbracelet/crush/internal/proto"
+	"github.com/charmbracelet/crush/internal/pubsub"
+	"github.com/charmbracelet/crush/internal/skills"
+	"github.com/stretchr/testify/require"
+)
+
+// TestMessageToProtoToolResult ensures 那 ToolResult metadata,
+// data, 和 MIME type survive conversion 到 proto. Without these
+// fields TUI cannot render rich 工具 output (e.g. syntax-
+// highlighted code 从 view, diffs 从 edit, images, etc.) 和
+// falls back 到 raw LLM-facing string.
+func TestMessageToProtoToolResult(t *testing.T) {
+	t.Parallel()
+
+	src := message.Message{
+		ID:   "m1",
+		Role: message.Tool,
+		Parts: []message.ContentPart{
+			message.ToolResult{
+				ToolCallID: "call-1",
+				Name:       "view",
+				Content:    "<file>\n  1| hi\n</file>",
+				Data:       "base64data",
+				MIMEType:   "image/png",
+				Metadata:   `{"file_path":"/tmp/x","content":"hi"}`,
+				IsError:    false,
+			},
+		},
+	}
+
+	got := messageToProto(src)
+	require.Len(t, got.Parts, 1)
+	tr, ok := got.Parts[0].(proto.ToolResult)
+	require.True(t, ok, "expected proto.ToolResult, got %T", got.Parts[0])
+	require.Equal(t, "call-1", tr.ToolCallID)
+	require.Equal(t, "view", tr.Name)
+	require.Equal(t, "<file>\n  1| hi\n</file>", tr.Content)
+	require.Equal(t, "base64data", tr.Data)
+	require.Equal(t, "image/png", tr.MIMEType)
+	require.Equal(t, `{"file_path":"/tmp/x","content":"hi"}`, tr.Metadata)
+	require.False(t, tr.IsError)
+}
+
+// TestMCPChannelEventToProto_RoundTrip verifies 那 渠道 push survives
+// SSE envelope conversion 用 它的 type 和 rendered <渠道> body intact,
+// 所以 客户端/服务端 sessions receive 渠道 events rather than dropping
+// payload 在 wire.
+func TestMCPChannelEventToProto_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	src := pubsub.Event[mcp.Event]{
+		Type: pubsub.CreatedEvent,
+		Payload: mcp.Event{
+			Type:           mcp.EventChannelMessage,
+			Name:           "webhook",
+			ChannelMessage: `<channel source="webhook">build failed</channel>`,
+		},
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	require.Equal(t, pubsub.PayloadTypeMCPEvent, env.Type)
+
+	var decoded pubsub.Event[proto.MCPEvent]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, proto.MCPEventChannelMessage, decoded.Payload.Type)
+	require.Equal(t, "webhook", decoded.Payload.Name)
+	require.Equal(t, `<channel source="webhook">build failed</channel>`, decoded.Payload.ChannelMessage)
+}
+
+// TestSkillsEventToProto_RoundTrip verifies 那 pubsub.事件[skills.事件]
+// can 是 wrapped, marshaled, 和 unmarshaled back through SSE
+// envelope without losing state values 或 错误 messages.
+func TestSkillsEventToProto_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	src := pubsub.Event[skills.Event]{
+		Type: pubsub.UpdatedEvent,
+		Payload: skills.Event{
+			States: []*skills.SkillState{
+				{Name: "ok", Path: "/p/ok", State: skills.StateNormal},
+				{Name: "broken", Path: "/p/broken", State: skills.StateError, Err: errors.New("bad frontmatter")},
+			},
+		},
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	require.Equal(t, pubsub.PayloadTypeSkillsEvent, env.Type)
+
+	var decoded pubsub.Event[proto.SkillsEvent]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, pubsub.UpdatedEvent, decoded.Type)
+	require.Len(t, decoded.Payload.States, 2)
+
+	require.Equal(t, "ok", decoded.Payload.States[0].Name)
+	require.Equal(t, "/p/ok", decoded.Payload.States[0].Path)
+	require.Equal(t, proto.SkillStateNormal, decoded.Payload.States[0].State)
+	require.Empty(t, decoded.Payload.States[0].Error)
+
+	require.Equal(t, "broken", decoded.Payload.States[1].Name)
+	require.Equal(t, proto.SkillStateError, decoded.Payload.States[1].State)
+	require.Equal(t, "bad frontmatter", decoded.Payload.States[1].Error)
+}
+
+// TestRunCompleteToProto_RoundTrip verifies 那 authoritative
+// per-运行 completion 事件 survives SSE envelope conversion 用
+// all reconciliation fields intact. SessionID, MessageID, 和 文本
+// 是 what non-interactive clients (e.g. `crush 运行`) rely 在 到
+// terminate 运行 loop 和 guarantee final 文本 在 stdout 当
+// 消息 events arrive out 的 order.
+func TestRunCompleteToProto_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	src := pubsub.Event[notify.RunComplete]{
+		Type: pubsub.UpdatedEvent,
+		Payload: notify.RunComplete{
+			SessionID: "S",
+			RunID:     "run-42",
+			MessageID: "M",
+			Text:      "VERDICT: APPROVED",
+			Error:     "",
+			Cancelled: false,
+		},
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	require.Equal(t, pubsub.PayloadTypeRunComplete, env.Type)
+
+	var decoded pubsub.Event[proto.RunComplete]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, pubsub.UpdatedEvent, decoded.Type)
+	require.Equal(t, "S", decoded.Payload.SessionID)
+	require.Equal(t, "run-42", decoded.Payload.RunID,
+		"RunID must survive the SSE envelope so clients can correlate "+
+			"this event with the SendMessage call that produced it")
+	require.Equal(t, "M", decoded.Payload.MessageID)
+	require.Equal(t, "VERDICT: APPROVED", decoded.Payload.Text)
+	require.Empty(t, decoded.Payload.Error)
+	require.False(t, decoded.Payload.Cancelled)
+}
+
+func TestReauthenticateEventIncludesProvider(t *testing.T) {
+	t.Parallel()
+
+	env := wrapEvent(pubsub.Event[notify.Notification]{
+		Type:    pubsub.CreatedEvent,
+		Payload: notify.Notification{Type: notify.TypeReAuthenticate, ProviderID: "example"},
+	})
+	require.NotNil(t, env)
+	var event pubsub.Event[proto.AgentEvent]
+	require.NoError(t, json.Unmarshal(env.Payload, &event))
+	require.Equal(t, "example", event.Payload.ProviderID)
+}
+
+// TestAgentErrorToProto_PreservesRunID verifies 那 async agent
+// 错误 通知 carries 它的 originating RunID (和 SessionID)
+// through SSE envelope. Without these correlators, `crush 运行`
+// cannot tell whether 错误 事件 belongs 到 它的 own 运行 和
+// would abort 在 any unrelated 工作区 failure.
+func TestAgentErrorToProto_PreservesRunID(t *testing.T) {
+	t.Parallel()
+
+	src := pubsub.Event[notify.Notification]{
+		Type: pubsub.CreatedEvent,
+		Payload: notify.Notification{
+			SessionID: "S",
+			RunID:     "run-99",
+			Type:      notify.TypeAgentError,
+			Message:   "boom",
+		},
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	require.Equal(t, pubsub.PayloadTypeAgentEvent, env.Type)
+
+	var decoded pubsub.Event[proto.AgentEvent]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, proto.AgentEventTypeError, decoded.Payload.Type)
+	require.Equal(t, "S", decoded.Payload.SessionID)
+	require.Equal(t, "run-99", decoded.Payload.RunID,
+		"RunID must survive so observers can attribute the error to its run")
+	require.NotNil(t, decoded.Payload.Error)
+	require.Equal(t, "boom", decoded.Payload.Error.Error())
+}
+
+// TestRunCompleteToProto_Error verifies 那 错误- 和 取消-shaped
+// RunComplete events round-trip cleanly 所以 clients can distinguish
+// "agent failed" (returns non-zero 从 `crush 运行`) 从 "agent
+// cancelled 通过 用户" (clean exit).
+func TestRunCompleteToProto_Error(t *testing.T) {
+	t.Parallel()
+
+	src := pubsub.Event[notify.RunComplete]{
+		Type: pubsub.UpdatedEvent,
+		Payload: notify.RunComplete{
+			SessionID: "S",
+			MessageID: "M",
+			Text:      "partial",
+			Error:     "context canceled",
+			Cancelled: true,
+		},
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	var decoded pubsub.Event[proto.RunComplete]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, "context canceled", decoded.Payload.Error)
+	require.True(t, decoded.Payload.Cancelled)
+}
+
+// TestUpdateAvailableMsgToProto_RoundTrip verifies 那
+// app.UpdateAvailableMsg — published directly (不 wrapped 在
+// pubsub.事件) 通过 app.checkForUpdates — survives SSE envelope
+// conversion. Without 这, 客户端/服务端 mode silently drops 更新
+// notifications because wrapEvent hits 它的 默认 branch.
+func TestUpdateAvailableMsgToProto_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	src := app.UpdateAvailableMsg{
+		CurrentVersion: "1.0.0",
+		LatestVersion:  "1.1.0",
+		IsDevelopment:  false,
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	require.Equal(t, pubsub.PayloadTypeUpdateAvailable, env.Type)
+
+	var decoded pubsub.Event[proto.UpdateAvailable]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, pubsub.UpdatedEvent, decoded.Type)
+	require.Equal(t, "1.0.0", decoded.Payload.CurrentVersion)
+	require.Equal(t, "1.1.0", decoded.Payload.LatestVersion)
+	require.False(t, decoded.Payload.IsDevelopment)
+}
+
+// TestHostThemeEvent_RoundTrip verifies 那 host theme 事件 survives
+// SSE envelope 用 double-nested wire shape hosts 和 TUIs decode:
+// {"type":"host_theme","payload":{"type":"updated","payload":{...}}}.
+func TestHostThemeEvent_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	src := pubsub.Event[proto.HostThemeState]{
+		Type: pubsub.UpdatedEvent,
+		Payload: proto.HostThemeState{
+			WorkspaceID: "w1",
+			Theme: &proto.HostTheme{
+				Name:        "charmtone-dark",
+				Source:      "superjoy",
+				Palette:     map[string]string{"primary": "#6B50FF"},
+				Syntax:      map[string]string{"keyword": "#00A4FF"},
+				Transparent: new(true),
+			},
+		},
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	require.Equal(t, pubsub.PayloadTypeHostTheme, env.Type)
+	require.Equal(t, "host_theme", env.Type)
+
+	var decoded pubsub.Event[proto.HostThemeState]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, pubsub.UpdatedEvent, decoded.Type)
+	require.Equal(t, "w1", decoded.Payload.WorkspaceID)
+	require.True(t, src.Payload.Theme.Equal(decoded.Payload.Theme))
+
+	// 一个 clear 是 deleted 事件 whose theme 是 null.
+	env = wrapEvent(pubsub.Event[proto.HostThemeState]{
+		Type:    pubsub.DeletedEvent,
+		Payload: proto.HostThemeState{WorkspaceID: "w1"},
+	})
+	require.NotNil(t, env)
+	data, err := json.Marshal(env)
+	require.NoError(t, err)
+	require.JSONEq(t,
+		`{"type":"host_theme","payload":{"type":"deleted","payload":{"workspace_id":"w1","theme":null}}}`,
+		string(data))
+}
+
+// TestMCPStateChangedEventForwardsCounts verifies 那 SSE envelope
+// carries 提示词 和 resource counts, 不 只 工具 counts. 客户端 TUI
+// renders all three, 所以 dropping other two made 客户端/服务端 mode
+// under-报告 what connected 服务端 offers.
+func TestMCPStateChangedEventForwardsCounts(t *testing.T) {
+	t.Parallel()
+
+	src := pubsub.Event[mcp.Event]{
+		Type: pubsub.UpdatedEvent,
+		Payload: mcp.Event{
+			Type:  mcp.EventStateChanged,
+			Name:  "ctx",
+			State: mcp.StateConnected,
+			Counts: mcp.Counts{
+				Tools:     4,
+				Prompts:   2,
+				Resources: 3,
+			},
+		},
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	require.Equal(t, pubsub.PayloadTypeMCPEvent, env.Type)
+
+	var decoded pubsub.Event[proto.MCPEvent]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, proto.MCPEventStateChanged, decoded.Payload.Type)
+	require.Equal(t, "ctx", decoded.Payload.Name)
+	require.Equal(t, proto.MCPStateConnected, decoded.Payload.State)
+	require.Equal(t, 4, decoded.Payload.ToolCount)
+	require.Equal(t, 2, decoded.Payload.PromptCount)
+	require.Equal(t, 3, decoded.Payload.ResourceCount)
+}
+
+// TestMCPUnknownEventTypeNotMappedToStateChange verifies 那 any
+// unrecognized MCP 事件 type 是 不 silently coerced 到 state_changed —
+// mapping must return ok=false 所以 wrapEvent can drop it instead 的
+// fabricating a state change.
+func TestMCPUnknownEventTypeNotMappedToStateChange(t *testing.T) {
+	t.Parallel()
+
+	// Use 值 well outside known range.
+	unknown := mcp.EventType(99)
+	pt := mcpEventTypeToProto(unknown)
+	require.Equal(t, proto.MCPEventType(""), pt,
+		"unknown MCP event types must map to empty proto type, not state_changed")
+}
+
+// TestMessageToProtoPrismModel ensures Prism-routed 模型 fields survive
+// conversion 到 proto. Without them 客户端 TUI cannot show which
+// 模型 actually served each turn 在 Hyper's 模型 router.
+func TestMessageToProtoPrismModel(t *testing.T) {
+	t.Parallel()
+
+	src := message.Message{
+		ID:             "m1",
+		Role:           message.Assistant,
+		Model:          "prism-model",
+		Provider:       "hyper",
+		PrismModelID:   "prism-42",
+		PrismModelName: "GLM 5.3",
+
+		PrismHypercreditSavings: ptrFloat(1.5),
+		PrismDollarSavings:      ptrFloat(0.002),
+	}
+
+	got := messageToProto(src)
+	require.Equal(t, "prism-42", got.PrismModelID)
+	require.Equal(t, "GLM 5.3", got.PrismModelName)
+	require.NotNil(t, got.PrismHypercreditSavings)
+	require.Equal(t, 1.5, *got.PrismHypercreditSavings)
+	require.NotNil(t, got.PrismDollarSavings)
+	require.Equal(t, 0.002, *got.PrismDollarSavings)
+}
+
+func ptrFloat(v float64) *float64 { return &v }
+
+func TestToolProgressToProto_RoundTrip(t *testing.T) {
+	t.Parallel()
+
+	src := pubsub.Event[tools.ToolProgress]{
+		Type: pubsub.UpdatedEvent,
+		Payload: tools.ToolProgress{
+			SessionID:  "s1",
+			ToolCallID: "call-1",
+			ShellID:    "001",
+			Output:     "line 1\nline 2",
+		},
+	}
+
+	env := wrapEvent(src)
+	require.NotNil(t, env)
+	require.Equal(t, pubsub.PayloadTypeToolProgress, env.Type)
+
+	var decoded pubsub.Event[proto.ToolProgress]
+	require.NoError(t, json.Unmarshal(env.Payload, &decoded))
+	require.Equal(t, pubsub.UpdatedEvent, decoded.Type)
+	require.Equal(t, proto.ToolProgress(src.Payload), decoded.Payload)
+}

@@ -1,0 +1,228 @@
+package cmd
+
+import (
+	"cmp"
+	"fmt"
+	"os"
+
+	"github.com/charmbracelet/crush/internal/config"
+	"github.com/charmbracelet/crush/internal/logout"
+	"github.com/charmbracelet/crush/internal/workspace"
+	"github.com/charmbracelet/x/ansi"
+	"github.com/spf13/cobra"
+)
+
+// providerDisplayNames maps OAuth-capable 提供方 IDs 到 display names.
+// Keep 这 list 在 sync 用 switch 在 RunE 和 login command.
+var providerDisplayNames = map[string]string{
+	"hyper":   "Charm Hyper",
+	"copilot": "GitHub Copilot",
+	"openai":  "ChatGPT",
+	"xai":     "Grok",
+}
+
+var logoutCmd = &cobra.Command{
+	Aliases: []string{"signout"},
+	Use:     "logout [platform]",
+	Short:   "Logout Crush from a platform",
+	Long: `Logout Crush from a specified platform, removing stored credentials.
+The platform should be provided as an argument.
+If no argument is given, a list of logged-in platforms will be shown.
+Available platforms are: hyper, copilot, openai (chatgpt), grok (xai).`,
+	Example: `
+# Sign out from Charm Hyper
+crush logout hyper
+
+# Sign out from GitHub Copilot
+crush logout copilot
+
+# Sign out from your ChatGPT (OpenAI) account
+crush logout openai
+
+# Sign out from your Grok (xAI) account
+crush logout grok
+  `,
+	ValidArgs: []cobra.Completion{
+		"hyper",
+		"copilot",
+		"github",
+		"github-copilot",
+		"openai",
+		"chatgpt",
+		"grok",
+		"xai",
+	},
+	Args: cobra.MaximumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		ws, cleanup, err := setupWorkspaceWithProgressBar(cmd)
+		if err != nil {
+			return err
+		}
+		defer cleanup()
+
+		cfg := ws.Config()
+		progressEnabled := cfg.Options.Progress == nil || *cfg.Options.Progress
+		if progressEnabled && supportsProgressBar() {
+			_, _ = fmt.Fprintf(os.Stderr, ansi.SetIndeterminateProgressBar)
+			defer func() { _, _ = fmt.Fprintf(os.Stderr, ansi.ResetProgressBar) }()
+		}
+
+		var provider string
+		chose := false
+		if len(args) == 0 {
+			provider, chose, err = pickLoggedInProvider(cfg)
+			if err != nil {
+				return err
+			}
+			if provider == "" {
+				return nil
+			}
+		} else {
+			provider = args[0]
+		}
+
+		// Canonicalize aliases before prompting.
+		switch provider {
+		case "hyper":
+		case "copilot", "github", "github-copilot":
+			provider = "copilot"
+		case "openai", "chatgpt":
+			provider = "openai"
+		case "grok", "xai":
+			provider = "xai"
+		default:
+			return fmt.Errorf("unknown platform: %s", provider)
+		}
+
+		force, _ := cmd.Flags().GetBool("force")
+		// Picking platform 从 list 是 explicit choice already,
+		// 所以 只 ask 为 confirmation 当 no choice was made.
+		if !force && !chose {
+			ok, err := logout.Confirm(fmt.Sprintf("Are you sure you want to log out of %s?", providerDisplayNames[provider]))
+			if err != nil {
+				return err
+			}
+			if !ok {
+				fmt.Println("Logout cancelled.")
+				return nil
+			}
+		}
+
+		switch provider {
+		case "hyper":
+			return logoutHyper(ws)
+		case "copilot":
+			return logoutCopilot(ws)
+		case "openai":
+			return logoutOpenAI(ws)
+		case "xai":
+			return logoutXAI(ws)
+		default:
+			return fmt.Errorf("unknown platform: %s", provider)
+		}
+	},
+}
+
+func logoutHyper(ws workspace.Workspace) error {
+	if err := cmp.Or(
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.hyper.api_key"),
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.hyper.oauth"),
+	); err != nil {
+		return err
+	}
+
+	fmt.Printf("Successfully logged out of %s.\n", providerDisplayNames["hyper"])
+	return nil
+}
+
+func logoutCopilot(ws workspace.Workspace) error {
+	if err := cmp.Or(
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.copilot.api_key"),
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.copilot.oauth"),
+	); err != nil {
+		return err
+	}
+
+	fmt.Printf("Successfully logged out of %s.\n", providerDisplayNames["copilot"])
+	return nil
+}
+
+func logoutOpenAI(ws workspace.Workspace) error {
+	// Logout clears every OpenAI credential: ChatGPT token 和 它的
+	// 模型 catalog, 和 API key too. API key mirrors access
+	// token 当 it came 从 OAuth flow, 和 explicit logout
+	// 应当 leave nothing behind either way.
+	if err := cmp.Or(
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.openai.oauth"),
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.openai.chatgpt_models"),
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.openai.api_key"),
+	); err != nil {
+		return err
+	}
+
+	fmt.Printf("Successfully logged out of %s.\n", providerDisplayNames["openai"])
+	return nil
+}
+
+func logoutXAI(ws workspace.Workspace) error {
+	// Logout clears both 存储 xAI credentials: OAuth token, 它的
+	// 模型 catalog, 和 API key, which mirrors OAuth access
+	// token 当 sign-在 wrote it.
+	if err := cmp.Or(
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.xai.oauth"),
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.xai.grok_models"),
+		ws.RemoveConfigField(config.ScopeGlobal, "providers.xai.api_key"),
+	); err != nil {
+		return err
+	}
+
+	fmt.Printf("Successfully logged out of %s.\n", providerDisplayNames["xai"])
+	return nil
+}
+
+// pickLoggedInProvider returns 提供方 到 log out 的 和 whether
+// 用户 explicitly picked it 从 list 的 logged-在 platforms.
+func pickLoggedInProvider(cfg *config.Config) (string, bool, error) {
+	// Only OAuth-based providers support login/logout. Keep 这 list 在
+	// sync 用 switch 在 RunE 和 login command.
+	var loggedIn []struct {
+		id   string
+		name string
+	}
+	for _, id := range []string{"hyper", "copilot", "openai", "xai"} {
+		if p, ok := cfg.Providers.Get(id); ok && p.OAuthToken != nil {
+			loggedIn = append(loggedIn, struct {
+				id   string
+				name string
+			}{id: id, name: providerDisplayNames[id]})
+		}
+	}
+
+	if len(loggedIn) == 0 {
+		fmt.Println("You are not logged in to any platform.")
+		return "", false, nil
+	}
+
+	if len(loggedIn) == 1 {
+		return loggedIn[0].id, false, nil
+	}
+
+	names := make([]string, len(loggedIn))
+	for i, p := range loggedIn {
+		names[i] = p.name
+	}
+	choice, err := logout.Choose("Which platform do you want to log out of?", names)
+	if err != nil {
+		return "", false, err
+	}
+	if choice < 0 {
+		fmt.Println("Logout cancelled.")
+		return "", false, nil
+	}
+
+	return loggedIn[choice].id, true, nil
+}
+
+func init() {
+	logoutCmd.Flags().BoolP("force", "f", false, "Skip logout confirmation prompt")
+}

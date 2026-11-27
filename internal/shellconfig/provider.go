@@ -1,0 +1,82 @@
+package shellconfig
+
+import (
+	"context"
+	"fmt"
+	"io"
+	"log/slog"
+)
+
+// handleProvider implements `提供方` builtin.
+//
+// Usage:
+//
+// 提供方 add <id> [--name NAME] [--type TYPE] [--api-key KEY]
+//	    [--base-url URL] [--disable true|false] [--flat-rate true|false]
+// [--discover-models true|false] [--system-提示词-prefix 文本]
+// [--extra-header KEY 值] [--extra-body JSON]
+// [--提供方-options JSON] [--aws-auth-refresh CMD]
+// 提供方 remove <id> (alias: rm)
+//
+// "add" defines 或 updates 提供方; repeated calls 用 same <id>
+// 更新 same 条目. "remove" removes 提供方 和 all 它的 children.
+func handleProvider(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
+	b := configBuilderFromCtx(ctx)
+	if b == nil {
+		return nil
+	}
+	if len(args) < 2 {
+		return usage(stderr, "usage: provider add <id> [flags] | provider remove <id>")
+	}
+
+	switch args[1] {
+	case "add":
+		return providerAdd(b, args, stderr)
+	case "remove", "rm":
+		return providerRemove(b, args, stderr)
+	default:
+		return usage(stderr, fmt.Sprintf("provider: unknown subcommand %q (expected add or remove)", args[1]))
+	}
+}
+
+// providerAddFlags 是 declarative flag surface 为 `提供方 add`.
+var providerAddFlags = []flagSpec{
+	{name: "--name", jsonKey: "name", kind: flagString, op: opSet},
+	{name: "--type", jsonKey: "type", kind: flagString, op: opSet},
+	{name: "--api-key", jsonKey: "api_key", kind: flagString, op: opSet, template: true},
+	{name: "--base-url", jsonKey: "base_url", kind: flagString, op: opSet, template: true},
+	{name: "--disable", jsonKey: "disable", kind: flagBool, op: opSet},
+	{name: "--flat-rate", jsonKey: "flat_rate", kind: flagBool, op: opSet},
+	{name: "--discover-models", jsonKey: "discover_models", kind: flagBool, op: opSet},
+	{name: "--system-prompt-prefix", jsonKey: "system_prompt_prefix", kind: flagString, op: opSet},
+	{name: "--extra-header", child: "extra_headers", kind: flagKeyValue, op: opSetChild, template: true},
+	{name: "--extra-body", child: "extra_body", kind: flagJSONObject, op: opMergeChild},
+	{name: "--provider-options", child: "provider_options", kind: flagJSONObject, op: opMergeChild},
+	{name: "--aws-auth-refresh", jsonKey: "aws_auth_refresh", kind: flagString, op: opSet},
+}
+
+func providerAdd(b *ConfigBuilder, args []string, stderr io.Writer) error {
+	if len(args) < 3 {
+		return usage(stderr, "usage: provider add <id> [--name NAME] [--type TYPE] [--api-key KEY] [--base-url URL] [--disable true|false] [--flat-rate true|false] [--discover-models true|false] [--system-prompt-prefix TEXT] [--extra-header KEY VALUE] [--extra-body JSON] [--provider-options JSON] [--aws-auth-refresh CMD]")
+	}
+	id := args[2]
+	slog.Info("Provider defined in shell config", "provider", id)
+	p := childMap(b.section("providers"), id)
+
+	if err := applyFlags(providerAddFlags, args, 3, p, "provider add", stderr); err != nil {
+		return err
+	}
+
+	slog.Debug("Provider recorded", "provider", id)
+	return nil
+}
+
+func providerRemove(b *ConfigBuilder, args []string, stderr io.Writer) error {
+	if len(args) < 3 {
+		return usage(stderr, "usage: provider remove <id>")
+	}
+	id := args[2]
+	delete(b.section("providers"), id)
+	slog.Info("Provider removed in shell config", "provider", id)
+	return nil
+}

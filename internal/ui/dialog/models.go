@@ -1,0 +1,531 @@
+package dialog
+
+import (
+	"cmp"
+	"fmt"
+	"log/slog"
+	"slices"
+
+	"charm.land/bubbles/v2/help"
+	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/textinput"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/catwalk/v3/pkg/catwalk"
+	"github.com/charmbracelet/crush/internal/config"
+	"github.com/charmbracelet/crush/internal/ui/common"
+	"github.com/charmbracelet/crush/internal/ui/util"
+	uv "github.com/charmbracelet/ultraviolet"
+)
+
+// ModelType represents type 的 模型 到 select.
+type ModelType int
+
+const (
+	ModelTypeLarge ModelType = iota
+	ModelTypeSmall
+)
+
+// String returns string representation 的 [ModelType].
+func (mt ModelType) String() string {
+	switch mt {
+	case ModelTypeLarge:
+		return "Large Task"
+	case ModelTypeSmall:
+		return "Small Task"
+	default:
+		return "Unknown"
+	}
+}
+
+// 配置 returns corresponding 配置 模型 type.
+func (mt ModelType) Config() config.SelectedModelType {
+	switch mt {
+	case ModelTypeLarge:
+		return config.SelectedModelTypeLarge
+	case ModelTypeSmall:
+		return config.SelectedModelTypeSmall
+	default:
+		return ""
+	}
+}
+
+// Placeholder returns input placeholder 为 模型 type.
+func (mt ModelType) Placeholder() string {
+	switch mt {
+	case ModelTypeLarge:
+		return largeModelInputPlaceholder
+	case ModelTypeSmall:
+		return smallModelInputPlaceholder
+	default:
+		return ""
+	}
+}
+
+const (
+	onboardingModelInputPlaceholder = "Find your fave"
+	largeModelInputPlaceholder      = "Choose a model for large, complex tasks"
+	smallModelInputPlaceholder      = "Choose a model for small, simple tasks"
+)
+
+// ModelsID 是 identifier 为 模型 selection dialog.
+const ModelsID = "models"
+
+const defaultModelsDialogMaxWidth = 73
+
+// Models represents 模型 selection dialog.
+type Models struct {
+	com          *common.Common
+	isOnboarding bool
+
+	modelType ModelType
+	providers []catwalk.Provider
+
+	keyMap struct {
+		Tab      key.Binding
+		UpDown   key.Binding
+		Select   key.Binding
+		Edit     key.Binding
+		Next     key.Binding
+		Previous key.Binding
+		Close    key.Binding
+	}
+	list  *ModelsList
+	input textinput.Model
+	help  help.Model
+}
+
+var _ Dialog = (*Models)(nil)
+
+// NewModels creates a new Models dialog.
+func NewModels(com *common.Common, isOnboarding bool) (*Models, error) {
+	t := com.Styles
+	m := &Models{}
+	m.com = com
+	m.isOnboarding = isOnboarding
+
+	help := help.New()
+	help.Styles = t.DialogHelpStyles()
+
+	m.help = help
+	m.list = NewModelsList(t)
+	m.list.Focus()
+	m.list.SetSelected(0)
+
+	m.input = textinput.New()
+	m.input.SetVirtualCursor(false)
+	m.input.Placeholder = onboardingModelInputPlaceholder
+	m.input.SetStyles(com.Styles.TextInput)
+	m.input.Focus()
+
+	m.keyMap.Tab = key.NewBinding(
+		key.WithKeys("tab", "shift+tab"),
+		key.WithHelp("tab", "toggle type"),
+	)
+	m.keyMap.Select = key.NewBinding(
+		key.WithKeys("enter", "ctrl+y"),
+		key.WithHelp("enter", "confirm"),
+	)
+	m.keyMap.Edit = key.NewBinding(
+		key.WithKeys("ctrl+e"),
+		key.WithHelp("ctrl+e", "edit"),
+	)
+	m.keyMap.UpDown = key.NewBinding(
+		key.WithKeys("up", "down"),
+		key.WithHelp("↑/↓", "choose"),
+	)
+	m.keyMap.Next = key.NewBinding(
+		key.WithKeys("down", "ctrl+n"),
+		key.WithHelp("↓", "next item"),
+	)
+	m.keyMap.Previous = key.NewBinding(
+		key.WithKeys("up", "ctrl+p"),
+		key.WithHelp("↑", "previous item"),
+	)
+	m.keyMap.Close = CloseKey
+
+	// 一个 stale catalog must 不 keep 这 dialog 从 opening: it 是
+	// 只 way 为 用户 到 choose 模型.
+	var err error
+	m.providers, err = config.Providers(m.com.Config())
+	if err != nil {
+		if len(m.providers) == 0 {
+			return nil, fmt.Errorf("failed to get providers: %w", err)
+		}
+		slog.Warn("Listing the previously known providers", "error", err)
+	}
+
+	if err := m.setProviderItems(); err != nil {
+		return nil, fmt.Errorf("failed to set provider items: %w", err)
+	}
+
+	return m, nil
+}
+
+// ID implements Dialog.
+func (m *Models) ID() string {
+	return ModelsID
+}
+
+// HandleMsg implements Dialog.
+func (m *Models) HandleMsg(msg tea.Msg) Action {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		switch {
+		case key.Matches(msg, m.keyMap.Close):
+			return ActionClose{}
+		case key.Matches(msg, m.keyMap.Previous):
+			m.list.Focus()
+			if m.list.IsSelectedFirst() {
+				m.list.SelectLast()
+			} else {
+				m.list.SelectPrev()
+			}
+			m.list.ScrollToSelected()
+		case key.Matches(msg, m.keyMap.Next):
+			m.list.Focus()
+			if m.list.IsSelectedLast() {
+				m.list.SelectFirst()
+			} else {
+				m.list.SelectNext()
+			}
+			m.list.ScrollToSelected()
+		case key.Matches(msg, m.keyMap.Select, m.keyMap.Edit):
+			selectedItem := m.list.SelectedItem()
+			if selectedItem == nil {
+				break
+			}
+
+			modelItem, ok := selectedItem.(*ModelItem)
+			if !ok {
+				break
+			}
+
+			isEdit := key.Matches(msg, m.keyMap.Edit)
+
+			return ActionSelectModel{
+				Provider:       modelItem.prov,
+				Model:          modelItem.SelectedModel(),
+				ModelType:      modelItem.SelectedModelType(),
+				ReAuthenticate: isEdit,
+			}
+		case key.Matches(msg, m.keyMap.Tab):
+			if m.isOnboarding {
+				break
+			}
+			if m.modelType == ModelTypeLarge {
+				m.modelType = ModelTypeSmall
+			} else {
+				m.modelType = ModelTypeLarge
+			}
+			if err := m.setProviderItems(); err != nil {
+				return util.ReportError(err)
+			}
+		default:
+			prevValue := m.input.Value()
+			var cmd tea.Cmd
+			m.input, cmd = m.input.Update(msg)
+			value := m.input.Value()
+			if value != prevValue {
+				m.list.Focus()
+				m.list.SetFilter(value)
+				m.list.SelectFirst()
+				m.list.ScrollToTop()
+			}
+			return ActionCmd{cmd}
+		}
+	}
+	return nil
+}
+
+// Cursor returns cursor 为 dialog.
+func (m *Models) Cursor() *tea.Cursor {
+	return InputCursor(m.com.Styles, m.input.Cursor())
+}
+
+// modelTypeRadioView returns radio view 为 模型 type selection.
+func (m *Models) modelTypeRadioView() string {
+	t := m.com.Styles
+	textStyle := t.Radio.Label
+	largeRadioStyle := t.Radio.Off
+	smallRadioStyle := t.Radio.Off
+	if m.modelType == ModelTypeLarge {
+		largeRadioStyle = t.Radio.On
+	} else {
+		smallRadioStyle = t.Radio.On
+	}
+
+	largeRadio := largeRadioStyle.Padding(0, 1).Render()
+	smallRadio := smallRadioStyle.Padding(0, 1).Render()
+
+	return fmt.Sprintf("%s%s  %s%s",
+		largeRadio, textStyle.Render(ModelTypeLarge.String()),
+		smallRadio, textStyle.Render(ModelTypeSmall.String()))
+}
+
+// Draw implements [Dialog].
+func (m *Models) Draw(scr uv.Screen, area uv.Rectangle) *tea.Cursor {
+	t := m.com.Styles
+	width := max(0, min(defaultModelsDialogMaxWidth, area.Dx()-t.Dialog.View.GetHorizontalBorderSize()))
+	height := max(0, min(defaultDialogHeight, area.Dy()-t.Dialog.View.GetVerticalBorderSize()))
+	innerWidth := width - t.Dialog.View.GetHorizontalFrameSize()
+	m.input.SetWidth(dialogInputTextWidth(t, m.input, innerWidth))
+
+	listHeight, listTotalHeight, _ := sizeDialogList(t, m.list, innerWidth, height)
+
+	rc := NewRenderContext(t, width)
+	rc.Title = "Switch Model"
+	rc.TitleInfo = m.modelTypeRadioView()
+
+	if m.isOnboarding {
+		titleText := t.Dialog.PrimaryText.Render("To start, let's choose a provider and model.")
+		rc.AddPart(titleText)
+	}
+
+	inputView := t.Dialog.InputPrompt.Render(m.input.View())
+	rc.AddPart(inputView)
+
+	listView := t.Dialog.List.Height(m.list.Height()).Render(m.list.Render())
+	listView = joinScrollbar(t, listView, listHeight, listTotalHeight, listHeight, m.list.Offset())
+	rc.AddPart(listView)
+
+	rc.Help = renderDialogHelp(t, &m.help, m, innerWidth)
+
+	cur := m.Cursor()
+
+	if m.isOnboarding {
+		rc.Title = ""
+		rc.TitleInfo = ""
+		rc.IsOnboarding = true
+		view := rc.Render()
+		cur = adjustOnboardingInputCursor(t, cur)
+		DrawOnboardingCursor(scr, area, view, cur)
+	} else {
+		view := rc.Render()
+		DrawCenterCursor(scr, area, view, cur)
+	}
+	return cur
+}
+
+// ShortHelp returns the short help view.
+func (m *Models) ShortHelp() []key.Binding {
+	if m.isOnboarding {
+		return []key.Binding{
+			m.keyMap.UpDown,
+			m.keyMap.Select,
+		}
+	}
+	h := []key.Binding{
+		m.keyMap.UpDown,
+		m.keyMap.Tab,
+		m.keyMap.Select,
+	}
+	if m.isSelectedConfigured() {
+		h = append(h, m.keyMap.Edit)
+	}
+	h = append(h, m.keyMap.Close)
+	return h
+}
+
+// FullHelp returns the full help view.
+func (m *Models) FullHelp() [][]key.Binding {
+	return [][]key.Binding{m.ShortHelp()}
+}
+
+func (m *Models) isSelectedConfigured() bool {
+	selectedItem := m.list.SelectedItem()
+	if selectedItem == nil {
+		return false
+	}
+	modelItem, ok := selectedItem.(*ModelItem)
+	if !ok {
+		return false
+	}
+	providerID := string(modelItem.prov.ID)
+	_, isConfigured := m.com.Config().Providers.Get(providerID)
+	return isConfigured
+}
+
+// setProviderItems sets 提供方 items 在 list.
+func (m *Models) setProviderItems() error {
+	t := m.com.Styles
+	cfg := m.com.Config()
+
+	var selectedItemID string
+	selectedType := m.modelType.Config()
+	currentModel := cfg.Models[selectedType]
+	recentItems := cfg.RecentModels[selectedType]
+
+	// Track providers already added 到 avoid duplicates
+	addedProviders := make(map[string]bool)
+
+	// Get list 的 known providers 到 compare against
+	knownProviders, err := config.Providers(cfg)
+	if err != nil && len(knownProviders) == 0 {
+		return fmt.Errorf("failed to get providers: %w", err)
+	}
+
+	containsProviderFunc := func(id string) func(p catwalk.Provider) bool {
+		return func(p catwalk.Provider) bool {
+			return p.ID == catwalk.InferenceProvider(id)
+		}
+	}
+
+	// itemsMap contains keys 的 added 模型 items.
+	itemsMap := make(map[string]*ModelItem)
+	groups := []ModelGroup{}
+	for id, p := range cfg.Providers.Seq2() {
+		if p.Disable {
+			continue
+		}
+
+		// Check 如果 这 提供方 是 不 在 known providers list
+		if !slices.ContainsFunc(knownProviders, containsProviderFunc(id)) ||
+			!slices.ContainsFunc(m.providers, containsProviderFunc(id)) {
+			provider := p.ToProvider()
+
+			// Add 这 unknown 提供方 到 list
+			name := cmp.Or(p.Name, id)
+
+			addedProviders[id] = true
+
+			group := NewModelGroup(t, name, true)
+			for _, model := range p.Models {
+				item := NewModelItem(t, provider, model, m.modelType, false)
+				group.AppendItems(item)
+				itemsMap[item.ID()] = item
+				if model.ID == currentModel.Model && string(provider.ID) == currentModel.Provider {
+					selectedItemID = item.ID()
+				}
+			}
+			if len(group.Items) > 0 {
+				groups = append(groups, group)
+			}
+		}
+	}
+
+	// Now add known providers 从 predefined list.
+	// Providers already has Hyper 在 front 的 list.
+	for _, provider := range m.providers {
+		providerID := string(provider.ID)
+		if addedProviders[providerID] {
+			continue
+		}
+
+		providerConfig, providerConfigured := cfg.Providers.Get(providerID)
+		if providerConfigured && providerConfig.Disable {
+			continue
+		}
+
+		displayProvider := provider
+		if providerConfigured {
+			displayProvider.Name = cmp.Or(providerConfig.Name, displayProvider.Name)
+			modelIndex := make(map[string]int, len(displayProvider.Models))
+			for i, model := range displayProvider.Models {
+				modelIndex[model.ID] = i
+			}
+			for _, model := range providerConfig.Models {
+				if model.ID == "" {
+					continue
+				}
+				if idx, ok := modelIndex[model.ID]; ok {
+					if model.Name != "" {
+						displayProvider.Models[idx].Name = model.Name
+					}
+					continue
+				}
+				model.Name = cmp.Or(model.Name, model.ID)
+				displayProvider.Models = append(displayProvider.Models, model)
+				modelIndex[model.ID] = len(displayProvider.Models) - 1
+			}
+		}
+
+		name := cmp.Or(displayProvider.Name, providerID)
+
+		// 一个 ChatGPT 或 Grok login lists 只 它的 subscription's models;
+		// API catalog would 404. Until 那 list 是 fetched, show catalog.
+		if subscriptionModels, _ := providerConfig.SubscriptionModels(); subscriptionModels != nil {
+			group := NewModelGroup(t, name, true)
+			for _, model := range subscriptionModels {
+				item := NewModelItem(t, provider, model, m.modelType, false)
+				group.AppendItems(item)
+				itemsMap[item.ID()] = item
+				if model.ID == currentModel.Model && string(provider.ID) == currentModel.Provider {
+					selectedItemID = item.ID()
+				}
+			}
+			if len(group.Items) > 0 {
+				groups = append(groups, group)
+			}
+			continue
+		}
+
+		group := NewModelGroup(t, name, providerConfigured)
+		for _, model := range displayProvider.Models {
+			item := NewModelItem(t, provider, model, m.modelType, false)
+			group.AppendItems(item)
+			itemsMap[item.ID()] = item
+			if model.ID == currentModel.Model && string(provider.ID) == currentModel.Provider {
+				selectedItemID = item.ID()
+			}
+		}
+
+		groups = append(groups, group)
+	}
+
+	if len(recentItems) > 0 {
+		recentGroup := NewModelGroup(t, "Recently used", false)
+
+		var validRecentItems []config.SelectedModel
+		for _, recent := range recentItems {
+			key := modelKey(recent.Provider, recent.Model)
+			item, ok := itemsMap[key]
+			if !ok {
+				continue
+			}
+
+			// Show 提供方 为 recent items
+			item = NewModelItem(t, item.prov, item.model, m.modelType, true)
+			item.showProvider = true
+
+			validRecentItems = append(validRecentItems, recent)
+			recentGroup.AppendItems(item)
+			if recent.Model == currentModel.Model && recent.Provider == currentModel.Provider {
+				selectedItemID = item.ID()
+			}
+		}
+
+		if len(validRecentItems) != len(recentItems) {
+			// FIXME: Does 这 need 到 是 here? Is it mutating 配置 during 读取?
+			if err := m.com.Workspace.SetConfigField(config.ScopeGlobal, fmt.Sprintf("recent_models.%s", selectedType), validRecentItems); err != nil {
+				return fmt.Errorf("failed to update recent models: %w", err)
+			}
+		}
+
+		if len(recentGroup.Items) > 0 {
+			groups = append([]ModelGroup{recentGroup}, groups...)
+		}
+	}
+
+	// Set 模型 groups 在 list.
+	m.list.SetGroups(groups...)
+	m.list.SetSelectedItem(selectedItemID)
+	if selectedItemID != "" {
+		m.list.ScrollToSelected()
+	} else {
+		m.list.ScrollToTop()
+	}
+
+	// 更新 placeholder based 在 模型 type
+	if !m.isOnboarding {
+		m.input.Placeholder = m.modelType.Placeholder()
+	}
+
+	return nil
+}
+
+func modelKey(providerID, modelID string) string {
+	if providerID == "" || modelID == "" {
+		return ""
+	}
+	return providerID + ":" + modelID
+}
