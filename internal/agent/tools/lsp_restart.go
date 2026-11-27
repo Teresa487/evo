@@ -1,3 +1,5 @@
+// lsp_restart.go —— lsp_restart 工具：重启语言服务器。
+
 package tools
 
 import (

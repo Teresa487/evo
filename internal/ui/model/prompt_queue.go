@@ -1,3 +1,7 @@
+// prompt_queue.go —— busy 时排队的 prompt 列表。
+//
+// 前端对后端：排队的消息随后由 sendMessageInternal 交给 Workspace.AgentRun。
+
 package model
 
 import "slices"

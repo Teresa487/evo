@@ -1,3 +1,19 @@
+// message.go —— 消息的持久化服务，是「上下文从哪里读、结果存到哪里」的源头。
+//
+// 从产物反推：
+//
+//	用户看到的回复 = currentAssistant.Content()
+//	  ← service.Update 把 Stream 增量写进 Message（带 debounce/flush）
+//	  ← service.Create 在 Run 的 PrepareStep 里建空 assistant 消息
+//	  ← service.List / ListFromSummary 在下一轮把历史读出来
+//
+// 关键能力：
+//   - Create/Update/Delete/List：消息 CRUD
+//   - Flush/FlushAll：把 debounce 的流式增量落盘；Run 结束前必须调用
+//   - ListFromSummary：压缩后只读「摘要 + 之后的消息」，实现上下文截断
+//   - marshalParts/unmarshalParts：内容片段的 JSON 编解码
+//
+// 它是存储层，不理解「什么是回答」；只保证消息正确落盘和可重放。
 package message
 
 import (

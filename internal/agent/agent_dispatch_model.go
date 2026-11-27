@@ -1,3 +1,8 @@
+// agent_dispatch_model.go —— 子 agent 派发时的模型选择与 reasoning 参数处理。
+//
+// 从产物反推：coordinator 派发子任务时需要确定用哪个模型，这里解析覆盖配置、
+// 校验可用模型、应用 reasoning 选项。
+
 package agent
 
 import (

@@ -1,3 +1,5 @@
+// events.go —— 服务端的事件分发：把 agent/session/message 事件推给订阅的客户端。
+
 package backend
 
 import (

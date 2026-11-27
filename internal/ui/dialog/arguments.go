@@ -1,3 +1,5 @@
+// arguments.go —— 工具/命令参数的展示与编辑。
+
 package dialog
 
 import (

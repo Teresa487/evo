@@ -1,3 +1,5 @@
+// run_output.go —— 非交互运行时的输出与 spinner 处理。
+
 package app
 
 import (

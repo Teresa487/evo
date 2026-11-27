@@ -1,3 +1,5 @@
+// nerdfont.go —— Nerd Font 图标支持。
+
 package model
 
 import (

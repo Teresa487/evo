@@ -1,3 +1,5 @@
+// todos.go —— todos 工具：维护任务清单。
+
 package tools
 
 import (

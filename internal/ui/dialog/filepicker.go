@@ -1,3 +1,5 @@
+// filepicker.go —— 文件选择弹窗。前端对后端：Workspace 的文件与项目信息。
+
 package dialog
 
 import (

@@ -1,3 +1,5 @@
+// notifications.go —— 通知样式设置弹窗。
+
 package dialog
 
 import (

@@ -1,3 +1,5 @@
+// logs.go —— 日志相关子命令。
+
 package cmd
 
 import (

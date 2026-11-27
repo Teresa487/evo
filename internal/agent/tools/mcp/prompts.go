@@ -1,3 +1,5 @@
+// prompts.go —— MCP prompts 的发现与调用。
+
 package mcp
 
 import (

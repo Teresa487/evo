@@ -1,3 +1,5 @@
+// dispatch.go —— 把命令分发到内置实现或系统 shell。
+
 package shell
 
 import (

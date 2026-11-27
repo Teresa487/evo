@@ -1,3 +1,5 @@
+// plan_handoff_inline.go —— 计划完成后交接的行内提示。
+
 package dialog
 
 import (

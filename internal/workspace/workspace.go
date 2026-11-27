@@ -1,7 +1,18 @@
-// Package 工作区 defines 工作区 interface used 通过 all
-// frontends (TUI, CLI) 到 interact 用 running 工作区. Two
-// implementations exist: one wrapping local app.App instance 和 one
-// wrapping HTTP 客户端 SDK.
+// workspace.go —— 前端（TUI/CLI）与 agent 核心之间的统一接口。
+//
+// 从产物反推：
+//
+//	用户按回车 / 渠道消息到达
+//	  → Workspace.AgentRun(sessionID, prompt, attachments)
+//	  → AppWorkspace（本地）直接调 app.App；ClientWorkspace（远程）走 HTTP/RPC
+//	  → 最终进入 agent.sessionAgent.Run
+//
+// 这个接口把「本地模式」和「客户端/服务端模式」统一起来：
+//   - AppWorkspace 包装进程内的 app.App
+//   - ClientWorkspace 通过 internal/client 调服务端
+//
+// 它定义了 session、message、agent、config、event 的统一入口，
+// 是多客户端架构的抽象边界。
 package workspace
 
 import (

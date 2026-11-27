@@ -1,3 +1,5 @@
+// session.go —— 协议里的 session 类型。
+
 package proto
 
 // 会话 represents 会话 在 proto layer.

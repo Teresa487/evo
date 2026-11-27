@@ -1,3 +1,5 @@
+// testing.go —— app 包的测试辅助构造。
+
 package app
 
 import (

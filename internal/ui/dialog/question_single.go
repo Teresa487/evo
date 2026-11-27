@@ -1,3 +1,5 @@
+// question_single.go —— 单选提问弹窗。
+
 package dialog
 
 import (

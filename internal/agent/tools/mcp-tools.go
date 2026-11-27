@@ -1,3 +1,5 @@
+// mcp-tools.go —— 把 MCP 服务器暴露的工具适配成 agent 工具。
+
 package tools
 
 import (

@@ -1,3 +1,5 @@
+// program_status.go —— 程序运行级状态（连接、错误提示）。
+
 package model
 
 import (

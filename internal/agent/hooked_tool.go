@@ -1,3 +1,8 @@
+// hooked_tool.go —— 用 hooks 包装每个工具调用。
+//
+// wrapToolsWithHooks 把工具变成 hookedTool，在真正执行前后触发
+// PreToolUse / PostToolUse，支持拦截与改写输入输出。
+
 package agent
 
 import (

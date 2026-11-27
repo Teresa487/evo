@@ -1,3 +1,5 @@
+// sourcegraph.go —— sourcegraph 工具：跨公共仓库搜索代码。
+
 package tools
 
 import (

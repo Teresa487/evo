@@ -1,3 +1,8 @@
+// prompts.go —— 内置 prompt 模板的加载与覆盖。
+//
+// coder/task/plan/initialize/title/summary 等模板从这里读取，
+// 支持用户自定义 prompt 文件替换。
+
 package agent
 
 import (

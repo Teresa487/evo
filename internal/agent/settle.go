@@ -1,3 +1,7 @@
+// settle.go —— 轮次收尾：给未回答的工具调用补结果，修复中断的工具状态。
+//
+// Run 结束后调用 settleTurn，保证消息历史里工具调用与结果成对。
+
 package agent
 
 import (

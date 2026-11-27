@@ -1,3 +1,5 @@
+// question.go —— question 工具：向用户提问并等待回答。
+
 package tools
 
 import (

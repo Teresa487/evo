@@ -1,3 +1,5 @@
+// mcp_auth.go —— MCP OAuth 授权流程的 UI。
+
 package model
 
 import (

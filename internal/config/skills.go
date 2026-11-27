@@ -1,3 +1,5 @@
+// skills.go —— 配置里的 skills 段解析（禁用列表、外部目录等）。
+
 package config
 
 import (

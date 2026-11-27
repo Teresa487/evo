@@ -1,3 +1,11 @@
+// run.go —— 非交互式 `crush run`：不启动 TUI，直接跑一轮并打印结果。
+//
+// 从产物反推：它自己实现了一条精简版产物链：
+//   connectToServer → overrideModels/restoreModelFromSession
+//   → AgentRun → 读取 SSE 事件流 runStream → 打印到 stdout
+//
+// 与 TUI 的区别只在展示层，后端调用是同一条 Workspace.AgentRun。
+
 package cmd
 
 import (

@@ -1,3 +1,5 @@
+// keys.go —— 键盘绑定与按键处理。
+
 package model
 
 import "charm.land/bubbles/v2/key"

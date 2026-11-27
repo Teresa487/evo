@@ -1,3 +1,19 @@
+// channelreply.go —— 回复链路的最后一站：把模型产出的文本送回来源渠道。
+//
+// 从产物反推它的位置：
+//
+//	sendChannelReply（本文件）
+//	  ← channelReplyText(currentAssistant)     取模型最终文本
+//	  ← currentAssistant.Content()             Run 里由 Stream 回调逐段写入
+//	  ← 来源 = call.Channel + channelMeta       Run 入口从 <channel> 元素解析
+//
+// 它解决两个问题：
+//  1. 渠道来源的轮次，模型可能已经用工具自己回过了（autoReplyDelivered 检测），
+//     这时不再重复发一遍。
+//  2. 回复要发到正确的目标：群消息回群里，私聊回发送者（resolveChannelReply 按
+//     channel meta 选工具和参数）。
+//
+// 本文件只负责「配送」，不产生内容；内容来自 agent.go 的 currentAssistant。
 package agent
 
 import (

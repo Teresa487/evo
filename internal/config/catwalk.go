@@ -1,3 +1,5 @@
+// catwalk.go —— 与 catwalk 模型目录对接：provider 列表、模型能力、默认值。
+
 package config
 
 import (

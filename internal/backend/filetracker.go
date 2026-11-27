@@ -1,3 +1,5 @@
+// filetracker.go —— 记录会话读过的文件，供上下文与权限判断使用。
+
 package backend
 
 import (

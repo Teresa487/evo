@@ -1,3 +1,7 @@
+// mcp.go —— UI 的 MCP 服务器/工具/资源浏览与管理。
+//
+// 前端对后端：通过 Workspace.ListMCP* 等接口访问 MCP 状态。
+
 package model
 
 import (

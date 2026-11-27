@@ -1,3 +1,5 @@
+// edit_whitespace.go —— edit 工具的空白/缩进容错匹配辅助。
+
 package tools
 
 import (

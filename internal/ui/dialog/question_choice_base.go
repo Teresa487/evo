@@ -1,3 +1,5 @@
+// question_choice_base.go —— 提问弹窗的选项基类。
+
 package dialog
 
 import (

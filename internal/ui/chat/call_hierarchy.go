@@ -1,3 +1,6 @@
+// call_hierarchy.go —— UI 消息渲染：把后端来的消息/工具调用转成 TUI 可显示的项。
+// 属于产物链的末端：db/message → Workspace.ListMessages → ui/chat → 屏幕。
+
 package chat
 
 import (

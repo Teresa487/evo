@@ -1,3 +1,5 @@
+// mcp.go —— 配置里的 MCP 服务器段解析与解析后 URL。
+
 package config
 
 import "fmt"

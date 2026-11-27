@@ -1,3 +1,5 @@
+// truncate.go —— 显示文本截断。
+
 package model
 
 import (

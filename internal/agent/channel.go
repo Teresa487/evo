@@ -1,3 +1,8 @@
+// channel.go —— 在 context 里传递当前渠道名。
+//
+// Run 把 call.Channel 放进 ctx，工具/回调通过 ChannelFromContext 读取，
+// 用于渠道权限和回复路由。
+
 package agent
 
 import "context"

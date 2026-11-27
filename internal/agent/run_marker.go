@@ -1,3 +1,5 @@
+// run_marker.go —— 在 context 里标记 RunComplete 是否已发布，避免重复发布。
+
 package agent
 
 import (

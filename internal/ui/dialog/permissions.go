@@ -1,3 +1,5 @@
+// permissions.go —— 工具权限申请弹窗：显示请求并回传允许/拒绝。
+
 package dialog
 
 import (

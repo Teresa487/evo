@@ -1,3 +1,5 @@
+// sessions.go —— 会话切换弹窗。前端对后端：Workspace.ListSessions / DeleteSession。
+
 package dialog
 
 import (

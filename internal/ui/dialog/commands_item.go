@@ -1,3 +1,5 @@
+// commands_item.go —— 命令列表的单项渲染。
+
 package dialog
 
 import (

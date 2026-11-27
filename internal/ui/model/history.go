@@ -1,3 +1,7 @@
+// history.go —— UI 读取消息历史并滚动展示。
+//
+// 前端对后端：通过 Workspace.ListMessages 拉取消息，交给 ui/chat 渲染。
+
 package model
 
 import (

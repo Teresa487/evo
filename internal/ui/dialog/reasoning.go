@@ -1,3 +1,5 @@
+// reasoning.go —— 推理强度（reasoning effort）选择弹窗。
+
 package dialog
 
 import (

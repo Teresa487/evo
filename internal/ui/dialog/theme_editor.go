@@ -1,3 +1,5 @@
+// theme_editor.go —— 主题编辑弹窗。
+
 package dialog
 
 import (

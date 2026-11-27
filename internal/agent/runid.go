@@ -1,3 +1,5 @@
+// runid.go —— 在 context 里传递 RunID，串起一次请求的终态事件。
+
 package agent
 
 import "context"

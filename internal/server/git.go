@@ -1,3 +1,5 @@
+// git.go —— 服务端的 Git 相关端点（状态、分支信息）。
+
 package server
 
 import (

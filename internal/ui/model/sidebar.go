@@ -1,3 +1,5 @@
+// sidebar.go —— 左侧 session 列表与分组展示。
+
 package model
 
 import (

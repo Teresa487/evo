@@ -1,3 +1,5 @@
+// auth_method.go —— 选择 provider 认证方式（API key / OAuth）。
+
 package dialog
 
 import (

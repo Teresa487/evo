@@ -1,3 +1,5 @@
+// socket_classify.go —— 判断 socket 连接类型与来源。
+
 package server
 
 import (

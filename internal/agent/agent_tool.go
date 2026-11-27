@@ -1,3 +1,7 @@
+// agent_tool.go —— 传统的 agent 工具实现（非并行派发版本）。
+//
+// 负责把 agent 调用的配置转换为子 agent 的 agent.Config，并判断只读访问。
+
 package agent
 
 import (

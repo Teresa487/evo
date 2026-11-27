@@ -1,3 +1,5 @@
+// stats.go —— 用量/统计相关子命令。
+
 package cmd
 
 import (

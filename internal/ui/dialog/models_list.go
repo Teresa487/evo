@@ -1,3 +1,5 @@
+// models_list.go —— 模型列表弹窗。
+
 package dialog
 
 import (

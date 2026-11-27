@@ -1,3 +1,15 @@
+// ui.go —— TUI 主控制器，也是「前端对后端」的入口点。
+//
+// 从产物反推前端到后端的调用：
+//
+//	用户输入 → sendMessage/sendMessageInternal（本文件）
+//	  → com.Workspace.AgentRun(runCtx, sessionID, content, attachments...)
+//	  → AppWorkspace（本地）或 ClientWorkspace（远程，走 HTTP/SSE）
+//	  → backend → app.App → agent.Run
+//	  → 结果经 pubsub/SSE 事件回到 UI 的消息渲染（ui/chat）
+//
+// 本文件还持有 UI 与 Workspace 的主要交互：session 切换、消息列表、
+// 模型/权限/配置、MCP、skills、通知、agent busy 状态。
 package model
 
 import (

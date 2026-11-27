@@ -1,3 +1,5 @@
+// filter.go —— UI 列表过滤逻辑。
+
 package model
 
 import (

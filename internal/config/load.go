@@ -1,3 +1,17 @@
+// load.go —— 配置的发现、读取、合并与 provider 解析，是启动链的第一站。
+//
+// 从产物反推（谁最终让模型能说话）：
+//
+//	Process 启动 → config.Load(workingDir, dataDir, debug)
+//	  → lookupConfigs / loadFromConfigPaths    找到全局 + 项目的配置文件
+//	  → loadFromBytes                          按优先级合并多份配置
+//	  → setDefaults / NormalizeOptions         补默认值与规范化
+//	  → configureProviders                     解析 provider、API key、base_url、OAuth
+//	  → defaultModelSelection / resolveSelectedModels  选定 large/small 模型
+//	  → 得到 *ConfigStore，交由 app.App 构造 coordinator 和 agent
+//
+// 本文件决定「用哪个 provider、哪个 model、从哪读 key」。
+
 package config
 
 import (

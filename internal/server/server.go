@@ -1,3 +1,13 @@
+// server.go —— HTTP/SSE 服务端：把远端客户端的请求转成 backend 调用，并把事件推回去。
+//
+// 从产物反推：
+//
+//	远端 TUI → ClientWorkspace → HTTP /v1/...
+//	  → server（本文件 + endpoints.go + proto.go）
+//	  → backend → app.App → agent.Run
+//	  → SSE event stream → ClientWorkspace → 远端 TUI 显示
+//
+// 服务端还负责 client_id 合法性、workspace 生命周期、空闲关闭。
 package server
 
 import (

@@ -1,3 +1,5 @@
+// quit.go —— 退出确认弹窗。
+
 package dialog
 
 import (

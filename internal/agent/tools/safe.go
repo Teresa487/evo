@@ -1,3 +1,5 @@
+// safe.go —— 工具参数的安全校验（路径逃逸、命令注入等）。
+
 package tools
 
 import (

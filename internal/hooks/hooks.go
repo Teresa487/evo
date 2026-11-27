@@ -1,5 +1,8 @@
-// Package hooks runs 用户-defined shell commands 那 fire 在 钩子 events
-// (e.g. PreToolUse), returning decisions 那 control agent behavior.
+// Package hooks 在钩子事件（如 PreToolUse）触发用户定义的 shell 命令，
+// 返回决策来控制 agent 行为。
+//
+// 从产物反推：工具调用的前后、轮次开始/结束、压缩前后都会经过这里；
+// hook 可以放行、拦截、改写工具输入/输出、注入上下文。
 package hooks
 
 import (

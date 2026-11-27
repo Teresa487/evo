@@ -1,3 +1,5 @@
+// actions.go —— 对话框里的动作定义与执行。
+
 package dialog
 
 import (

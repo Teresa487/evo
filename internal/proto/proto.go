@@ -1,3 +1,7 @@
+// proto.go —— 客户端/服务端之间传输的协议类型。
+//
+// ClientWorkspace 和 server 都依赖这里的 Workspace、事件、权限、请求等结构；
+// 它定义「两端说什么语言」，不含业务逻辑。
 package proto
 
 import (

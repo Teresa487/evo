@@ -1,3 +1,5 @@
+// oauth_hyper.go —— Hyper 的 OAuth 登录弹窗。
+
 package dialog
 
 import (

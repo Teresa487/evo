@@ -1,3 +1,5 @@
+// crush_info.go —— crush_info 工具：报告当前 Crush 运行环境信息。
+
 package tools
 
 import (

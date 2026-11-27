@@ -1,3 +1,5 @@
+// recover.go —— 请求 panic 的恢复，避免单个请求打挂服务端。
+
 package server
 
 import (

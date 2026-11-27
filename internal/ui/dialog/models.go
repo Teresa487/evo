@@ -1,3 +1,5 @@
+// models.go —— 模型选择弹窗。前端对后端：UpdatePreferredModel / recent_models 配置。
+
 package dialog
 
 import (

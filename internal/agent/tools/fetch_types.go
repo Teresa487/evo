@@ -1,3 +1,5 @@
+// fetch_types.go —— fetch 相关工具的参数与结果类型。
+
 package tools
 
 // AgenticFetchToolName 是 name 的 agentic fetch 工具.

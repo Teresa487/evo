@@ -1,3 +1,5 @@
+// persist_message.go —— 把 shell 执行结果写入消息历史。
+
 package shell
 
 import (

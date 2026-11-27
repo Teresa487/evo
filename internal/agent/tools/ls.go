@@ -1,3 +1,5 @@
+// ls.go —— ls 工具：列出目录内容。
+
 package tools
 
 import (

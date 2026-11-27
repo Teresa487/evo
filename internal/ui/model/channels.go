@@ -1,3 +1,7 @@
+// channels.go —— 渠道（MCP messaging server）事件的 UI 侧处理。
+//
+// 客户端/服务端模式下后端负责注入渠道事件，这里只展示。
+
 package model
 
 import (

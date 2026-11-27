@@ -1,3 +1,5 @@
+// ssh.go —— SSH 相关操作的后端支撑。
+
 package backend
 
 import (

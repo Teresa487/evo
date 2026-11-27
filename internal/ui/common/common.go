@@ -1,3 +1,8 @@
+// common.go —— UI 各面板共享的上下文对象 Common，持有 Workspace 与样式。
+//
+// 前端对后端的所有访问都通过 Common.Workspace（workspace.Workspace 接口）：
+// 本地模式是 AppWorkspace，远程模式是 ClientWorkspace。
+// 本文件还提供 plan marker、图片/音频路径判断等 UI 公共工具。
 package common
 
 import (

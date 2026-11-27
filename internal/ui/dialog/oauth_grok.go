@@ -1,3 +1,5 @@
+// oauth_grok.go —— Grok 的 OAuth 登录弹窗。
+
 package dialog
 
 import (

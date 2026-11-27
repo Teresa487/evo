@@ -1,3 +1,5 @@
+// permission.go —— 权限请求：后端把工具权限询问转给客户端并等待答复。
+
 package backend
 
 import (

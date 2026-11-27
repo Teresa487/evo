@@ -1,3 +1,5 @@
+// program_resume.go —— TUI 重启后恢复现场（session、busy 状态）。
+
 package model
 
 import (

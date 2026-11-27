@@ -1,3 +1,7 @@
+// agent_dispatch.go —— agent 派发工具的入口：agent / agent_send / agent_stop。
+//
+// 定义派发参数、停止语义，以及子 agent 如何被创建、收消息、停止。
+
 package agent
 
 import (

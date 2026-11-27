@@ -1,3 +1,5 @@
+// models.go —— `crush models` 子命令：列出可用 provider 与模型。
+
 package cmd
 
 import (

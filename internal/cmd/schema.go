@@ -1,3 +1,5 @@
+// schema.go —— 生成配置 JSON schema。
+
 package cmd
 
 import (

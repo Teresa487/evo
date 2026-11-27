@@ -1,3 +1,5 @@
+// doc.go —— shell 包的包级说明。
+
 package shell
 
 // Example usage 的 shell package:

@@ -1,3 +1,5 @@
+// question_multi.go —— 多选提问弹窗。
+
 package dialog
 
 import (

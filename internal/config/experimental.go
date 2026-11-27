@@ -1,3 +1,5 @@
+// experimental.go —— 实验性配置项。
+
 package config
 
 import (

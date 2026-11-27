@@ -1,3 +1,5 @@
+// atomicwrite.go —— 配置文件的原子写入（先写临时文件再替换），避免写坏配置。
+
 package config
 
 import (

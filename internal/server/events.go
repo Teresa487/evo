@@ -1,3 +1,7 @@
+// events.go —— SSE 事件流：把 backend 的事件按客户端订阅过滤后推送给远端。
+//
+// 从产物反推：远端 TUI 之所以能看到消息更新、session 变化、agent 完成，
+// 全靠这里的事件流把 backend/pubsub 的事件推过 HTTP 长连接。
 package server
 
 import (

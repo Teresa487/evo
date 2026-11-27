@@ -1,3 +1,5 @@
+// hyper_credits.go —— 用 Hyper 额度包装 LanguageModel，刷新余额。
+
 package agent
 
 import (

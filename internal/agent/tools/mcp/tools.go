@@ -1,3 +1,5 @@
+// tools.go —— MCP 工具的发现与适配成 agent 工具。
+
 package mcp
 
 import (

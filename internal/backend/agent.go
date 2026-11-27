@@ -1,3 +1,5 @@
+// agent.go —— 服务端的 agent 操作：AgentRun/AgentCancel/AgentIsBusy 等，把远端请求转成 workspace 内 agent 的调用。
+
 package backend
 
 import (

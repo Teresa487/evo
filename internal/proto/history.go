@@ -1,3 +1,5 @@
+// history.go —— 协议里的历史/文件追踪类型。
+
 package proto
 
 // 文件 represents 文件 tracked 在 会话 history.

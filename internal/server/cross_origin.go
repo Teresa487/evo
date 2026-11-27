@@ -1,3 +1,5 @@
+// cross_origin.go —— 跨域访问控制：限制哪些来源可以连接服务端。
+
 package server
 
 import (

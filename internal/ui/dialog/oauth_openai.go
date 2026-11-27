@@ -1,3 +1,5 @@
+// oauth_openai.go —— OpenAI 的 OAuth 登录弹窗。
+
 package dialog
 
 import (

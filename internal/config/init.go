@@ -1,3 +1,5 @@
+// init.go —— 配置初始化：首次运行生成默认配置、创建目录。
+
 package config
 
 import (

@@ -1,3 +1,8 @@
+// host_context.go —— 把宿主应用状态和用户 notes 注入本轮 prompt。
+//
+// hostContextPrompt 生成 <host_context>，notesPrompt 生成 <user_notes>；
+// 它们只随当前提问发送，不写进消息历史。
+
 package agent
 
 import (

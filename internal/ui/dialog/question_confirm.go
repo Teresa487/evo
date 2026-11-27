@@ -1,3 +1,5 @@
+// question_confirm.go —— 确认型提问弹窗。
+
 package dialog
 
 import (

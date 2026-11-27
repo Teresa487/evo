@@ -1,3 +1,5 @@
+// channel.go —— MCP 渠道消息的渲染与解析（<channel> 元素）。
+
 package mcp
 
 import (

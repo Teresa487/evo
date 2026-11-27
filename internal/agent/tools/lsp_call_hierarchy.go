@@ -1,3 +1,5 @@
+// lsp_call_hierarchy.go —— lsp_call_hierarchy 工具：查询调用层级。
+
 package tools
 
 import (

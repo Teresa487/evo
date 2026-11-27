@@ -1,3 +1,5 @@
+// resolve.go —— 配置值的解析：变量展开、路径锚定、优先级合并。
+
 package config
 
 import (

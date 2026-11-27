@@ -1,3 +1,5 @@
+// stream.go —— 命令输出的流式读取。
+
 package shell
 
 import (

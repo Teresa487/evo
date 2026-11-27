@@ -1,3 +1,5 @@
+// theme_new.go —— 新建主题弹窗。
+
 package dialog
 
 import (

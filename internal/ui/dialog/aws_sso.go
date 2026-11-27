@@ -1,3 +1,5 @@
+// aws_sso.go —— AWS SSO 登录的弹窗与提示。
+
 package dialog
 
 import (

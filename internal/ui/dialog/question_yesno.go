@@ -1,3 +1,5 @@
+// question_yesno.go —— 是/否提问弹窗。
+
 package dialog
 
 import (

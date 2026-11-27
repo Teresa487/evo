@@ -1,3 +1,8 @@
+// agent_background.go —— 长跑子 agent 的后台化：超过阈值就转成可后台查看的任务。
+//
+// coordinator.runSubAgentMaybeBackground 在子 agent 运行一段时间后给出后台提示，
+// 让用户不必一直等它完成。属于 agent 派发链的一环。
+
 package agent
 
 import (

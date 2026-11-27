@@ -1,3 +1,5 @@
+// job_kill.go —— job_kill 工具：终止后台任务。
+
 package tools
 
 import (

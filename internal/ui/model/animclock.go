@@ -1,3 +1,5 @@
+// animclock.go —— 动画时钟，驱动 spinner 等动画。
+
 package model
 
 import (

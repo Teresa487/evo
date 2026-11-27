@@ -1,3 +1,5 @@
+// message.go —— 协议里的消息与内容片段类型，与服务端 message 模型对应。
+
 package proto
 
 import (

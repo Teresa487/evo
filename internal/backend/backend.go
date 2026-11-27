@@ -1,6 +1,14 @@
-// Package backend provides transport-agnostic operations 为 managing
-// workspaces, sessions, agents, permissions, 和 events. 它 是 consumed
-// 通过 protocol-specific layers such 作为 HTTP (服务端) 和 ACP.
+// Package backend 提供与传输方式无关的操作：管理 workspace、session、agent、
+// 权限和事件。它被 HTTP 服务端、ACP 等协议层调用。
+//
+// 从产物反推：
+//
+//	HTTP /v1/...（server）
+//	  → backend.Workspace.AgentRun
+//	  → app.App → agent.Run
+//
+// 多客户端状态也在这一层：每个 client_id 的 currentSessionID、SSE 流计数、
+// holdTimer，以及「同一目录共享 workspace / 不同目录隔离」。
 package backend
 
 import (

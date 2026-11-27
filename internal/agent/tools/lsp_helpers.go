@@ -1,3 +1,5 @@
+// lsp_helpers.go —— LSP 工具的公共辅助：定位服务器、格式化结果。
+
 package tools
 
 import (

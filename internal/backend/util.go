@@ -1,3 +1,5 @@
+// util.go —— backend 包的小工具函数。
+
 package backend
 
 import (

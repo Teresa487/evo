@@ -1,3 +1,5 @@
+// dialog.go —— 对话框的通用框架：打开/关闭/叠加与尺寸计算。
+
 package dialog
 
 import (

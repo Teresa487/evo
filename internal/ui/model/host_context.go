@@ -1,3 +1,7 @@
+// host_context.go —— UI 把宿主应用上下文（当前文件等）附到提问上。
+//
+// 与 agent/host_context.go 对应：这里构造，agent 那边注入 prompt。
+
 package model
 
 import (

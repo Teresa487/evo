@@ -1,3 +1,5 @@
+// sessions_item.go —— 会话列表的单项渲染。
+
 package dialog
 
 import (

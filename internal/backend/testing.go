@@ -1,3 +1,5 @@
+// testing.go —— backend 包的测试辅助。
+
 package backend
 
 import "context"

@@ -1,3 +1,5 @@
+// pinentry_gpg.go —— GPG pinentry 辅助，用于凭据输入。
+
 package cmd
 
 import (

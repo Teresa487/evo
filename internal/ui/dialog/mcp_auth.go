@@ -1,3 +1,5 @@
+// mcp_auth.go —— MCP 服务器授权弹窗。
+
 package dialog
 
 import (

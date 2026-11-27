@@ -1,3 +1,5 @@
+// config.go —— 服务端的配置端点：远端客户端读写 workspace 配置。
+
 package server
 
 import (

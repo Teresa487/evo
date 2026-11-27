@@ -1,3 +1,5 @@
+// title_tracker.go —— 后台标题生成的并发跟踪与等待。
+
 package agent
 
 import (

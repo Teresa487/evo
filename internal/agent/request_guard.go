@@ -1,3 +1,5 @@
+// request_guard.go —— 请求超时错误类型与面向用户的提示。
+
 package agent
 
 import (

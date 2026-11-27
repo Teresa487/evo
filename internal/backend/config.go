@@ -1,3 +1,12 @@
+// config.go —— 服务端的配置操作入口：把远端客户端的配置改动落到 ConfigStore。
+//
+// 从产物反推：
+//
+//	远端 UI → ClientWorkspace.SetConfigField → HTTP → backend.SetConfigField
+//	  → workspace 的 ConfigStore → 后续 UpdateAgentModel 生效
+//
+// 同时负责 API key 写入与 OAuth 完成信号。
+
 package backend
 
 import (

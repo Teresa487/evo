@@ -1,3 +1,5 @@
+// landing.go —— 没有选中 session 时的欢迎页。
+
 package model
 
 import (

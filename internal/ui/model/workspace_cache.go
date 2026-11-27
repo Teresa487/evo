@@ -1,3 +1,7 @@
+// workspace_cache.go —— UI 缓存的 workspace 配置/状态，避免频繁访问后端。
+//
+// 本地模式读本地；客户端/服务端模式下由 SSE 事件刷新缓存。
+
 package model
 
 // Memoized 工作区 state.

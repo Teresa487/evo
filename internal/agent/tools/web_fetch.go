@@ -1,3 +1,5 @@
+// web_fetch.go —— web_fetch 工具：抓取网页正文。
+
 package tools
 
 import (

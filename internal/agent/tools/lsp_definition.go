@@ -1,3 +1,5 @@
+// lsp_definition.go —— lsp_definition 工具：跳到符号定义。
+
 package tools
 
 import (

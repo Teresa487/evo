@@ -1,3 +1,5 @@
+// scope.go —— 配置作用域（全局/项目）的定义与路径选择。
+
 package config
 
 import "fmt"

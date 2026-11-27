@@ -1,3 +1,5 @@
+// background.go —— 后台 shell 任务的管理与输出读取。
+
 package shell
 
 import (

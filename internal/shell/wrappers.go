@@ -1,3 +1,5 @@
+// wrappers.go —— 命令包装：注入环境变量、拦截危险命令。
+
 package shell
 
 import (

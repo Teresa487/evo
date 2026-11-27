@@ -1,3 +1,5 @@
+// coreutils.go —— coreutils 模式：按配置限制某些命令行为。
+
 package shell
 
 import (

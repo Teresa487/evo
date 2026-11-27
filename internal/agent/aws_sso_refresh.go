@@ -1,3 +1,7 @@
+// aws_sso_refresh.go —— provider 报 401 时的 AWS SSO 凭据刷新。
+//
+// 由 agent 的 OnAuthRefresh 钩子调用：提取 SSO URL、登录、刷新凭据后让流重试。
+
 package agent
 
 import (

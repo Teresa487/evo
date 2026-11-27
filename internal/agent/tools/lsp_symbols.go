@@ -1,3 +1,5 @@
+// lsp_symbols.go —— lsp_symbols 工具：列出文件的符号大纲。
+
 package tools
 
 import (

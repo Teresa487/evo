@@ -1,3 +1,5 @@
+// list_mcp_resources.go —— list_mcp_resources 工具：列出 MCP 资源。
+
 package tools
 
 import (

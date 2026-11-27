@@ -1,3 +1,5 @@
+// expand.go —— 命令/路径中的变量与通配符展开。
+
 package shell
 
 import (

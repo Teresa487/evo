@@ -1,3 +1,5 @@
+// server.go —— `crush server` 子命令：以服务端模式运行，供远端客户端连接。
+
 package cmd
 
 import (

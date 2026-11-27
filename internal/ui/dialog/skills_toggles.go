@@ -1,3 +1,5 @@
+// skills_toggles.go —— 技能启用/禁用弹窗。
+
 package dialog
 
 import (

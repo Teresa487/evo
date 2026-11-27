@@ -1,3 +1,5 @@
+// subagent_name.go —— 给子 agent 生成可读的显示名字。
+
 package agent
 
 import (

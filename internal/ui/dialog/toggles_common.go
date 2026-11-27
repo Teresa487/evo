@@ -1,3 +1,5 @@
+// toggles_common.go —— 开关型弹窗的公共逻辑。
+
 package dialog
 
 import (

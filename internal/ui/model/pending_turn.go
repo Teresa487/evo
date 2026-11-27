@@ -1,3 +1,7 @@
+// pending_turn.go —— 本轮消息乐观显示（发送后先看得到，等权威事件回来）。
+//
+// 前端对后端：sendMessage 调 Workspace.AgentRun 之前先把用户消息显示出来。
+
 package model
 
 import (

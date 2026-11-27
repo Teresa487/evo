@@ -1,3 +1,5 @@
+// lsp_rename.go —— lsp_rename 工具：语义重命名符号。
+
 package tools
 
 import (

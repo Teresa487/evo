@@ -1,3 +1,5 @@
+// theme.go —— 主题选择弹窗。前端对后端：SetConfigField(options.tui.active_theme)。
+
 package dialog
 
 import (

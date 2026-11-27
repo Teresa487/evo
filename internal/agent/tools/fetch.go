@@ -1,3 +1,5 @@
+// fetch.go —— fetch 工具：抓取 URL 原始内容并转为文本/Markdown。
+
 package tools
 
 import (

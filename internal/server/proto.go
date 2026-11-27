@@ -1,3 +1,7 @@
+// proto.go —— HTTP controller：解析请求、校验 client_id、调用 backend、写响应。
+//
+// 多客户端的关键校验在这里：缺失或非法的 client_id 会被直接拒绝。
+// 路由定义在 endpoints.go，真正的业务在 backend。
 package server
 
 import (

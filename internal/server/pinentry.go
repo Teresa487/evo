@@ -1,3 +1,5 @@
+// pinentry.go —— 凭据输入请求在服务端与客户端之间的转发。
+
 package server
 
 import (

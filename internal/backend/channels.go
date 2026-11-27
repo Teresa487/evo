@@ -1,3 +1,5 @@
+// channels.go —— 服务端的渠道事件注入：把 MCP channel 消息投进 session。
+
 package backend
 
 import (

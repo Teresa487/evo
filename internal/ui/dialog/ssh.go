@@ -1,3 +1,5 @@
+// ssh.go —— SSH 相关弹窗。
+
 package dialog
 
 import (

@@ -1,3 +1,5 @@
+// hosttheme.go —— 宿主主题同步到 TUI 样式。
+
 package model
 
 import (

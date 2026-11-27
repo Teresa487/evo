@@ -1,3 +1,5 @@
+// shared_models.go —— coordinator 共享的模型集合与覆盖模型管理。
+
 package agent
 
 import (

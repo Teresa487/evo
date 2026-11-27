@@ -1,3 +1,5 @@
+// channels.go —— 渠道（messaging server）配置弹窗。
+
 package dialog
 
 import (

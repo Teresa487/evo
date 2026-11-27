@@ -1,3 +1,5 @@
+// permission.go —— 协议里的权限请求与答复类型。
+
 package proto
 
 import (

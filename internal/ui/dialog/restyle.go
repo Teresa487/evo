@@ -1,3 +1,5 @@
+// restyle.go —— 主题重排/重载辅助。
+
 package dialog
 
 // StyleRefresher 是 implemented 通过 dialogs, inline editors 和 list items

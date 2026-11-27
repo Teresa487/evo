@@ -1,3 +1,5 @@
+// hyper.go —— Hyper provider 的配置与额度接入。
+
 package config
 
 import (

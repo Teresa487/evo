@@ -1,3 +1,7 @@
+// agentic_fetch_tool.go —— agentic_fetch 工具：让子 agent 抓取并总结URL内容。
+//
+// 从产物反推：模型调用该工具 → 校验参数 → 起一个子 agent 执行抓取总结。
+
 package agent
 
 import (

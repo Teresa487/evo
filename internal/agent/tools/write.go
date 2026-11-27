@@ -1,3 +1,5 @@
+// write.go —— write 工具：创建或覆盖文件。
+
 package tools
 
 import (

@@ -1,3 +1,5 @@
+// pinentry.go —— 凭据输入弹窗。
+
 package dialog
 
 import (

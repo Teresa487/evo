@@ -1,3 +1,5 @@
+// lsp_replace_symbol.go —— lsp_replace_symbol 工具：按符号整体替换函数/方法/类型。
+
 package tools
 
 import (

@@ -1,3 +1,5 @@
+// lifecycle.go —— MCP 服务器的启动、健康检查与关闭。
+
 package mcp
 
 import (

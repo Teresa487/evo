@@ -1,3 +1,5 @@
+// status.go —— 底部状态栏：模型、cwd、agent 状态、busy 等。
+
 package model
 
 import (

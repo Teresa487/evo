@@ -1,3 +1,5 @@
+// progress.go —— 工具执行进度的上报。
+
 package tools
 
 import (

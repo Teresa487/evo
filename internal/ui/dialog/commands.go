@@ -1,3 +1,5 @@
+// commands.go —— 斜杠命令选择弹窗。
+
 package dialog
 
 import (

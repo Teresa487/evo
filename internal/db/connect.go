@@ -1,3 +1,7 @@
+// connect.go —— SQLite 连接的生命周期与共享，是消息/session 持久化的底座。
+//
+// 每个 dataDir 一个 crush.db；同一路径的多个客户端通过连接池共享同一个 DB 连接。
+// message、session 等包拿到 db.Querier 后完成读写。
 package db
 
 import (

@@ -1,3 +1,5 @@
+// mcp.go —— 协议里的 MCP 服务器、工具、资源、prompt 类型。
+
 package proto
 
 import (

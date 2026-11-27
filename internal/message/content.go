@@ -1,3 +1,17 @@
+// content.go —— 定义一条消息「由什么组成」，以及它如何被重放给模型。
+//
+// 从产物反推：
+//
+//	模型下一轮看到的历史 = preparePrompt(msgs) 里每条 m.ToAIMessage()
+//	  ← content.go 的 ToAIMessage 把存储的 ContentPart 转成 fantasy.Message
+//	  ← TextContent 变成 TextPart；BinaryContent（图片/音频）变成 FilePart
+//	  ← ToolCall/ToolResult 按调用 ID 重新配对
+//
+// 这是「图片本体随消息持久化、每轮重新附上」的实现点：
+// createUserMessage 把附件存成 BinaryContent，ToAIMessage 在后续每轮读历史时
+// 又把它变回 FilePart，所以模型不会只看到 OCR 文字而丢失原图。
+//
+// 本文件只做「存储表示 ↔ 模型输入」的转换，不做业务逻辑。
 package message
 
 import (

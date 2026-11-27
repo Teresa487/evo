@@ -1,3 +1,7 @@
+// loop_detection.go —— 检测重复工具调用，防止 agent 卡在循环里。
+//
+// 对最近若干步的「工具名+输入+输出」做哈希，重复超阈值就提前停止本轮。
+
 package agent
 
 import (

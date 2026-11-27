@@ -1,3 +1,5 @@
+// edit.go —— edit 工具：精确文本查找替换编辑文件。
+
 package tools
 
 import (

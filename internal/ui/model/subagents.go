@@ -1,3 +1,5 @@
+// subagents.go —— 子 agent 列表与状态展示。
+
 package model
 
 import (

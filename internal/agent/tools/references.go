@@ -1,3 +1,5 @@
+// references.go —— references 工具：查找符号引用。
+
 package tools
 
 import (

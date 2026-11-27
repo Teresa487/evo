@@ -1,3 +1,5 @@
+// lsp.go —— LSP 诊断/状态的 UI 展示。
+
 package model
 
 import (

@@ -1,3 +1,11 @@
+// client.go —— RPC 客户端 SDK：ClientWorkspace 通过它访问远端服务端。
+//
+// 从产物反推：
+//
+//	远端 TUI → ClientWorkspace.AgentRun → client.Client
+//	  → HTTP /v1/... → server → backend → agent.Run
+//
+// 本文件提供连接、workspace 创建/销毁、事件订阅等客户端侧能力。
 package client
 
 import (

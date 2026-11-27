@@ -1,3 +1,5 @@
+// read_mcp_resource.go —— read_mcp_resource 工具：读取 MCP 资源内容。
+
 package tools
 
 import (

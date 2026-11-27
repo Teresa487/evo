@@ -1,3 +1,5 @@
+// hooks.go —— 配置里的 hooks 段解析与校验。
+
 package config
 
 import (

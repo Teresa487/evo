@@ -1,3 +1,5 @@
+// update_providers.go —— 刷新 provider/模型目录缓存。
+
 package cmd
 
 import (

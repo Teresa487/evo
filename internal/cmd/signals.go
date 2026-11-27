@@ -1,3 +1,5 @@
+// signals.go —— 处理 SIGINT/SIGTERM 等信号，做优雅退出。
+
 package cmd
 
 import (

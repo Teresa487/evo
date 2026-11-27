@@ -1,3 +1,5 @@
+// agent.go —— 协议里的 agent 相关类型：运行、取消、busy 状态、模型信息。
+
 package proto
 
 import (

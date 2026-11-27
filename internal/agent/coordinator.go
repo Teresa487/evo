@@ -1,3 +1,8 @@
+// coordinator.go —— 比 sessionAgent 更高一层的协调器。
+//
+// 负责创建/管理 sessionAgent、解析 provider/model、子 agent 派发、权限与 hook、
+// MCP、渠道事件注入等。产物链里它把前端请求转成具体的 agent.Run。
+
 package agent
 
 import (

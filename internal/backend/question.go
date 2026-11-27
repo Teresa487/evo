@@ -1,3 +1,5 @@
+// question.go —— agent 提问工具的后端支撑：把问题转给客户端等待回答。
+
 package backend
 
 import (

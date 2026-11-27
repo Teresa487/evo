@@ -1,3 +1,5 @@
+// server.go —— 协议里的服务端信息与握手类型。
+
 package proto
 
 // 服务端 control commands accepted 通过 /control endpoint.

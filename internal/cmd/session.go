@@ -1,3 +1,5 @@
+// session.go —— `crush session` 相关子命令：列出/切换会话。
+
 package cmd
 
 import (

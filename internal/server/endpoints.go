@@ -1,3 +1,7 @@
+// endpoints.go —— HTTP 路由表：定义 /v1/... 的每个端点及其 handler。
+//
+// 从产物反推：远端客户端的 AgentRun/CreateWorkspace/SubscribeEvents 等请求
+// 都从这里进入，再交给 proto.go 的 controller 校验后调用 backend。
 package server
 
 import (

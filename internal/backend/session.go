@@ -1,3 +1,5 @@
+// session.go —— 服务端的 session 管理：创建、列出、保存、删除、广播。
+
 package backend
 
 import (

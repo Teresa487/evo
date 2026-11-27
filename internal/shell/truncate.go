@@ -1,3 +1,5 @@
+// truncate.go —— 长输出的截断与落盘提示。
+
 package shell
 
 import (

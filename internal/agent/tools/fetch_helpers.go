@@ -1,3 +1,5 @@
+// fetch_helpers.go —— fetch/web_fetch 的通用辅助：内容清洗、截断。
+
 package tools
 
 import (

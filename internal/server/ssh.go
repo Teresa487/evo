@@ -1,3 +1,5 @@
+// ssh.go —— 服务端的 SSH 相关端点。
+
 package server
 
 import (

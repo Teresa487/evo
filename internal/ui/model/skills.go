@@ -1,3 +1,7 @@
+// skills.go —— UI 的技能列表与查看。
+//
+// 前端对后端：通过 Workspace.ListSkills 获取技能。
+
 package model
 
 import (

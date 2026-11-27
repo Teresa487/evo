@@ -1,3 +1,5 @@
+// resources.go —— MCP 资源的发现与读取。
+
 package mcp
 
 import (

@@ -1,3 +1,5 @@
+// event.go —— agent 运行期的埋点事件：prompt 发送/响应、token 用量等。
+
 package agent
 
 import (

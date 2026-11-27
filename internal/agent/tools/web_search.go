@@ -1,3 +1,5 @@
+// web_search.go —— web_search 工具：联网搜索。
+
 package tools
 
 import (

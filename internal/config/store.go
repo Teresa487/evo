@@ -1,3 +1,10 @@
+// store.go —— 配置的运行时存储与热更新（ConfigStore）。
+//
+// 从产物反推：UI 改设置 → Workspace.SetConfigField/SetProviderAPIKey
+//   → ConfigStore 落盘并广播变更 → 下次 UpdateAgentModel 生效。
+//
+// 它让配置在运行中可改，而不必重启进程。
+
 package config
 
 import (

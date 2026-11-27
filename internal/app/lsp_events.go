@@ -1,3 +1,5 @@
+// lsp_events.go —— 把 LSP 诊断事件转发给 UI。
+
 package app
 
 import (

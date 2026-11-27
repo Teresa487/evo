@@ -1,3 +1,5 @@
+// docs.go —— 服务端 API 文档端点。
+
 package server
 
 import (

@@ -1,3 +1,13 @@
+// session.go —— 会话本身的状态与存储，保存「当前对话是哪一条、从哪里开始读」。
+//
+// 从产物反推：
+//
+//	getSessionMessages(session) 用 session.SummaryMessageID 决定历史起点
+//	  ← getSessionMessages 在 agent.go 的 Run 里调用
+//	  ← SummaryMessageID 由 summarize() 压缩后写回并 save
+//
+// session 不存消息正文（那在 message 包），只存 session 元数据：
+// ID、父会话、标题、token 用量、todo、SummaryMessageID、channel 等。
 package session
 
 import (

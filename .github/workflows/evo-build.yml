@@ -1,0 +1,112 @@
+name: evo build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version label for artifacts (e.g. 0.1.0)"
+        required: false
+        default: "dev"
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evo-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            suffix: linux-amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+            suffix: linux-arm64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            suffix: darwin-arm64
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            suffix: darwin-amd64
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            suffix: windows-amd64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          EXT=""
+          if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
+          go build -trimpath \
+            -ldflags "-s -w -X github.com/charmbracelet/crush/internal/version.Version=${{ steps.ver.outputs.value }}" \
+            -o "dist/evo${EXT}" .
+          ls -la dist
+
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p out
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            (cd dist && 7z a ../out/evo-${{ matrix.suffix }}.zip evo.exe)
+          else
+            tar -C dist -czf "out/evo-${{ matrix.suffix }}.tar.gz" evo
+          fi
+          ls -la out
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: evo-${{ matrix.suffix }}
+          path: out/*
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bea5795decb2a7bf93ba98409e61e # v4.3.0
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca3e6d62432ae4661d # v2.2.2
+        with:
+          files: artifacts/*
+          generate_release_notes: true

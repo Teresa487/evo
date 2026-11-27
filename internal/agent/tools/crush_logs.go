@@ -1,3 +1,5 @@
+// crush_logs.go —— crush_logs 工具：读取 Crush 自身日志。
+
 package tools
 
 import (

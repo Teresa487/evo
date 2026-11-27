@@ -1,3 +1,5 @@
+// theme.go —— 宿主主题在服务端与客户端间同步。
+
 package server
 
 import (

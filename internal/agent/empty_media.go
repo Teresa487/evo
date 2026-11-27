@@ -1,3 +1,7 @@
+// empty_media.go —— 清理发给模型的空媒体片段。
+//
+// 工具返回的图片/音频为空时，转成一段文本说明，避免传给 provider 空 FilePart。
+
 package agent
 
 import (

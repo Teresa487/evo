@@ -1,3 +1,5 @@
+// dirs.go —— 解析配置目录、数据目录、工作目录等路径。
+
 package cmd
 
 import (

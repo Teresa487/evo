@@ -1,3 +1,8 @@
+// provider.go —— provider 的解析与可用性判断。
+//
+// 从产物反推：config.Load → configureProviders 用到这里的逻辑，
+// 决定一个 provider 是否可用（有 key、OAuth 已登录、keyless 等）。
+
 package config
 
 import (

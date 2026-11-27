@@ -1,3 +1,5 @@
+// question_editor.go —— 带编辑器的提问弹窗。
+
 package dialog
 
 import (

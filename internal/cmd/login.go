@@ -1,3 +1,5 @@
+// login.go —— `crush login`：交互式配置 provider 凭据（API key / OAuth）。
+
 package cmd
 
 import (

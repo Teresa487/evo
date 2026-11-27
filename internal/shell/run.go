@@ -1,3 +1,5 @@
+// run.go —— 执行一条命令的入口：准备环境、启动、收集输出。
+
 package shell
 
 import (

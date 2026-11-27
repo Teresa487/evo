@@ -1,3 +1,5 @@
+// api_key_input.go —— 输入 provider API key 的弹窗。前端对后端：Workspace.SetProviderAPIKey。
+
 package dialog
 
 import (

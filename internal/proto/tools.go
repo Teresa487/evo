@@ -1,3 +1,5 @@
+// tools.go —— 协议里的工具描述类型。
+
 package proto
 
 // wire schema 为 per-工具 权限 parameters 是 owned 通过

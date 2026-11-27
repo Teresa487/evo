@@ -1,3 +1,5 @@
+// logging.go —— 服务端请求与错误日志。
+
 package server
 
 import (

@@ -1,3 +1,5 @@
+// errors.go —— agent 包内部的 sentinel 错误定义。
+
 package agent
 
 import "errors"

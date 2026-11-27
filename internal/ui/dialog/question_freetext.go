@@ -1,3 +1,5 @@
+// question_freetext.go —— 自由文本提问弹窗。
+
 package dialog
 
 import (

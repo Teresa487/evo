@@ -1,3 +1,9 @@
+// config.go —— 配置的数据结构与类型定义。
+//
+// 定义 Config / ProviderConfig / SelectedModel / MCPConfig / LSPConfig /
+// Options / Permissions 等，以及它们的方法（如 ToProvider、HasAPIKey）。
+// 读取与合并逻辑在 load.go，热更新在 store 相关文件。
+
 package config
 
 import (

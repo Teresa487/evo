@@ -1,3 +1,5 @@
+// provider.go —— app 层的 provider/model 解析：根据配置选出实际使用的模型与客户端。
+
 package app
 
 import (

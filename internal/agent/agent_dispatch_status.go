@@ -1,3 +1,7 @@
+// agent_dispatch_status.go —— agent_status 工具：报告已派发子 agent 的状态。
+//
+// 维护 dispatchRecords，供模型和 UI 查询子任务进展。
+
 package agent
 
 import (

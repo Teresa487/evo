@@ -1,3 +1,5 @@
+// models_item.go —— 模型列表的单项渲染。
+
 package dialog
 
 import (

@@ -1,3 +1,5 @@
+// oauth_copilot.go —— GitHub Copilot 的 OAuth 登录弹窗。
+
 package dialog
 
 import (

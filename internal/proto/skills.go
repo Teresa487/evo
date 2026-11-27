@@ -1,3 +1,5 @@
+// skills.go —— 协议里的技能类型。
+
 package proto
 
 // SkillDiscoveryState mirrors skills.DiscoveryState across the wire.

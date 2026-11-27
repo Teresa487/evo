@@ -417,3 +417,101 @@ func stretchLetterformPart(s string, p letterformProps) string {
 	}
 	return lipgloss.JoinHorizontal(lipgloss.Top, parts...)
 }
+
+// LetterEvoE renders letter E in the stylized wordmark.
+//
+// Here's what we're making:
+//
+//	█▀▀▀▀
+//	█▀▀▀▀
+//	▀▀▀▀▀
+func LetterEvoE(stretch bool) string {
+	left := heredoc.Doc(`
+		█
+		█
+		▀
+	`)
+	middle := heredoc.Doc(`
+		▀
+		▀
+		▀
+	`)
+	return joinLetterform(
+		left,
+		stretchLetterformPart(middle, letterformProps{
+			stretch:    stretch,
+			width:      4,
+			minStretch: 7,
+			maxStretch: 12,
+		}),
+	)
+}
+
+// LetterEvoV renders letter V in the stylized wordmark.
+//
+// Here's what we're making:
+//
+//	█   █
+//	█   █
+//	 ▀▀▀
+func LetterEvoV(stretch bool) string {
+	left := heredoc.Doc(`
+		█
+		█
+	`)
+	middle := heredoc.Doc(`
+
+
+		 ▀
+	`)
+	right := heredoc.Doc(`
+		█
+		█
+	`)
+	return joinLetterform(
+		left,
+		stretchLetterformPart(middle, letterformProps{
+			stretch:    stretch,
+			width:      3,
+			minStretch: 7,
+			maxStretch: 12,
+		}),
+		right,
+	)
+}
+
+// LetterEvoO renders letter O in the stylized wordmark.
+//
+// Here's what we're making:
+//
+//	█▀▀▀█
+//	█   █
+//	▀▀▀▀▀
+func LetterEvoO(stretch bool) string {
+	left := heredoc.Doc(`
+		█
+		█
+		▀
+	`)
+	top := heredoc.Doc(`
+		▀
+	`)
+	bottom := heredoc.Doc(`
+		▀
+	`)
+	right := heredoc.Doc(`
+		█
+		█
+		▀
+	`)
+	return joinLetterform(
+		left,
+		stretchLetterformPart(top, letterformProps{
+			stretch:    stretch,
+			width:      3,
+			minStretch: 7,
+			maxStretch: 12,
+		}),
+		right,
+	)
+}

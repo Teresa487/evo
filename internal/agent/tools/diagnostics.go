@@ -1,3 +1,5 @@
+// diagnostics.go —— diagnostics 工具：获取 LSP 诊断（错误/警告）。
+
 package tools
 
 import (

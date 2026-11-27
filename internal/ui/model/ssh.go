@@ -1,3 +1,5 @@
+// ssh.go —— SSH 相关会话的 UI 支持。
+
 package model
 
 import (

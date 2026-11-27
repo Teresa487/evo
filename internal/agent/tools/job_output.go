@@ -1,3 +1,5 @@
+// job_output.go —— job_output 工具：读取后台任务输出。
+
 package tools
 
 import (

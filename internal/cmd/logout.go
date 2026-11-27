@@ -1,3 +1,5 @@
+// logout.go —— `crush logout`：清除已保存的 provider 凭据。
+
 package cmd
 
 import (

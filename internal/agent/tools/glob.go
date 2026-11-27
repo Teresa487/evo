@@ -1,3 +1,5 @@
+// glob.go —— glob 工具：按文件名模式查找文件。
+
 package tools
 
 import (

@@ -1,3 +1,5 @@
+// mcp_toggles.go —— MCP 服务器/工具开关弹窗。
+
 package dialog
 
 import (

@@ -1,3 +1,7 @@
+// turn_hooks.go —— 轮次级 hook：TurnStart / TurnEnd / StopFailure / Interrupt。
+//
+// fireTurnHook 在轮次开始/结束时触发，turnEndEvent 决定具体事件名。
+
 package agent
 
 import (

@@ -1,3 +1,5 @@
+// usage_fallback.go —— provider 不返回用量时的估算与消息克隆工具。
+
 package agent
 
 import (

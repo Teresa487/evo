@@ -1,3 +1,5 @@
+// download.go —— download 工具：把 URL 下载到本地文件。
+
 package tools
 
 import (

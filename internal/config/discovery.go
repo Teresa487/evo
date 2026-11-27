@@ -1,3 +1,5 @@
+// discovery.go —— 发现可用的 provider 与模型目录（catwalk）。
+
 package config
 
 import (

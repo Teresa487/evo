@@ -1,3 +1,5 @@
+// multiedit.go —— multiedit 工具：一次对同一文件做多处替换。
+
 package tools
 
 import (

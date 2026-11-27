@@ -1,3 +1,5 @@
+// hooks.go —— app 层的 hook 装配：把配置里的 hooks 接到 agent 的工具/轮次钩子上。
+
 package app
 
 import (

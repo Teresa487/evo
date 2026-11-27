@@ -1,3 +1,5 @@
+// prompt_flag.go —— 处理 `-p/--prompt` 参数的一次性提问。
+
 package cmd
 
 import (

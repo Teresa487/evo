@@ -1,5 +1,12 @@
-// Package app wires together services, coordinates agents, 和 manages
-// application lifecycle.
+// Package app 把 agent、session、message、工具、LSP、hook 等装配成一个应用，
+// 并管理应用生命周期。
+//
+// 从产物反推：
+//
+//	AppWorkspace.AgentRun → app.App → agent.sessionAgent.Run
+//
+// app.App 是 agent 核心的「宿主」：本地模式由 AppWorkspace 直接持有它，
+// 客户端/服务端模式由 backend.Workspace 持有它。
 package app
 
 import (

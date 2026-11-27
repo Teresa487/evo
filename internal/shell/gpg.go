@@ -1,3 +1,5 @@
+// gpg.go —— GPG 相关命令支持（pinentry）。
+
 package shell
 
 import (

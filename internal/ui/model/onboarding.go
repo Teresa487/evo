@@ -1,3 +1,7 @@
+// onboarding.go —— 首次启动的引导流程：选 provider/model、初始化项目。
+//
+// 前端对后端：通过 Workspace 的配置与 agent 就绪接口驱动初始化。
+
 package model
 
 import (

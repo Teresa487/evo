@@ -1,3 +1,7 @@
+// refusal_retry.go —— provider 安全分类器拒绝响应时的一次性重试。
+//
+// 把拒绝变成可重试的 ProviderError，让 fantasy 重发该步。
+
 package agent
 
 import (

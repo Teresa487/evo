@@ -1,3 +1,5 @@
+// inline_editor.go —— 行内文本编辑组件。
+
 package dialog
 
 import (

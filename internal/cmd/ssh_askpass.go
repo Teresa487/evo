@@ -1,3 +1,5 @@
+// ssh_askpass.go —— SSH askpass 辅助进程入口。
+
 package cmd
 
 import (

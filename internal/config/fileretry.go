@@ -1,3 +1,5 @@
+// fileretry.go —— 配置文件读写的重试策略。
+
 package config
 
 import (

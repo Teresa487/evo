@@ -1,3 +1,5 @@
+// jq.go —— 内置 jq 实现或调用。
+
 package shell
 
 import (

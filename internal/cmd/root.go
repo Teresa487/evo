@@ -1,3 +1,16 @@
+// root.go —— CLI 根命令与启动装配，是整条启动链的入口。
+//
+// 从产物反推（进程怎么变成能对话的 agent）：
+//
+//	main() → cmd.Execute()（本文件）
+//	  → 解析命令行
+//	  → setupWorkspaceWithProgressBar
+//	      ├─ setupLocalWorkspace      → config.Load → app.New → AppWorkspace
+//	      └─ setupClientServerWorkspace → connectToServer → ClientWorkspace
+//	  → 进入 TUI（ui/model）
+//
+// 本文件决定「本地模式还是客户端/服务端模式」，并把 Workspace 交给 UI。
+
 package cmd
 
 import (

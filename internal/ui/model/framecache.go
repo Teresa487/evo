@@ -1,3 +1,5 @@
+// framecache.go —— 渲染帧缓存。
+
 package model
 
 import (

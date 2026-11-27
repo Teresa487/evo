@@ -1,3 +1,12 @@
+// client_workspace.go —— Workspace 的远程实现：所有操作通过 RPC 发给服务端。
+//
+// 从产物反推：
+//
+//	远端 TUI 的 AgentRun → ClientWorkspace.AgentRun → internal/client →
+//	  HTTP /v1/... → internal/server → backend → agent.Run
+//
+// 它缓存 proto.Workspace，订阅 SSE 事件，并在配置变更后刷新缓存，
+// 是多客户端架构里「客户端这一侧」的适配层。
 package workspace
 
 import (

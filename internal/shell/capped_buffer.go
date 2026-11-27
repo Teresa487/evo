@@ -1,3 +1,5 @@
+// capped_buffer.go —— 有上限的输出缓冲，避免内存被长输出撑爆。
+
 package shell
 
 import (

@@ -1,3 +1,5 @@
+// grep.go —— grep 工具：按内容正则搜索文件。
+
 package tools
 
 import (

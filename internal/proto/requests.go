@@ -1,3 +1,5 @@
+// requests.go —— 协议里的请求体定义（各端点的入参）。
+
 package proto
 
 import (

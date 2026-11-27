@@ -1,3 +1,5 @@
+// bash.go —— bash 工具：在 shell 里执行命令，支持前台/后台。
+
 package tools
 
 import (

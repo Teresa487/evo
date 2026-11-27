@@ -1,5 +1,19 @@
 // Package agent 是 Crush AI agent 的核心编排层。
 //
+// 从产物（用户收到的一条回复）往上游反推，本文件的核心链路是：
+//
+//	sendChannelReply(channelReplyText(currentAssistant))   ← 回复出口（channelreply.go）
+//	  ↑ currentAssistant 由 Stream 回调逐段写入            ← agent.go 本文件的 OnTextDelta
+//	  ↑ agent.Stream(AgentStreamCall{Prompt, Files, Messages})
+//	  ↑ PrepareStep 里创建空 assistant 消息、重排工具结果
+//	  ↑ history, files := preparePrompt(msgs, attachments)  ← 组装发给上游的 Messages/Files
+//	  ↑ msgs := getSessionMessages(session)                 ← 从摘要点读历史
+//	  ↑ createUserMessage(call, modelContext)               ← 把本轮输入+附件落库
+//
+// Run() 是这条链的主函数；preparePrompt() 决定「模型每轮看到什么」；
+// createUserMessage() 决定「输入如何持久化」；summarize() 决定「历史如何截断」。
+// 排队、取消、渠道回复、TurnEnd 钩子都围绕同一条链做状态保护。
+//
 // 它提供基于 session 的 AI agent 功能，管理对话、工具执行和消息处理。
 // 它协调语言模型、消息、session 和工具之间的交互，同时处理
 // 自动摘要、排队和 token 管理等功能。

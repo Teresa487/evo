@@ -1,3 +1,5 @@
+// rg.go —— ripgrep 的封装与可用性探测。
+
 package tools
 
 import (

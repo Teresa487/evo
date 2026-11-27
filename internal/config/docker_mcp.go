@@ -1,3 +1,5 @@
+// docker_mcp.go —— Docker 型 MCP 服务器的配置解析。
+
 package config
 
 import (

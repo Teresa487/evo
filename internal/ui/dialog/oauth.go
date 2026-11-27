@@ -1,3 +1,5 @@
+// oauth.go —— OAuth 登录弹窗的通用框架。前端对后端：Workspace.SetProviderAPIKey。
+
 package dialog
 
 import (

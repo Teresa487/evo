@@ -1,3 +1,5 @@
+// host_context.go —— 远端客户端的宿主上下文（当前文件、光标）传入后端。
+
 package backend
 
 import (

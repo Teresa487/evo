@@ -1,3 +1,8 @@
+// session.go —— UI 的会话管理：新建、切换、重命名、删除 session。
+//
+// 前端对后端：通过 Workspace.CreateSession/ListSessions/SaveSession/DeleteSession
+// 操作会话；事件回流后刷新 UI 的 session 列表。
+
 package model
 
 import (

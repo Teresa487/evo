@@ -1,3 +1,5 @@
+// question_form.go —— 多字段表单型提问弹窗。
+
 package dialog
 
 import (

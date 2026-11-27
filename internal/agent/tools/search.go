@@ -1,3 +1,5 @@
+// search.go —— 搜索类工具的公共实现。
+
 package tools
 
 import (

@@ -1,3 +1,5 @@
+// tools.go —— 工具注册与装配：把各工具挂到 agent 的工具集上。
+
 package tools
 
 import (

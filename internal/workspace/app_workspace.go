@@ -1,3 +1,10 @@
+// app_workspace.go —— Workspace 的本地实现：直接调用进程内的 app.App。
+//
+// 从产物反推：
+//
+//	本地 TUI/CLI 的 AgentRun → AppWorkspace.AgentRun → app.App → agent.Run
+//
+// 单进程模式走这里，没有 HTTP/SSE，也没有 client_id。
 package workspace
 
 import (

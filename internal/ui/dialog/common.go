@@ -1,3 +1,5 @@
+// common.go —— 对话框的公共基类与共享工具。
+
 package dialog
 
 import (

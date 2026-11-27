@@ -1,3 +1,5 @@
+// header.go —— 顶部标题栏：当前 session 标题等。
+
 package model
 
 import (

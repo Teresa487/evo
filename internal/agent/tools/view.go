@@ -1,3 +1,5 @@
+// view.go —— view 工具：按行范围读取文件。
+
 package tools
 
 import (

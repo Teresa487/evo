@@ -1,3 +1,5 @@
+// theme.go —— 协议里的主题类型（宿主主题同步）。
+
 package proto
 
 import "maps"

@@ -1,3 +1,5 @@
+// builtins_registry.go —— 内置命令（jq、gpg 等）的注册表。
+
 package shell
 
 import (

@@ -1,3 +1,5 @@
+// projects.go —— `crush projects` 子命令：项目级配置与初始化。
+
 package cmd
 
 import (
