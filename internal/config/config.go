@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	appName              = "crush"
-	defaultDataDirectory = ".crush"
+	appName              = "evo"
+	defaultDataDirectory = ".evo"
 	defaultInitializeAs  = "AGENTS.md"
 )
 
@@ -473,7 +473,7 @@ type Options struct {
 	// SQLite 数据库 和 工作区 overrides. Relative paths 是
 	// resolved against working 目录; absolute paths 是 used
 	// verbatim. After defaulting 存储 值 是 always absolute.
-	DataDirectory     string       `json:"data_directory,omitempty" jsonschema:"description=Directory for storing application data. Relative paths are resolved against the working directory; absolute paths are used as-is.,default=.crush,example=.crush"`
+	DataDirectory     string       `json:"data_directory,omitempty" jsonschema:"description=Directory for storing application data. Relative paths are resolved against the working directory; absolute paths are used as-is.,default=.evo,example=.evo"`
 	DisabledTools     []string     `json:"disabled_tools,omitempty" jsonschema:"description=List of built-in tools to disable and hide from the agent,example=bash,example=sourcegraph"`
 	Attribution       *Attribution `json:"attribution,omitempty" jsonschema:"description=Attribution settings for generated content"`
 	DisableMetrics    bool         `json:"disable_metrics,omitempty" jsonschema:"description=Disable sending metrics,default=false"`

@@ -22,7 +22,7 @@ type Transport struct {
 	// through 原样.
 	Token *oauth.Token
 	// Originator identifies 客户端 到 backend. Defaults 到
-	// "crush".
+	// "evo".
 	Originator string
 }
 

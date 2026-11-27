@@ -10,7 +10,7 @@ import (
 )
 
 // programStatusApp 是 stable program name reported 到 终态.
-const programStatusApp = "crush"
+const programStatusApp = "evo"
 
 // programStatus reports what Crush 是 doing 到 terminals 那 support
 // Program Status Protocol (OSC 7501), 所以 they can show whether Crush 是

@@ -75,16 +75,16 @@ var resumeToken string
 
 // spawnedServerEnv marks 服务端 那 客户端 process started 在 它的
 // behalf. Such 服务端 shuts itself down once 空闲 所以 it cannot outlive
-// 客户端; 服务端 started explicitly 用 `crush 服务端` has no such
+// 客户端; 服务端 started explicitly 用 `evo server` has no such
 // marker 和 keeps running. variable 是 set 在 child environment 通过
 // [detachedServerCmd] 和 读取 通过 服务端 command.
 const spawnedServerEnv = "CRUSH_SPAWNED_SERVER"
 
 func init() {
 	rootCmd.PersistentFlags().StringP("cwd", "c", "", "Current working directory")
-	rootCmd.PersistentFlags().StringP("data-dir", "D", "", "Custom crush data directory")
+	rootCmd.PersistentFlags().StringP("data-dir", "D", "", "Custom evo data directory")
 	rootCmd.PersistentFlags().BoolP("debug", "d", false, "Debug")
-	rootCmd.PersistentFlags().StringVarP(&clientHost, "host", "H", server.DefaultHost(), "Connect to a specific crush server host (for advanced users)")
+	rootCmd.PersistentFlags().StringVarP(&clientHost, "host", "H", server.DefaultHost(), "Connect to a specific evo server host (for advanced users)")
 	rootCmd.Flags().BoolP("help", "h", false, "Help")
 	rootCmd.PersistentFlags().CountP("yolo", "y", "Skip permission prompts: -y to stop being asked and block dangerous commands, -yy to allow them too")
 	rootCmd.PersistentFlags().StringSlice("channels", nil, "MCP servers to enable as channels (repeatable), e.g. --channels server:webhook")
@@ -109,7 +109,7 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "crush",
+	Use:   "evo",
 	Short: "A terminal-first AI assistant for software development",
 	Long:  "A glamorous, terminal-first AI assistant for software development and adjacent tasks",
 	PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
@@ -117,38 +117,38 @@ var rootCmd = &cobra.Command{
 	},
 	Example: `
 # Run in interactive mode
-crush
+evo
 
 # Run non-interactively
-crush run "Guess my 5 favorite Pokémon"
+evo run "Guess my 5 favorite Pokémon"
 
 # Run a non-interactively with pipes and redirection
-cat README.md | crush run "make this more glamorous" > GLAMOROUS_README.md
+cat README.md | evo run "make this more glamorous" > GLAMOROUS_README.md
 
 # Run with debug logging in a specific directory
-crush --debug --cwd /path/to/project
+evo --debug --cwd /path/to/project
 
 # Run in yolo mode (skip permission prompts, block dangerous commands)
-crush -y
+evo -y
 
 # Run in sysadmin mode (skip prompts and allow dangerous commands too)
-crush -yy
+evo -yy
 
 # Run with custom data directory
-crush --data-dir /path/to/custom/.crush
+evo --data-dir /path/to/custom/.evo
 
 # Continue a previous session
-crush --session {session-id}
+evo --session {session-id}
 
 # Continue the most recent session
-crush --continue
+evo --continue
   `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Bail out before loading 配置 或 reporting anything 当 there 是
 		// no 终态 到 draw 在, e.g. package manager validators 那 运行
 		// 二进制 用 redirected streams 和 no console.
 		if !hasTerminal(term.IsTerminal, os.Stdin.Fd(), os.Stdout.Fd()) {
-			fmt.Fprintln(cmd.ErrOrStderr(), "Crush needs an interactive terminal. Use `crush run` for non-interactive use.")
+			fmt.Fprintln(cmd.ErrOrStderr(), "Evo needs an interactive terminal. Use `evo run` for non-interactive use.")
 			return nil
 		}
 
@@ -227,7 +227,7 @@ var heartbit = lipgloss.NewStyle().Foreground(tone.Dolly).SetString(`
 `)
 
 // printSessionResume prints the exit banner after the TUI exits, including the
-// 会话 标题 和 hint 到 resume it 用 `crush -s <id>`. banner
+// 会话 标题 和 hint 到 resume it 用 `evo -s <id>`. banner
 // style decides how much 的 那 是 shown; see 配置.ExitBanner.
 func printSessionResume(model *ui.UI, theme *styles.Styles, banner config.ExitBanner) {
 	tw, _, _ := term.GetSize(os.Stdout.Fd())
@@ -509,7 +509,7 @@ func setupLocalWorkspace(cmd *cobra.Command, store *config.ConfigStore) (workspa
 		return nil, nil, err
 	}
 
-	logFile := filepath.Join(cfg.Options.DataDirectory, "logs", "crush.log")
+	logFile := filepath.Join(cfg.Options.DataDirectory, "logs", "evo.log")
 	crushlog.Setup(logFile, debug)
 
 	// Discover skills once before app.New. Local mode hosts a single
@@ -658,7 +658,7 @@ func connectToServer(cmd *cobra.Command) (*client.Client, *proto.Workspace, func
 	}
 
 	if ws.Config != nil {
-		logFile := filepath.Join(ws.Config.Options.DataDirectory, "logs", "crush.log")
+		logFile := filepath.Join(ws.Config.Options.DataDirectory, "logs", "evo.log")
 		if err := crushlog.SetFile(logFile); err != nil {
 			slog.Warn("Failed to close the client startup log", "error", err)
 		}
@@ -756,7 +756,7 @@ func replaceExitingServer(cmd *cobra.Command, hostURL *url.URL) error {
 		return err
 	}
 	if err := spawnAndWaitReady(cmd, hostURL); err != nil {
-		return fmt.Errorf("failed to initialize crush server: %v", err)
+		return fmt.Errorf("failed to initialize evo server: %v", err)
 	}
 	return nil
 }
@@ -859,7 +859,7 @@ func ensureServer(cmd *cobra.Command, hostURL *url.URL) error {
 
 		if needsStart {
 			if err := spawnAndWaitReady(cmd, hostURL); err != nil {
-				return fmt.Errorf("failed to initialize crush server: %v", err)
+				return fmt.Errorf("failed to initialize evo server: %v", err)
 			}
 			return nil
 		}
@@ -871,7 +871,7 @@ func ensureServer(cmd *cobra.Command, hostURL *url.URL) error {
 				slog.Warn("Server is shutting down; replacing it", "error", err)
 				return replaceExitingServer(cmd, hostURL)
 			}
-			return fmt.Errorf("failed to initialize crush server: %v", err)
+			return fmt.Errorf("failed to initialize evo server: %v", err)
 		}
 	}
 
@@ -962,7 +962,7 @@ func perHostServerDir(hostURL *url.URL) (string, error) {
 // refuses 到 rename 文件 another process holds open, which stops
 // 服务端's logging.
 func serverLogFile(hostURL *url.URL) string {
-	return filepath.Join(config.GlobalCacheDir(), "server-"+safeHostName(hostURL), "crush.log")
+	return filepath.Join(config.GlobalCacheDir(), "server-"+safeHostName(hostURL), "evo.log")
 }
 
 // clientLogFile returns log 文件 clients 的 服务端 在 hostURL 写入
@@ -1317,9 +1317,9 @@ func (s *spawnedServer) exited() bool {
 // exitError reports 那 服务端 exited before it was ready, along 用
 // last lines it wrote 到 stderr, which say why.
 func (s *spawnedServer) exitError() error {
-	err := errors.New("crush server exited before it was ready")
+	err := errors.New("evo server exited before it was ready")
 	if s.err != nil {
-		err = fmt.Errorf("crush server exited before it was ready: %v", s.err)
+		err = fmt.Errorf("evo server exited before it was ready: %v", s.err)
 	}
 	data, _ := os.ReadFile(s.stderrPath)
 	var lines []string
@@ -1336,7 +1336,7 @@ func (s *spawnedServer) exitError() error {
 	return fmt.Errorf("%w; last lines of %s:\n%s", err, s.stderrPath, strings.Join(lines, "\n"))
 }
 
-// startDetachedServer launches `crush 服务端` detached 从 这 process.
+// startDetachedServer launches `evo server` detached 从 这 process.
 // 它 是 variable 所以 tests can observe spawns without starting 服务端.
 var startDetachedServer = func(cmd *cobra.Command, hostURL *url.URL) (*spawnedServer, error) {
 	exe, err := os.Executable()
@@ -1382,7 +1382,7 @@ var startDetachedServer = func(cmd *cobra.Command, hostURL *url.URL) (*spawnedSe
 		return c
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to start crush server: %v", err)
+		return nil, fmt.Errorf("failed to start evo server: %v", err)
 	}
 
 	// Wait 在 process rather than releasing it, 所以 readiness wait

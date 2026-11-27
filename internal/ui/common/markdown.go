@@ -18,7 +18,7 @@ import (
 	"github.com/charmbracelet/crush/internal/ui/xchroma"
 )
 
-const formatterName = "crush"
+const formatterName = "evo"
 
 // Code block colors.
 //
@@ -106,7 +106,7 @@ func codeBlockSlot(c *ansi.Chroma) int {
 		delete(codeBlockByKey, old)
 	}
 	codeBlockKeys[slot] = key.String()
-	codeBlockStyles[slot] = chroma.MustNewStyle("crush", entries)
+	codeBlockStyles[slot] = chroma.MustNewStyle("evo", entries)
 	codeBlockByKey[key.String()] = slot
 	return slot
 }
