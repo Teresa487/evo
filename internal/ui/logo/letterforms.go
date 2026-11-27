@@ -496,9 +496,6 @@ func LetterEvoO(stretch bool) string {
 	top := heredoc.Doc(`
 		▀
 	`)
-	bottom := heredoc.Doc(`
-		▀
-	`)
 	right := heredoc.Doc(`
 		█
 		█
