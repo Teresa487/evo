@@ -32,18 +32,14 @@ jobs:
             goos: linux
             goarch: arm64
             suffix: linux-arm64
-          - os: macos-latest
-            goos: darwin
+          - os: ubuntu-latest
+            goos: freebsd
+            goarch: amd64
+            suffix: freebsd-amd64
+          - os: ubuntu-latest
+            goos: freebsd
             goarch: arm64
-            suffix: darwin-arm64
-          - os: macos-latest
-            goos: darwin
-            goarch: amd64
-            suffix: darwin-amd64
-          - os: windows-latest
-            goos: windows
-            goarch: amd64
-            suffix: windows-amd64
+            suffix: freebsd-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -71,22 +67,16 @@ jobs:
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: "0"
         run: |
-          EXT=""
-          if [ "$GOOS" = "windows" ]; then EXT=".exe"; fi
           go build -trimpath \
             -ldflags "-s -w -X github.com/charmbracelet/crush/internal/version.Version=${{ steps.ver.outputs.value }}" \
-            -o "dist/evo${EXT}" .
+            -o "dist/evo" .
           ls -la dist
 
       - name: Package
         shell: bash
         run: |
           mkdir -p out
-          if [ "${{ matrix.goos }}" = "windows" ]; then
-            (cd dist && 7z a ../out/evo-${{ matrix.suffix }}.zip evo.exe)
-          else
-            tar -C dist -czf "out/evo-${{ matrix.suffix }}.tar.gz" evo
-          fi
+          tar -C dist -czf "out/evo-${{ matrix.suffix }}.tar.gz" evo
           ls -la out
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
