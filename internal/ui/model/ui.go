@@ -3483,11 +3483,8 @@ func (m *UI) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 					cmds = append(cmds, cmd)
 				}
 
-			case key.Matches(msg, m.keyMap.Editor.PasteImage):
-				// 先试图片，剪贴板里没有图片（或模型不支持图片）就退回文本粘贴。
-				cmds = append(cmds, m.pasteImageFromClipboard)
-			case key.Matches(msg, m.keyMap.Editor.PasteText):
-				cmds = append(cmds, m.pasteTextFromClipboard)
+			case key.Matches(msg, m.keyMap.Editor.Paste):
+				cmds = append(cmds, m.pasteFromClipboard)
 
 			case key.Matches(msg, m.keyMap.Editor.SendMessage):
 				if m.modeSwitching {
@@ -4263,8 +4260,7 @@ func (m *UI) FullHelp() [][]key.Binding {
 				k.Editor.Newline,
 				k.Editor.MentionFile,
 				k.Editor.OpenEditor,
-				k.Editor.PasteImage,
-				k.Editor.PasteText,
+				k.Editor.Paste,
 				k.Editor.SelectAll,
 				k.Editor.CopySelection,
 				k.Editor.CutSelection,
@@ -4340,8 +4336,7 @@ func (m *UI) FullHelp() [][]key.Binding {
 				k.Editor.Newline,
 				k.Editor.MentionFile,
 				k.Editor.OpenEditor,
-				k.Editor.PasteImage,
-				k.Editor.PasteText,
+				k.Editor.Paste,
 				k.Editor.SelectAll,
 				k.Editor.CopySelection,
 				k.Editor.CutSelection,
@@ -6569,6 +6564,29 @@ func (m *UI) handleFilePathPaste(path string) tea.Cmd {
 	}
 }
 
+// pasteFromClipboard 把 ctrl+v 变成一次粘贴：剪贴板里有图片就建图片
+// 附件，否则按文本粘贴，文本走和 bracketed paste 完全相同的逻辑。
+func (m *UI) pasteFromClipboard() tea.Msg {
+	if m.currentModelSupportsImages() {
+		if imageData, err := clipboard.Read(clipboard.FormatImage); err == nil {
+			if int64(len(imageData)) > common.MaxAttachmentSize {
+				return util.InfoMsg{
+					Type: util.InfoTypeError,
+					Msg:  "File too large, max 5MB",
+				}
+			}
+			name := fmt.Sprintf("paste_%d.png", m.pasteIdx())
+			return message.Attachment{
+				FilePath: name,
+				FileName: name,
+				MimeType: mimeOf(imageData),
+				Content:  imageData,
+			}
+		}
+	}
+	return m.pasteTextFromClipboard()
+}
+
 // pasteTextFromClipboard 读系统剪贴板里的文本并包成 tea.PasteMsg，让
 // ctrl+v 走和 bracketed paste 完全相同的粘贴逻辑。
 func (m *UI) pasteTextFromClipboard() tea.Msg {
@@ -6586,31 +6604,6 @@ func (m *UI) pasteTextFromClipboard() tea.Msg {
 		}
 	}
 	return tea.PasteMsg{Content: string(textData)}
-}
-
-// pasteImageFromClipboard 用剪贴板里的图片建附件；剪贴板没有图片数据时
-// 直接走文本粘贴，所以 ctrl+v 在纯文本场景下同样能贴上内容。
-func (m *UI) pasteImageFromClipboard() tea.Msg {
-	if !m.currentModelSupportsImages() {
-		return m.pasteTextFromClipboard()
-	}
-	imageData, err := clipboard.Read(clipboard.FormatImage)
-	if err != nil {
-		return m.pasteTextFromClipboard()
-	}
-	if int64(len(imageData)) > common.MaxAttachmentSize {
-		return util.InfoMsg{
-			Type: util.InfoTypeError,
-			Msg:  "File too large, max 5MB",
-		}
-	}
-	name := fmt.Sprintf("paste_%d.png", m.pasteIdx())
-	return message.Attachment{
-		FilePath: name,
-		FileName: name,
-		MimeType: mimeOf(imageData),
-		Content:  imageData,
-	}
 }
 
 var pasteRE = regexp.MustCompile(`paste_(\d+).txt`)

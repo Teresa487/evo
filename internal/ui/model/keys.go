@@ -10,7 +10,7 @@ type KeyMap struct {
 		OpenEditor  key.Binding
 		Newline     key.Binding
 		AddImage    key.Binding
-		PasteImage  key.Binding
+		Paste       key.Binding
 		MentionFile key.Binding
 		Commands    key.Binding
 
@@ -33,10 +33,6 @@ type KeyMap struct {
 
 		// SelectAll selects all 文本 在 textarea.
 		SelectAll key.Binding
-
-		// PasteText pastes clipboard 文本 into textarea, 作为
-		// alternative 到 bracketed paste.
-		PasteText key.Binding
 	}
 
 	Chat struct {
@@ -149,13 +145,9 @@ func DefaultKeyMap() KeyMap {
 		key.WithKeys("ctrl+f"),
 		key.WithHelp("ctrl+f", "add image"),
 	)
-	km.Editor.PasteImage = key.NewBinding(
+	km.Editor.Paste = key.NewBinding(
 		key.WithKeys("ctrl+v"),
 		key.WithHelp("ctrl+v", "paste"),
-	)
-	km.Editor.PasteText = key.NewBinding(
-		key.WithKeys("ctrl+shift+v"),
-		key.WithHelp("ctrl+shift+v", "paste text"),
 	)
 	km.Editor.MentionFile = key.NewBinding(
 		key.WithKeys("@"),
