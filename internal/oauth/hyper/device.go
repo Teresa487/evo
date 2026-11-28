@@ -77,9 +77,9 @@ func InitiateDeviceAuth(ctx context.Context) (*DeviceAuthResponse, error) {
 
 func deviceName() string {
 	if hostname, err := os.Hostname(); err == nil && hostname != "" {
-		return "Crush (" + hostname + ")"
+		return "Evo (" + hostname + ")"
 	}
-	return "Crush"
+	return "Evo"
 }
 
 // PollForToken polls /device/token endpoint until authorization 是 完成.

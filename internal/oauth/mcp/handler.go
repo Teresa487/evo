@@ -194,7 +194,7 @@ func NewHandler(
 		Client: newOAuthMetadataClient(http.DefaultTransport, serverURL),
 		DynamicClientRegistrationConfig: &auth.DynamicClientRegistrationConfig{
 			Metadata: &oauthex.ClientRegistrationMetadata{
-				ClientName:   "Crush",
+				ClientName:   "Evo",
 				RedirectURIs: []string{redirectURL},
 				GrantTypes:   []string{"authorization_code", "refresh_token"},
 			},

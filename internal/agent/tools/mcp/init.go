@@ -1164,9 +1164,9 @@ func createSession(ctx context.Context, cfg *config.ConfigStore, name string, m 
 	}
 	client := mcp.NewClient(
 		&mcp.Implementation{
-			Name:    "crush",
+			Name:    "evo",
 			Version: version.Version,
-			Title:   "Crush",
+			Title:   "Evo",
 		},
 		opts,
 	)

@@ -1384,7 +1384,7 @@ func (c *coordinator) buildOpenrouterProvider(_, apiKey string, headers map[stri
 		headers["HTTP-Referer"] = "https://charm.land/crush"
 	}
 	if _, ok := headers["X-Title"]; !ok {
-		headers["X-Title"] = "Crush"
+		headers["X-Title"] = "Evo"
 	}
 	opts := []openrouter.Option{
 		openrouter.WithAPIKey(apiKey),

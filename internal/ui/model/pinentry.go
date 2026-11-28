@@ -31,7 +31,7 @@ func (m *UI) handlePinentryEvent(ev pinentry.Event) tea.Cmd {
 				cmds = append(cmds, cmd)
 			}
 			if cmd := m.sendNotification(notification.Notification{
-				Title:   "Crush is waiting...",
+				Title:   "Evo is waiting...",
 				Message: "GPG is asking for your passphrase (pinentry)",
 			}); cmd != nil {
 				cmds = append(cmds, cmd)
@@ -109,7 +109,7 @@ func (m *UI) openPinentryDialog(req pinentry.PromptRequest) tea.Cmd {
 		what = "security key PIN"
 	}
 	cmds := []tea.Cmd{m.sendNotification(notification.Notification{
-		Title:   "Crush is waiting...",
+		Title:   "Evo is waiting...",
 		Message: "GPG needs your " + what + " to continue",
 	})}
 	// 一个 重试 carries why GPG rejected previous attempt; surface it

@@ -31,7 +31,7 @@ func TestRespawnKeepsPreviousServerOutput(t *testing.T) {
 	}
 
 	run()
-	serverDirs, err := filepath.Glob(filepath.Join(sb.dir, "xdg_cache_home", "crush", "server-*"))
+	serverDirs, err := filepath.Glob(filepath.Join(sb.dir, "xdg_cache_home", "evo", "server-*"))
 	require.NoError(t, err)
 	require.Len(t, serverDirs, 1)
 	shutdownServer(t, sb.socket)

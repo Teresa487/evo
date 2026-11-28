@@ -26,7 +26,7 @@ func (m *UI) handleSSHPrompt(req sshaskpass.PromptRequest) []tea.Cmd {
 		m.com.Workspace.SSHRespond(req.ID, "yes")
 		cmds = append(cmds, util.ReportWarn(req.Message))
 		if cmd := m.sendNotification(notification.Notification{
-			Title:   "Crush is waiting...",
+			Title:   "Evo is waiting...",
 			Message: req.Message,
 		}); cmd != nil {
 			cmds = append(cmds, cmd)
@@ -82,7 +82,7 @@ func sshWaitingMessage(req sshaskpass.PromptRequest) string {
 // SSH 提示词 dialog.
 func sshWaitingNotification(req sshaskpass.PromptRequest) notification.Notification {
 	return notification.Notification{
-		Title:   "Crush is waiting...",
+		Title:   "Evo is waiting...",
 		Message: sshWaitingMessage(req),
 	}
 }

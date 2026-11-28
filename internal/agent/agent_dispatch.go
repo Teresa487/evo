@@ -43,7 +43,7 @@ const (
 // Nobody 是 left 到 读取 报告 then, 所以 none 是 written; next 运行 在
 // parent 会话 finds 派发 unanswered 和 reports it 作为
 // interrupted instead.
-const stopForShutdown = "Crush is shutting down"
+const stopForShutdown = "Evo is shutting down"
 
 type AgentDispatchParams struct {
 	Prompt string `json:"prompt" description:"The task for the subagent to perform"`

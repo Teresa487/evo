@@ -136,9 +136,9 @@ func Write(w io.Writer, r Result) error {
 		data.Title = "Authorization failed — Crush"
 		data.Kind = "failed"
 		data.Heading = "Authorization failed"
-		data.Detail = "Crush was not granted access to"
+		data.Detail = "Evo was not granted access to"
 		if r.Subject == "" {
-			data.Detail = "Crush was not granted access."
+			data.Detail = "Evo was not granted access."
 		}
 		// 一个 failed page keeps itself open: reader needs reason,
 		// 和 closing tab out 从 under them would take it away.
@@ -147,9 +147,9 @@ func Write(w io.Writer, r Result) error {
 		data.Title = "Authorized — Crush"
 		data.Kind = "ok"
 		data.Heading = "You’re all set"
-		data.Detail = "Crush is now connected to"
+		data.Detail = "Evo is now connected to"
 		if r.Subject == "" {
-			data.Detail = "Crush is now connected."
+			data.Detail = "Evo is now connected."
 		}
 		// Replaced 通过 countdown 作为 soon 作为 script runs, 所以 这
 		// 文本 是 what reader without JavaScript 是 left 用.

@@ -105,7 +105,7 @@ func startSlowLLM(t *testing.T) (streaming, cancelled chan struct{}, url string)
 // writeMockConfig points sandbox's global 配置 在 LLM 在 url.
 func writeMockConfig(t *testing.T, sb *sandbox, url string) {
 	t.Helper()
-	dir := filepath.Join(sb.dir, "xdg_config_home", "crush")
+	dir := filepath.Join(sb.dir, "xdg_config_home", "evo")
 	require.NoError(t, os.MkdirAll(dir, 0o700))
 	cfg := fmt.Sprintf(`{
   "providers": {"mock": {"type": "openai-compat", "base_url": %q, "api_key": "test",

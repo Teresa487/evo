@@ -10,7 +10,7 @@ import (
 
 // apiInfo 是 top-level metadata 为 Crush API documentation.
 var apiInfo = apigen.Info{
-	Title:   "Crush API",
+	Title:   "Evo API",
 	Version: "1.0",
 }
 

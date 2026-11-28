@@ -342,7 +342,7 @@ func (c *coordinator) summarizeDispatch(parentSessionID string, record *dispatch
 	entry, ok := c.dispatched.Get(dispatchKey(parentSessionID, record.Label))
 	if !ok || entry.SessionID != childID {
 		if record.Open {
-			sum.State, sum.Detail = SubagentInterrupted, "Crush exited"
+			sum.State, sum.Detail = SubagentInterrupted, "Evo exited"
 		}
 		return sum
 	}
