@@ -1,69 +1,100 @@
-# evo 配置完整参考
+# evo 配置说明
 
-配置文件加载顺序（后者覆盖前者，同名键深合并）：
+配置文件按顺序加载，后者覆盖前者（同名键深合并）：
 
-| 优先级 | 路径 | 格式 |
-|---|---|---|
-| 1（最低） | `/etc/evo/evo.json` | JSON（仅 Unix） |
-| 2 | `~/.config/evo/evo.json` | JSON |
-| 3 | `~/.config/evo/evorc` | Bash |
-| 4 | `~/.local/share/evo/evo.json` | JSON（机器写入，别手改） |
-| 5 | 项目内向上查找 `.evorc` / `evorc` / `.evo.json` / `evo.json` | Bash / JSON |
+```
+/etc/evo/evo.json            系统级，仅 Unix
+~/.config/evo/evo.json       用户全局
+~/.config/evo/evorc          用户全局，Bash 格式（可写注释）
+~/.local/share/evo/evo.json  机器写入，别手改
+<项目>/.evorc 或 evorc 或 .evo.json 或 evo.json
+```
 
-同目录下 `evorc` 优先于 `evo.json`，并且会打一条 warning。
+同目录下 `evorc` 优先于 `evo.json`。`evo.json` 是严格 JSON，**不能写注释**，所以注释都写在下面这份里。
 
-两个格式的取舍：
+只有一个约定：标了**【必填】**的字段不能删，其余都是可选的，删掉就用默认值。
 
-- **`evo.json` 是严格 JSON，不能写注释**。想写注释请用 `evorc`（Bash，`#` 即注释）。
-- **`evorc` 覆盖不到所有字段**。主题、`tools.*`、模型的 `effort_levels` / `audio` / `options`、`$schema` 只能用 JSON 写。
-
-## 一、完整 JSON（可直接使用）
-
-下面这份把所有字段都写出来了，值是示例。用不到的直接删掉即可——**只有标了「必填」的不能删**。
-
-```json
+```jsonc
 {
+  // 编辑器补全用，运行时不读
   "$schema": "https://raw.githubusercontent.com/Teresa487/evo/main/schema.json",
 
+  // ==========================================================================
+  // providers：AI 供应商。至少得有一个可用的才能跑。
+  // 只认配置文件里手写的定义，例外是 openai / xai / copilot / hyper
+  // 这四个可登录的，它们带内置目录。
+  // ==========================================================================
   "providers": {
     "my-llm": {
-      "id": "my-llm",
-      "name": "My LLM",
+      "id": "my-llm",           // 一般不用写，默认等于键名
+      "name": "My LLM",         // 显示名，默认等于键名
+
+      // completions（OpenAI Chat，中转站基本都是这个）/ responses /
+      // messages（Anthropic）/ hyper / ollama / litellm / llamacpp /
+      // lmstudio / omlx。默认 completions
       "type": "completions",
+
+      // 【必填】自定义 provider 必须写。缺失或解析为空 → 整个 provider 被丢弃
       "base_url": "https://api.example.com/v1",
+
+      // 支持 $VAR 和 $(cmd)。登录类 provider 可以用 oauth 代替
       "api_key": "$MY_API_KEY",
-      "disable": false,
-      "flat_rate": false,
-      "discover_models": true,
+
+      "disable": false,          // 置 true 等同于删除
+      "flat_rate": false,        // 订阅/包月，不计费用
+      "discover_models": true,   // 走 /v1/models 自动发现，和手写的合并，手写的优先
+
       "system_prompt_prefix": "You are working on a Rust codebase.",
+
+      // 每个请求都带的头，支持变量展开；解析成空串的头会被丢弃
       "extra_headers": {
         "X-Title": "evo",
         "X-Org": "$MY_ORG_ID"
       },
+
+      // 原样合并进请求体，这里不支持变量展开
       "extra_body": {
-        "chat_template_kwargs": {"enable_thinking": false}
+        "chat_template_kwargs": { "enable_thinking": false }
       },
+
       "provider_options": {},
+
+      // Bedrock 凭据过期时执行，只有 Bedrock 用得上
       "aws_auth_refresh": "aws sso login --profile $AWS_PROFILE",
+
+      // 【必填】非目录内 provider 必须至少列一条
       "models": [
         {
-          "id": "gpt-4o",
-          "name": "GPT-4o",
-          "type": "completions",
-          "pricing": {"input": 2.5, "output": 10, "cache_create": 0, "cache_hit": 0},
+          "id": "gpt-4o",        // 【必填】provider API 里的真实模型 ID
+          "name": "GPT-4o",      // 默认等于 id
+          "type": "completions", // 默认继承 provider 的 type
+
+          "pricing": {           // 美元 / 百万 token
+            "input": 2.5,
+            "output": 10,
+            "cache_create": 0,
+            "cache_hit": 0
+          },
+
           "context_window": 128000,
           "default_max_tokens": 8192,
-          "max_attachments": 5,
+          "max_attachments": 5,  // 单次最多几个附件
+
           "reasoning": {
-            "thinking": "toggleable",
+            "thinking": "toggleable",     // always / never（默认）/ toggleable
             "effort_levels": [
-              {"value": "low", "display": "Low"},
-              {"value": "high", "display": "High"}
+              { "value": "low", "display": "Low" },
+              { "value": "high", "display": "High" }
             ],
             "default_effort_level": "low"
           },
-          "capabilities": {"vision": true, "audio": false},
-          "options": {
+
+          "capabilities": {      // 决定能不能收图片/音频附件，默认都 false
+            "vision": true,
+            "audio": false
+          },
+
+          "options": {           // 模型级采样参数
             "temperature": 0.7,
             "top_p": 0.95,
             "top_k": 40,
@@ -75,19 +106,23 @@
       ]
     },
 
+    // 走 Anthropic 协议
     "my-claude": {
       "type": "messages",
-      "base_url": "https://api.anthropic.com",
+      "base_url": "https://api.anthropic.com",   // 【必填】
       "api_key": "$ANTHROPIC_API_KEY",
-      "models": [{"id": "claude-sonnet-5", "name": "Claude Sonnet 5"}]
+      "models": [{ "id": "claude-sonnet-5", "name": "Claude Sonnet 5" }]  // 【必填】
     },
 
+    // 本地 ollama，不需要 api_key
     "local-ollama": {
       "type": "ollama",
-      "base_url": "http://localhost:11434/v1",
-      "models": [{"id": "qwen3-coder", "name": "Qwen3 Coder"}]
+      "base_url": "http://localhost:11434/v1",   // 【必填】
+      "models": [{ "id": "qwen3-coder", "name": "Qwen3 Coder" }]  // 【必填】
     },
 
+    // 这一段由 `evo login openai` 自动写入，不要手填。
+    // 端点和模型目录来自内置目录，不需要 base_url / models
     "openai": {
       "oauth": {
         "access_token": "",
@@ -98,473 +133,279 @@
     }
   },
 
+  // ==========================================================================
+  // models：选哪个模型。只有 large（主力）和 small（小任务/后台）两个槽。
+  // 整段省略时会按 provider 顺序自动挑默认模型。
+  // ==========================================================================
   "models": {
     "large": {
-      "provider": "my-llm",
-      "model": "gpt-4o",
-      "max_tokens": 8192,
+      "provider": "my-llm",  // 【必填】必须是 providers 里的键
+      "model": "gpt-4o",     // 【必填】必须是该 provider 的模型 ID
+
+      "max_tokens": 8192,    // 覆盖模型默认输出上限
       "temperature": 0.7,
       "top_p": 0.95,
       "top_k": 40,
       "frequency_penalty": 0,
       "presence_penalty": 0,
-      "reasoning_effort": "high",
-      "think": false,
+      "reasoning_effort": "high",  // low / medium / high
+      "think": false,              // 强制开思考（Anthropic 系）
       "provider_options": {}
     },
+    // 省略时：provider 在目录里就用它的默认小模型，否则直接复用 large
     "small": {
       "provider": "my-llm",
       "model": "gpt-4o"
     }
   },
 
+  // ==========================================================================
+  // mcp：MCP 服务器。键是服务器名字。
+  // ==========================================================================
   "mcp": {
     "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {"Authorization": "Bearer $GITHUB_TOKEN"},
-      "timeout": 30,
+      "type": "http",            // 【必填】stdio / sse / http
+      "url": "https://api.githubcopilot.com/mcp/",   // 【必填，sse/http】
+
+      "headers": { "Authorization": "Bearer $GITHUB_TOKEN" },
+
+      "timeout": 30,             // 默认 10，秒
       "disabled": false,
-      "enabled_tools": ["search_code"],
-      "disabled_tools": [],
+
+      "enabled_tools": ["search_code"],  // 白名单
+      "disabled_tools": [],              // 黑名单
+
+      // 不维护 MCP session 的服务器（GitHub MCP 等）置 true，
+      // 否则会被 404 拒绝。省略时自动识别已知的
       "sessionless": true,
-      "oauth": false,
-      "oauth_client_id": "",
+
+      "oauth": false,            // 仅 type=http，走 OAuth 2.1
+      "oauth_client_id": "",     // 提供方不支持动态注册时才填
       "oauth_client_secret": "",
-      "oauth_callback_port": 0,
+      "oauth_callback_port": 0,  // 省略则自动挑空闲端口
+
+      // 把这个 MCP 当渠道用（等价 --channels）
       "channel_enabled": false,
+
+      // 自动把回复路由回渠道
       "channel_reply": {
-        "user": {
+        "user": {                        // 私聊回复走哪个工具
           "tool": "send_message_to_user",
-          "target_param": "user_id",
+          "target_param": "user_id",     // 这个工具收「发给谁」的参数名
           "target_meta": "sender"
         },
-        "group": {
+        "group": {                       // 群聊回复
           "tool": "send_group_message",
           "target_param": "group_id"
         },
-        "message_param": "message",
-        "suppress_tools": ["send"]
+        "message_param": "message",      // 接收正文的参数名，默认 message
+        "suppress_tools": ["send"]       // 模型已调过这些工具就不再补发
       }
     },
+
     "files": {
-      "type": "stdio",
-      "command": "npx",
+      "type": "stdio",           // 建议写明；用 mcp add 时自动填 stdio
+      "command": "npx",          // 【必填，stdio】
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"],
-      "env": {"NODE_NO_WARNINGS": "1"},
+      "env": { "NODE_NO_WARNINGS": "1" },
       "timeout": 10
     }
   },
 
+  // ==========================================================================
+  // lsp：语言服务器。键是服务器名字。
+  // ==========================================================================
   "lsp": {
     "gopls": {
+      // 名字能命中内置目录（gopls / pylsp / typescript-language-server 等）
+      // 时可以省略，会自动补
       "command": "gopls",
+
       "args": [],
       "env": {},
-      "filetypes": ["go", "gomod"],
+
+      "filetypes": ["go", "gomod"],   // 省略时从内置目录补
       "root_markers": ["go.mod"],
-      "init_options": {},
-      "options": {
+
+      "init_options": {},             // LSP initialize 请求的入参
+      "options": {                    // 服务器专属设置，原样传给 LSP
         "gofumpt": true,
         "staticcheck": true
       },
-      "timeout": 60,
+
+      "timeout": 60,                  // 默认 30，秒
       "disabled": false
     }
   },
 
+  // ==========================================================================
+  // options：应用行为。以下全部有默认值。
+  // ==========================================================================
   "options": {
+    // 额外喂给模型的上下文文件，追加到内置默认列表之后
     "context_paths": [".cursorrules", "AGENTS.md", "docs/architecture.md"],
+
+    // 默认 ~/.config/evo/CRUSH.md 和 ~/.config/AGENTS.md
     "global_context_paths": ["~/.config/evo/AGENTS.md"],
+
+    // 内置的 ~/.config/evo/skills 和 <项目>/skills 总会加上
     "skills_paths": ["~/.config/evo/skills", "./skills"],
-    "disabled_skills": ["some-skill"],
-    "disabled_tools": ["sourcegraph"],
-    "debug": false,
-    "debug_lsp": false,
+
+    "disabled_skills": ["some-skill"],   // 按名字停用 skill
+    "disabled_tools": ["sourcegraph"],   // 隐藏给模型的工具
+
+    "debug": false,                // 开 Debug 日志（等价 -d）
+    "debug_lsp": false,            // LSP 详细日志
     "disable_auto_summarize": false,
-    "data_directory": ".evo",
-    "initialize_as": "AGENTS.md",
-    "auto_lsp": true,
-    "progress": true,
+
+    "data_directory": ".evo",      // 放 SQLite 和 logs/，相对路径按工作目录解析
+    "initialize_as": "AGENTS.md",  // 项目初始化写哪个文件
+    "auto_lsp": true,              // 按 root_markers 自动起 LSP
+    "progress": true,              // 长操作显示进度
+
+    // auto / native / osc / bell / disabled。
+    // auto 会按环境挑：本地用系统通知，SSH 用 OSC
     "notifications": "auto",
+
+    // 单次 LLM 请求的秒数，默认 60。0 表示不限。
+    // 会按上下文规模自动放大，超时会重试。
+    // 流式响应只在两个 token 之间沉默这么久才中断
     "request_timeout": 60,
-    "max_background_jobs": 50,
-    "pinentry_integrated": true,
-    "pinentry_cache_timeout": 0,
-    "disable_metrics": false,
+
+    "max_background_jobs": 50,     // 同时能跑几个后台 shell 任务
+
+    "pinentry_integrated": true,   // GPG 密码用 evo 自己的弹窗
+    "pinentry_cache_timeout": 0,   // 密码在内存里留几秒，0 不留
+
+    "disable_metrics": false,      // 关掉统计上报
+
+    // shell 里的 coreutils（ls/cat/grep 等）由谁提供：
+    // turtle / system / auto（默认）/ off
     "coreutils": "auto",
+
+    // 提交信息署名
     "attribution": {
-      "trailer_style": "assisted-by",
+      "trailer_style": "assisted-by",  // none / co-authored-by / assisted-by
       "generated_with": true
     },
+
+    // 用文件整体替换内置 prompt。
+    // 可替换的键：coder / task / plan / summary / title / initialize。
+    // 注意是整体替换，内置模板注入的 skills、上下文文件、LSP 状态都会丢，
+    // 除非你的新模板自己带上
     "prompts": {
       "coder": "./prompts/coder.md",
       "summary": "./prompts/summary.md"
     },
+
     "tui": {
-      "compact_mode": false,
-      "diff_mode": "unified",
+      "compact_mode": false,      // 紧凑布局
+      "diff_mode": "unified",     // unified 行内 / split 左右对照
       "active_theme": "charmtone-panther",
       "transparent": false,
+
+      // default 两秒后自动隐藏 / always / never
       "scrollbar": "default",
+
+      // 置 false 会把选中和复制粘贴交还给终端。
+      // ctrl+v 或鼠标选中不顺手时先试这个
       "mouse": true,
-      "nerd_fonts": true,
-      "exit_banner": "default",
-      "completions": {"max_depth": 10, "max_items": 100}
+
+      "nerd_fonts": true,         // 省略则自动探测
+      "exit_banner": "default",   // default 完整 logo / compact 精简 / none 不打
+
+      // 路径补全的扫描范围，0 表示用内置上限
+      "completions": {
+        "max_depth": 10,
+        "max_items": 100
+      }
     },
+
+    // 未完成的实验性功能，随时可能变。环境变量优先于这里
     "experimental": {
-      "client_server": false,
-      "server_ready_timeout": 30,
-      "server_idle_timeout": 60,
-      "server_detach_grace": 10
+      "client_server": false,       // CRUSH_CLIENT_SERVER
+      "server_ready_timeout": 30,   // CRUSH_SERVER_READY_TIMEOUT
+      "server_idle_timeout": 60,    // CRUSH_SERVER_IDLE_TIMEOUT
+      "server_detach_grace": 10     // CRUSH_SERVER_DETACH_GRACE
     }
   },
 
+  // ==========================================================================
+  // permissions：权限
+  // ==========================================================================
   "permissions": {
-    "allowed_tools": ["view", "ls", "grep", "glob"],
+    "allowed_tools": ["view", "ls", "grep", "glob"],  // 免确认的工具
+
+    // 精确匹配的完整命令行，免确认。
+    // 字面匹配：写了 "go build" 不覆盖 "go build -o out"
     "safe_commands": ["go build", "cargo check"],
-    "blocked_commands": ["kubectl", "terraform"],
-    "allowed_commands": ["curl"]
+
+    "blocked_commands": ["kubectl", "terraform"],  // 额外列为危险，会弹确认
+    "allowed_commands": ["curl"]                   // 从危险列表移除（含内置项）
   },
 
+  // ==========================================================================
+  // tools：内置工具参数
+  // ==========================================================================
   "tools": {
-    "ls": {"max_depth": 0, "max_items": 1000},
-    "grep": {"timeout": "5s"},
-    "glob": {"timeout": "30s"}
+    "ls": {
+      "max_depth": 0,     // 0 表示不限
+      "max_items": 1000
+    },
+    "grep": { "timeout": "5s" },    // 默认 5s
+    "glob": { "timeout": "30s" }    // 默认 30s，注意是带单位的字符串
   },
 
+  // ==========================================================================
+  // hooks：钩子。键必须是合法事件名（大小写和下划线会被折叠）。
+  //
+  //   PreToolUse         工具执行前，可 allow / deny / 改写入参
+  //   PostToolUse        工具成功后，可改写输出
+  //   PostToolUseFailure 工具失败后，可补上下文
+  //   PermissionRequest  弹权限确认时
+  //   PermissionResult   权限结果确定时
+  //   SessionStart       会话创建或恢复
+  //   SessionEnd         退出时
+  //   TurnStart          一轮开始
+  //   TurnEnd            一轮结束
+  //   StopFailure        一轮因 provider 错误结束
+  //   Interrupt          用户取消
+  //   PreCompact         压缩上下文前，可阻止
+  //   PostCompact        压缩完成后
+  // ==========================================================================
   "hooks": {
     "PreToolUse": [
       {
-        "name": "log-bash",
+        "name": "log-bash",     // 默认等于 command。想单独删这条必须写 name
+
+        // 对工具名跑的正则。省略则匹配全部
         "matcher": "^bash$",
+
+        // 【必填】缺失直接报错。脚本能拿到的环境变量（前缀是 CRUSH_）：
+        //   CRUSH_EVENT / CRUSH_SESSION_ID / CRUSH_CWD / CRUSH_PROJECT_DIR
+        //   CRUSH_TOOL_NAME / CRUSH_TOOL_INPUT_COMMAND / CRUSH_TOOL_INPUT_FILE_PATH
         "command": "echo \"$CRUSH_TOOL_INPUT_COMMAND\" >> ~/.evo-audit.log",
-        "timeout": 30
+
+        "timeout": 30    // 默认 30 秒
       }
     ],
+
     "SessionStart": [
-      {"command": "echo started"}
+      { "command": "echo started" }   // 最简只需要 command
     ]
   },
 
+  // hook 的 stdout 如果是 JSON 可以干预流程，例如：
+  //   {"decision": "deny", "reason": "不要碰生产库", "halt": false}
+  // decision 可取 allow / deny / block；continue:false 等价 halt:true。
+  // 空输出或非 JSON 都视为「不干预」
+
+  // ==========================================================================
+  // env：启动时注入的环境变量。上面所有 $VAR 都从这里解析
+  // ==========================================================================
   "env": {
     "AWS_PROFILE": "work",
     "NO_COLOR": "1"
   }
 }
 ```
-
-## 二、字段说明
-
-「必填」= 缺了会加载失败或该条目被静默丢弃；「可选」= 省略即用默认值。
-
-### 顶层
-
-| 字段 | 必填性 | 说明 |
-|---|---|---|
-| `$schema` | 可选 | 编辑器补全用，运行时不读 |
-| `providers` | 可选 | 至少有一个可用 provider 才能跑 agent |
-| `models` | 可选 | 省略则按 provider 顺序自动挑默认模型 |
-| `mcp` / `lsp` | 可选 | 键是 server 名字 |
-| `options` | 可选 | 应用行为，全部有默认值 |
-| `permissions` | 可选 | 权限策略 |
-| `tools` | 可选 | 内置工具的超参 |
-| `hooks` | 可选 | 键必须是合法事件名，值是该事件的 hook 数组 |
-| `env` | 可选 | 启动时注入的环境变量，provider 的 `$VAR` 从这里解析 |
-
-### `providers.<id>`
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `id` | 可选 | 键名 | 一般不用写 |
-| `name` | 可选 | `id` | 显示名 |
-| `type` | 可选 | `completions` | `completions`（OpenAI Chat） / `responses`（OpenAI Responses） / `messages`（Anthropic） / `hyper` / `ollama` / `litellm` / `llamacpp` / `lmstudio` / `omlx` |
-| `base_url` | **自定义 provider 必填** | — | 缺失或解析为空 → 整个 provider 被丢弃 |
-| `api_key` | 登录类可选，其余建议填 | — | 支持 `$VAR` 和 `$(cmd)` |
-| `disable` | 可选 | `false` | 置 true 等同于删除 |
-| `flat_rate` | 可选 | `false` | 订阅/包月计费，不累计费用 |
-| `discover_models` | 可选 | `true` | 走 `/v1/models` 自动发现；与手写 models 合并，手写的优先 |
-| `system_prompt_prefix` | 可选 | — | 追加到该 provider 的 system prompt 前 |
-| `extra_headers` | 可选 | — | 支持 `$VAR` / `$(cmd)`；解析为空串的头会被丢弃 |
-| `extra_body` | 可选 | — | 原样合并进请求体，**不做**变量展开 |
-| `provider_options` | 可选 | — | provider 专属透传 |
-| `aws_auth_refresh` | 可选 | — | Bedrock 凭据过期时执行的命令 |
-| `models` | **必填（非目录内 provider）** | — | 空数组 + 发现失败 → provider 被丢弃 |
-| `oauth` | 可选 | — | OAuth 登录后由 `evo login` 写入，别手填 |
-
-### `providers.<id>.models[]`
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `id` | **必填** | — | provider API 里的模型 ID |
-| `name` | 可选 | `id` | 显示名 |
-| `type` | 可选 | 继承 provider | 单模型覆盖 wire 协议 |
-| `pricing.input` / `.output` | 可选 | `0` | 美元 / 百万 token |
-| `pricing.cache_create` / `.cache_hit` | 可选 | `0` | 缓存写/读单价 |
-| `context_window` | 可选 | `0` | 上下文上限 |
-| `default_max_tokens` | 可选 | `0` | 默认输出上限 |
-| `max_attachments` | 可选 | `0` | 单次最多附件数 |
-| `reasoning.thinking` | 可选 | `never` | `always` / `never` / `toggleable` |
-| `reasoning.effort_levels` | 可选 | — | `[{value, display}]` 列表 |
-| `reasoning.default_effort_level` | 可选 | — | 默认档位 |
-| `capabilities.vision` / `.audio` | 可选 | `false` | 是否支持图片/音频输入 |
-| `options.*` | 可选 | — | temperature / top_p / top_k / frequency_penalty / presence_penalty / provider_options |
-
-> schema 把 `name` / `pricing` / `context_window` / `default_max_tokens` / `reasoning` / `capabilities` 都标成 required，但**运行时只校验 `id`**，其余缺了就用零值。编辑器会标红，可以忽略。
-
-### `models.large` / `models.small`
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `provider` | **必填** | — | 必须是 `providers` 下的键 |
-| `model` | **必填** | — | 必须是该 provider 的模型 ID |
-| `max_tokens` | 可选 | 模型默认 | 覆盖输出上限 |
-| `temperature` / `top_p` / `top_k` | 可选 | 模型默认 | 采样参数 |
-| `frequency_penalty` / `presence_penalty` | 可选 | 模型默认 | 重复惩罚 |
-| `reasoning_effort` | 可选 | 模型默认 | `low` / `medium` / `high` |
-| `think` | 可选 | `false` | 强制开思考（Anthropic） |
-| `provider_options` | 可选 | — | 模型级透传 |
-
-`small` 省略时：provider 在目录里取它的默认小模型，否则直接复用 `large`。
-
-### `mcp.<name>`
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `type` | 可选（JSON 里建议写） | `stdio` | `stdio` / `sse` / `http`；未知值 → server 启动失败 |
-| `command` | **stdio 必填** | — | 空则报 "requires a non-empty 'command' field" |
-| `args` | 可选 | — | 支持变量展开 |
-| `env` | 可选 | — | 启动该进程的环境变量 |
-| `url` | **sse / http 必填** | — | 空则报错 |
-| `headers` | 可选 | — | 支持 `$VAR` / `$(cmd)`，空值丢弃 |
-| `timeout` | 可选 | `10` | 连接超时（秒） |
-| `disabled` | 可选 | `false` | 停用该 server |
-| `enabled_tools` | 可选 | 全部 | 白名单 |
-| `disabled_tools` | 可选 | 无 | 黑名单 |
-| `sessionless` | 可选 | 自动识别 | 不维护 MCP session 的 server（GitHub 等）置 true，跳过 subscriptions 流 |
-| `oauth` | 可选 | `false` | 仅 `type: http`，走 OAuth 2.1 |
-| `oauth_client_id` / `oauth_client_secret` | 可选 | — | 提供方不支持动态注册时填 |
-| `oauth_callback_port` | 可选 | 自动挑 | 需要固定回调端口时填 |
-| `channel_enabled` | 可选 | `false` | 把该 MCP 当渠道（等价 `--channels`） |
-| `channel_reply` | 可选 | — | 自动把回复路由回渠道 |
-
-### `lsp.<name>`
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `command` | 可选 | 从内置目录补 | 名字命中 gopls / pylsp 等时可省 |
-| `args` / `env` | 可选 | — | 支持变量展开 |
-| `filetypes` | 可选 | 内置目录 | 该 server 负责的文件类型 |
-| `root_markers` | 可选 | 内置目录 | 判断项目根 |
-| `init_options` | 可选 | 内置目录 | LSP `initialize` 的入参 |
-| `options` | 可选 | 内置目录 | server 专属设置 |
-| `timeout` | 可选 | `30` | 初始化超时（秒） |
-| `disabled` | 可选 | `false` | 停用 |
-
-### `options`
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `context_paths` | 可选 | 一批约定文件 | 额外喂给模型的上下文文件 |
-| `global_context_paths` | 可选 | `~/.config/evo/CRUSH.md`、`~/.config/AGENTS.md` | 全局上下文 |
-| `skills_paths` | 可选 | 见下 | skills 目录；内置的 `~/.config/evo/skills`、`<项目>/skills` 总会加上 |
-| `disabled_skills` | 可选 | — | 按名字停用 skill |
-| `disabled_tools` | 可选 | — | 隐藏给模型的工具 |
-| `debug` | 可选 | `false` | Debug 级别日志（等价 `-d`） |
-| `debug_lsp` | 可选 | `false` | LSP 详细日志 |
-| `disable_auto_summarize` | 可选 | `false` | 关掉自动摘要 |
-| `data_directory` | 可选 | `.evo` | 相对路径按工作目录解析 |
-| `initialize_as` | 可选 | `AGENTS.md` | 项目初始化写哪个文件 |
-| `auto_lsp` | 可选 | `true` | 按 root marker 自动起 LSP |
-| `progress` | 可选 | `true` | 长操作的进度指示 |
-| `notifications` | 可选 | `auto` | `auto` / `native` / `osc` / `bell` / `disabled` |
-| `request_timeout` | 可选 | `60` | 单次请求秒数；0 关闭；按上下文规模放大，超时会重试（主对话 10 次、后台 3 次） |
-| `max_background_jobs` | 可选 | `50` | 并发后台 shell 上限 |
-| `pinentry_integrated` | 可选 | `true` | GPG 密码用 evo 自己的弹窗 |
-| `pinentry_cache_timeout` | 可选 | `0` | 密码在内存里留多久 |
-| `disable_metrics` | 可选 | `false` | 关闭统计上报 |
-| `coreutils` | 可选 | `auto` | `turtle` / `system` / `auto` / `off` |
-| `attribution` | 可选 | `assisted-by` + `generated_with: true` | 提交信息署名 |
-| `prompts` | 可选 | — | 用文件替换内置 prompt，键见下表 |
-| `tui` | 可选 | — | 见下 |
-| `experimental` | 可选 | — | 见下 |
-
-`prompts` 可替换的键：`coder`、`task`、`plan`、`summary`、`title`、`initialize`。替换是**整体替换**，内置模板注入的 skills / 上下文文件 / LSP 状态都会丢，除非你新模板自己带上。
-
-`options.tui`：
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `compact_mode` | 可选 | `false` | 紧凑布局 |
-| `diff_mode` | 可选 | `unified` | `unified` / `split` |
-| `active_theme` | 可选 | `charmtone-panther` | 主题名 |
-| `transparent` | 可选 | `false` | 透明背景 |
-| `scrollbar` | 可选 | `default` | `default`（2 秒后隐藏） / `always` / `never` |
-| `mouse` | 可选 | `true` | **置 false 交给终端处理选中和复制粘贴** |
-| `nerd_fonts` | 可选 | 自动探测 | `true` / `false` |
-| `exit_banner` | 可选 | `default` | `default` / `compact` / `none` |
-| `completions.max_depth` / `.max_items` | 可选 | `0` / `0`（=内置上限） | 补全扫描范围 |
-
-`options.experimental`（都不稳定，环境变量优先）：
-
-| 字段 | 必填性 | 默认 | 对应的环境变量 |
-|---|---|---|---|
-| `client_server` | 可选 | `false` | `CRUSH_CLIENT_SERVER` |
-| `server_ready_timeout` | 可选 | — | `CRUSH_SERVER_READY_TIMEOUT` |
-| `server_idle_timeout` | 可选 | `60` | `CRUSH_SERVER_IDLE_TIMEOUT` |
-| `server_detach_grace` | 可选 | `10` | `CRUSH_SERVER_DETACH_GRACE` |
-
-### `permissions`
-
-| 字段 | 必填性 | 说明 |
-|---|---|---|
-| `allowed_tools` | 可选 | 免确认的工具名 |
-| `safe_commands` | 可选 | 精确匹配的完整命令行，免确认。**多一个参数就不匹配** |
-| `blocked_commands` | 可选 | 额外列入危险命令，普通模式会弹确认 |
-| `allowed_commands` | 可选 | 从危险列表移除（含内置项），比如放行 `curl` |
-
-### `tools`
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `ls.max_depth` | 可选 | `0`（不限） | ls 深度 |
-| `ls.max_items` | 可选 | `1000` | ls 条目上限 |
-| `grep.timeout` | 可选 | `5s` | grep 超时 |
-| `glob.timeout` | 可选 | `30s` | glob 超时 |
-
-### `hooks.<Event>[]`
-
-| 字段 | 必填性 | 默认 | 说明 |
-|---|---|---|---|
-| `command` | **必填** | — | 缺失直接报错 |
-| `name` | 可选 | `command` | 显示名；**要单独删除必须写** |
-| `matcher` | 可选 | 匹配全部 | 对工具名匹配的正则 |
-| `timeout` | 可选 | `30` | 秒 |
-
-合法事件名（大小写和 `_` 会被折叠，`pretooluse` 也认）：
-
-`PreToolUse`、`PostToolUse`、`PostToolUseFailure`、`PermissionRequest`、`PermissionResult`、`SessionStart`、`SessionEnd`、`TurnStart`、`TurnEnd`、`StopFailure`、`Interrupt`、`PreCompact`、`PostCompact`。
-
-hook 脚本能拿到的环境变量（前缀是 `CRUSH_`）：`CRUSH_EVENT`、`CRUSH_SESSION_ID`、`CRUSH_CWD`、`CRUSH_PROJECT_DIR`（另有 `CLAUDE_PROJECT_DIR` 同值）、`CRUSH_TOOL_NAME`、`CRUSH_TOOL_INPUT_COMMAND`、`CRUSH_TOOL_INPUT_FILE_PATH`。
-
-hook 的 stdout 若是 JSON，可以干预流程：
-
-```json
-{"decision": "allow", "reason": "", "halt": false, "context": "附加给模型的上下文", "updated_input": {}, "updated_output": {}}
-```
-
-`decision` 可取 `allow` / `deny` / `block`；`continue: false` 等价 `halt: true`。空输出或非 JSON 输出都视为「不干预」。也认 Claude Code 的 `hookSpecificOutput` 形式。
-
-## 三、等价 evorc（带注释，可读性更好）
-
-```bash
-#!/usr/bin/env bash
-# evo 的 Bash 配置。放在 ~/.config/evo/evorc 或项目里的 evorc。
-# 只有 provider / model / mcp / lsp / hook / permissions / option 这些
-# 内置命令能表达的字段可以用它写；主题、tools.*、模型的 effort_levels
-# 等仍然只能写 JSON。
-
-# ---- provider ----
-# --base-url 对非目录内的 provider 是必填的，缺了会被丢弃。
-provider add my-llm \
-  --name "My LLM" \
-  --type completions \
-  --base-url "https://api.example.com/v1" \
-  --api-key "$MY_API_KEY" \
-  --extra-header X-Title "evo" \
-  --extra-body '{"chat_template_kwargs":{"enable_thinking":false}}' \
-  --system-prompt-prefix "You are working on a Rust codebase."
-
-# 本地 ollama，不需要 api-key
-provider add local-ollama --type ollama --base-url "http://localhost:11434/v1"
-
-# ---- 模型 ----
-# 非目录内的 provider，models 必须至少有一条，否则整个 provider 被丢弃。
-model add my-llm/gpt-4o \
-  --name "GPT-4o" \
-  --context-window 128000 \
-  --default-max-tokens 8192 \
-  --thinking toggleable \
-  --reasoning-effort low \
-  --supports-images true \
-  --price-input 2.5 \
-  --price-output 10 \
-  --max-attachments 5
-
-model add local-ollama/qwen3-coder --name "Qwen3 Coder" --context-window 262144
-
-# 选模型：provider/model 必填，其后都是可选覆盖
-model large my-llm/gpt-4o --max-tokens 8192 --temperature 0.7 --top-p 0.95
-model small my-llm/gpt-4o
-
-# ---- MCP ----
-# stdio（默认 type），--command 必填
-mcp add files --command npx \
-  --args -y --args @modelcontextprotocol/server-filesystem --args /tmp \
-  --timeout 10
-
-# http，--url 必填
-mcp add github --type http --url "https://api.githubcopilot.com/mcp/" \
-  --header Authorization "Bearer $GITHUB_TOKEN" \
-  --sessionless true \
-  --enabled-tools search_code
-
-# ---- LSP ----
-# 名字命中内置目录时可省 --command
-lsp add gopls --command gopls --filetypes go --root-markers go.mod --timeout 60
-
-# ---- 权限 ----
-permissions allow view ls grep glob
-permissions safe "go build" "cargo check"
-permissions block kubectl terraform
-permissions unblock curl
-
-# ---- hook ----
-# PreToolUse 记得配 --matcher 收窄范围，--command 必填
-hook add PreToolUse --name log-bash --matcher '^bash$' \
-  --command 'echo "$CRUSH_TOOL_INPUT_COMMAND" >> ~/.evo-audit.log' --timeout 30
-
-# ---- option ----
-option data-directory .evo
-option request-timeout 60
-option max-background-jobs 50
-option notifications auto
-option initialize-as AGENTS.md
-option coreutils auto
-option metrics false              # 注意：这是「关闭指标」，存的键是 disable_metrics
-option auto-summarize true
-option context-path docs/architecture.md
-option skill-path ./skills
-option disable-skill some-skill
-option prompt coder ./prompts/coder.md
-option attribution-trailer-style assisted-by
-option attribution-generated-with true
-
-# 列表项可以用 reset 清空后再加
-option reset skill-path
-option skill-path ./skills
-
-# ---- TUI ----
-option ui compact false
-option ui diff unified
-option ui transparent false
-option ui mouse true        # 置 false 让终端自己处理选中/粘贴
-option ui nerd-fonts true
-option ui scrollbar default
-option ui exit-banner default
-option ui completions-max-depth 10
-option ui completions-max-items 100
-
-# ---- experimental ----
-option experimental client-server false
-option experimental server-idle-timeout 60
-option experimental server-detach-grace 10
-```
-
-## 四、注意事项
-
-1. **`evo.json` 里写注释会直接解析失败**，`loadFromConfigPaths` 用 `json.Valid` 卡得很死。要注释只能用 `evorc`。
-2. **自定义 provider 缺 `base_url` 或 `models` 会被静默删除**，日志里只有一条 `Skipping custom provider due to missing API endpoint`。
-3. `option provider-auto-update` 和 `option default-providers` 是历史残留：对应的配置字段已经删了，写了不报错也不生效。
-4. `evo` 对配置**不做运行时 schema 校验**，schema 只用于编辑器提示，所以字段名拼错可能静默失效。
-5. 环境变量覆盖：`CRUSH_GLOBAL_CONFIG` / `CRUSH_GLOBAL_DATA` / `CRUSH_DATA_DIR` / `CRUSH_CACHE_DIR` / `CRUSH_SKILLS_DIR`（前缀仍是 `CRUSH_`，没跟着改名）。
