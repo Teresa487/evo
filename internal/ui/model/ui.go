@@ -3484,9 +3484,7 @@ func (m *UI) handleKeyPressMsg(msg tea.KeyPressMsg) tea.Cmd {
 				}
 
 			case key.Matches(msg, m.keyMap.Editor.PasteImage):
-				if !m.currentModelSupportsImages() {
-					break
-				}
+				// 先试图片，剪贴板里没有图片（或模型不支持图片）就退回文本粘贴。
 				cmds = append(cmds, m.pasteImageFromClipboard)
 			case key.Matches(msg, m.keyMap.Editor.PasteText):
 				cmds = append(cmds, m.pasteTextFromClipboard)
@@ -4265,13 +4263,14 @@ func (m *UI) FullHelp() [][]key.Binding {
 				k.Editor.Newline,
 				k.Editor.MentionFile,
 				k.Editor.OpenEditor,
+				k.Editor.PasteImage,
 				k.Editor.PasteText,
 				k.Editor.SelectAll,
 				k.Editor.CopySelection,
 				k.Editor.CutSelection,
 			}
 			if m.currentModelSupportsImages() {
-				editorBinds = append(editorBinds, k.Editor.AddImage, k.Editor.PasteImage)
+				editorBinds = append(editorBinds, k.Editor.AddImage)
 			}
 			binds = append(binds, editorBinds)
 			if hasAttachments {
@@ -4341,13 +4340,14 @@ func (m *UI) FullHelp() [][]key.Binding {
 				k.Editor.Newline,
 				k.Editor.MentionFile,
 				k.Editor.OpenEditor,
+				k.Editor.PasteImage,
 				k.Editor.PasteText,
 				k.Editor.SelectAll,
 				k.Editor.CopySelection,
 				k.Editor.CutSelection,
 			}
 			if m.currentModelSupportsImages() {
-				editorBinds = append(editorBinds, k.Editor.AddImage, k.Editor.PasteImage)
+				editorBinds = append(editorBinds, k.Editor.AddImage)
 			}
 			binds = append(binds, editorBinds)
 			if hasAttachments {
@@ -6569,10 +6569,16 @@ func (m *UI) handleFilePathPaste(path string) tea.Cmd {
 	}
 }
 
-// pasteTextFromClipboard reads 文本 从 system clipboard 和 returns
-// tea.PasteMsg 所以 it flows through same paste logic 作为 bracketed paste.
+// pasteTextFromClipboard 读系统剪贴板里的文本并包成 tea.PasteMsg，让
+// ctrl+v 走和 bracketed paste 完全相同的粘贴逻辑。
 func (m *UI) pasteTextFromClipboard() tea.Msg {
 	textData, err := clipboard.Read(clipboard.FormatText)
+	if errors.Is(err, clipboard.ErrUnsupported) {
+		return util.InfoMsg{
+			Type: util.InfoTypeError,
+			Msg:  "This platform has no clipboard access; paste with your terminal instead",
+		}
+	}
 	if err != nil || len(textData) == 0 {
 		return util.InfoMsg{
 			Type: util.InfoTypeError,
@@ -6582,14 +6588,16 @@ func (m *UI) pasteTextFromClipboard() tea.Msg {
 	return tea.PasteMsg{Content: string(textData)}
 }
 
-// pasteImageFromClipboard reads 图片 data 从 system clipboard 和
-// creates 附件. If no 图片 data 是 found, it falls back 到
-// interpreting clipboard 文本 作为 文件 路径.
+// pasteImageFromClipboard 用剪贴板里的图片建附件；剪贴板没有图片数据时
+// 直接走文本粘贴，所以 ctrl+v 在纯文本场景下同样能贴上内容。
 func (m *UI) pasteImageFromClipboard() tea.Msg {
 	if !m.currentModelSupportsImages() {
-		return util.NewWarnMsg("The current model does not support image attachments")
+		return m.pasteTextFromClipboard()
 	}
 	imageData, err := clipboard.Read(clipboard.FormatImage)
+	if err != nil {
+		return m.pasteTextFromClipboard()
+	}
 	if int64(len(imageData)) > common.MaxAttachmentSize {
 		return util.InfoMsg{
 			Type: util.InfoTypeError,
@@ -6597,57 +6605,11 @@ func (m *UI) pasteImageFromClipboard() tea.Msg {
 		}
 	}
 	name := fmt.Sprintf("paste_%d.png", m.pasteIdx())
-	if err == nil {
-		return message.Attachment{
-			FilePath: name,
-			FileName: name,
-			MimeType: mimeOf(imageData),
-			Content:  imageData,
-		}
-	}
-
-	textData, textErr := clipboard.Read(clipboard.FormatText)
-	if textErr != nil || len(textData) == 0 {
-		return nil // Clipboard is empty or does not contain an image
-	}
-
-	path := strings.TrimSpace(string(textData))
-	path = strings.ReplaceAll(path, "\\ ", " ")
-	if _, statErr := os.Stat(path); statErr != nil {
-		return nil // Clipboard does not contain an image or valid file path
-	}
-
-	if !common.IsImagePath(path) {
-		return util.NewInfoMsg("File type is not a supported image format")
-	}
-
-	fileInfo, statErr := os.Stat(path)
-	if statErr != nil {
-		return util.InfoMsg{
-			Type: util.InfoTypeError,
-			Msg:  fmt.Sprintf("Unable to read file: %v", statErr),
-		}
-	}
-	if fileInfo.Size() > common.MaxAttachmentSize {
-		return util.InfoMsg{
-			Type: util.InfoTypeError,
-			Msg:  "File too large, max 5MB",
-		}
-	}
-
-	content, readErr := os.ReadFile(path)
-	if readErr != nil {
-		return util.InfoMsg{
-			Type: util.InfoTypeError,
-			Msg:  fmt.Sprintf("Unable to read file: %v", readErr),
-		}
-	}
-
 	return message.Attachment{
-		FilePath: path,
-		FileName: filepath.Base(path),
-		MimeType: mimeOf(content),
-		Content:  content,
+		FilePath: name,
+		FileName: name,
+		MimeType: mimeOf(imageData),
+		Content:  imageData,
 	}
 }
 

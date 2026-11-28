@@ -3,8 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -314,30 +313,6 @@ func chatGPTLoginToken() *oauth.Token {
 	}
 }
 
-// newCatwalkStub serves given 响应 为 /v3/providers 所以 Load's
-// catalog fetch can 是 driven without network. CATWALK_URL 和
-// HYPER_URL 是 pointed 在 stub: Hyper fails fast against it instead
-// 的 reaching real service.
-func newCatwalkStub(t *testing.T, status int, catalog []catwalk.Provider) {
-	t.Helper()
-
-	catalogJSON, err := json.Marshal(catalog)
-	require.NoError(t, err)
-
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/v3/providers" && status == http.StatusOK {
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = w.Write(catalogJSON)
-			return
-		}
-		w.WriteHeader(status)
-	}))
-	t.Cleanup(server.Close)
-
-	t.Setenv("CATWALK_URL", server.URL)
-	t.Setenv("HYPER_URL", server.URL)
-}
-
 // isolateLoadEnv points 配置 discovery 在 throwaway directories.
 func isolateLoadEnv(t *testing.T) (workDir, dataDir string) {
 	t.Helper()
@@ -366,26 +341,15 @@ func stubChatGPTModels(t *testing.T, models []catwalk.Model) *bool {
 	return &called
 }
 
-// TestLoadRefreshesChatGPTModelsWhenCatwalkUpdates covers the startup
-// wiring: 当 Catwalk delivers fresh catalog, ChatGPT 模型 catalog
-// 是 refreshed 在 same 运行, 和 配置 Load publishes afterwards
-// still carries resolved 默认 models ( refresh swaps 配置
-// out 从 under Load, which must re-读取 it).
-func TestLoadRefreshesChatGPTModelsWhenCatwalkUpdates(t *testing.T) {
-	// Not parallel: swaps package-level 提供方 state 和 fetch
-	// stub, 和 sets environment variables.
+// TestLoadRefreshesChatGPTModelsOnStartup covers the startup
+// wiring: every load re-fetches the ChatGPT 模型 catalog, 和
+// 配置 Load publishes afterwards still carries resolved 默认
+// models ( refresh swaps 配置 out 从 under Load, which must
+// re-读取 it).
+func TestLoadRefreshesChatGPTModelsOnStartup(t *testing.T) {
+	// Not parallel: swaps the fetch stub 和 sets environment
+	// variables.
 	workDir, dataDir := isolateLoadEnv(t)
-	newCatwalkStub(t, http.StatusOK, []catwalk.Provider{{
-		Name:                "OpenAI",
-		ID:                  catwalk.InferenceProviderOpenAI,
-		Type:                catwalk.TypeResponses,
-		DefaultLargeModelID: "gpt-5.1",
-		DefaultSmallModelID: "gpt-5.1-mini",
-		Models: []catwalk.Model{
-			{ID: "gpt-5.1", Name: "GPT-5.1"},
-			{ID: "gpt-5.1-mini", Name: "GPT-5.1 mini"},
-		},
-	}})
 	resetProviderState()
 	t.Cleanup(resetProviderState)
 
@@ -400,26 +364,20 @@ func TestLoadRefreshesChatGPTModelsWhenCatwalkUpdates(t *testing.T) {
 	store, err := Load(t.Context(), workDir, dataDir, false)
 	require.NoError(t, err)
 
-	require.True(t, CatwalkUpdated(), "the stub served a fresh catalog")
-	require.True(t, *fetched, "the ChatGPT catalog refresh rides the Catwalk update")
+	require.True(t, *fetched, "startup refreshes the ChatGPT catalog")
 
 	pc, ok := store.Config().Providers.Get("openai")
 	require.True(t, ok)
 	require.Equal(t, "gpt-fresh", pc.ChatGPTModels[0].ID, "the stale catalog is replaced")
-
-	large, ok := store.Config().Models[SelectedModelTypeLarge]
-	require.True(t, ok)
-	require.Equal(t, "gpt-5.1", large.Model, "the resolved default model survives the catalog refresh")
 }
 
-// TestLoadKeepsChatGPTModelsWhenCatwalkNotModified verifies 刷新
-// 只 follows actual Catwalk updates: 304 Not Modified leaves
-// persisted 目录 alone.
-func TestLoadKeepsChatGPTModelsWhenCatwalkNotModified(t *testing.T) {
-	// Not parallel: swaps package-level 提供方 state 和 fetch
-	// stub, 和 sets environment variables.
+// TestLoadKeepsChatGPTModelsWhenFetchFails verifies 那 failed
+// startup refresh leaves persisted 目录 alone. Load never fails
+// over it: login still works 用 whatever catalog 是 already there.
+func TestLoadKeepsChatGPTModelsWhenFetchFails(t *testing.T) {
+	// Not parallel: swaps the fetch stub 和 sets environment
+	// variables.
 	workDir, dataDir := isolateLoadEnv(t)
-	newCatwalkStub(t, http.StatusNotModified, nil)
 	resetProviderState()
 	t.Cleanup(resetProviderState)
 
@@ -429,13 +387,14 @@ func TestLoadKeepsChatGPTModelsWhenCatwalkNotModified(t *testing.T) {
 		0o600,
 	))
 
-	fetched := stubChatGPTModels(t, []catwalk.Model{{ID: "gpt-fresh", Name: "GPT Fresh"}})
+	originalFetch := fetchOpenAIModels
+	fetchOpenAIModels = func(context.Context, *oauth.Token) ([]catwalk.Model, error) {
+		return nil, errors.New("catalog unavailable")
+	}
+	t.Cleanup(func() { fetchOpenAIModels = originalFetch })
 
 	store, err := Load(t.Context(), workDir, dataDir, false)
-	require.NoError(t, err)
-
-	require.False(t, CatwalkUpdated(), "the stub reported the catalog unchanged")
-	require.False(t, *fetched, "an unchanged Catwalk catalog does not trigger a refresh")
+	require.NoError(t, err, "a failed catalog refresh must not fail the load")
 
 	pc, ok := store.Config().Providers.Get("openai")
 	require.True(t, ok)

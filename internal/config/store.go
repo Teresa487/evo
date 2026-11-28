@@ -218,7 +218,9 @@ func (s *ConfigStore) RefetchHyperProvider(ctx context.Context) error {
 		baseURL:    hyperp.BaseURL(),
 		resolveKey: func() string { return ResolveHyperAPIKey(s.Config()) },
 	}
-	hyperSyncer.SetClient(freshClient)
+	// 启动时不再拉取整份目录，hyper 同步器可能尚未初始化；这里按需初始化，
+	// 否则登录后刷新会 panic 在 "called Refetch before Init"。
+	hyperSyncer.Init(freshClient, cachePathFor("hyper"), true)
 
 	hyperProvider, err := hyperSyncer.Refetch(ctx)
 	if err != nil {

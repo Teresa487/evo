@@ -127,19 +127,7 @@ func UpdateHyper(pathOrURL string) error {
 	return nil
 }
 
-var (
-	catwalkSyncer = &catwalkSync{}
-	hyperSyncer   = &hyperSync{}
-)
-
-// CatwalkUpdated reports whether Catwalk 提供方 catalog was
-// refreshed 用 new data during 这 运行's catalog fetch. fetch
-// runs once per process, before first 调用 到 Providers returns, 所以
-// 结果 是 stable afterwards. Callers use it 到 renew catalogs 那
-// shadow Catwalk's, such 作为 ChatGPT 模型 catalog.
-func CatwalkUpdated() bool {
-	return catwalkSyncer.Updated()
-}
+var hyperSyncer = &hyperSync{}
 
 // Providers returns list 的 providers, taking into account cached results
 // 和 whether 或 不 auto 更新 是 enabled.
@@ -161,18 +149,52 @@ func Providers(cfg *Config) ([]catwalk.Provider, error) {
 	return LoadProviders(context.Background(), cfg, nil)
 }
 
+// signInProviderIDs lists the providers whose credentials come from an
+// OAuth login rather than a hand-written config entry. Their endpoint and
+// model catalog cannot be typed into evo.json, so they keep an embedded
+// catalog; everything else comes from the user's config only. Hyper leads
+// the list because the models dialog expects it at the front.
+var signInProviderIDs = []string{
+	hyper.Name,
+	string(catwalk.InferenceProviderOpenAI),
+	string(catwalk.InferenceProviderXAI),
+	string(catwalk.InferenceProviderCopilot),
+}
+
+// signInProviders returns the embedded catalog for the sign-in providers.
+// Keeping just these four means /model lists what the user configured plus
+// what they can actually log in to, and a login can still resolve an
+// endpoint and model list for a provider that has no config entry yet.
+func signInProviders() []catwalk.Provider {
+	embeddedProviders := embedded.GetAll()
+	providers := make([]catwalk.Provider, 0, len(signInProviderIDs))
+	for _, id := range signInProviderIDs {
+		if id == hyper.Name {
+			providers = append(providers, hyper.Embedded())
+			continue
+		}
+		for _, p := range embeddedProviders {
+			if string(p.ID) == id {
+				providers = append(providers, p)
+				break
+			}
+		}
+	}
+	return providers
+}
+
 // LoadProviders 返回可用的 provider 列表。
 //
-// 本仓库只使用用户配置里手写的 provider，不再下载或内置任何 provider 目录，
-// 所以这里永远返回空列表。唯一例外是 Hyper 目录：它的端点与模型列表不在用户
-// 配置里，无法手写，因此仍由 LoadProviders 之外的路径单独提供。
+// 本仓库不再下载或内置完整 provider 目录，provider 一律来自用户配置文件里
+// 的手写定义；唯一的例外是支持登录的 openai、xai、copilot 和 hyper，它们的
+// 端点与模型列表无法手写，只能继续内置，否则登录后无法还原 provider。
 //
-// 这样 /model 里只会出现用户自己配置的 provider。
+// 这样 /model 里只会出现用户自己配置的 provider，以及可以登录的这几个。
 func LoadProviders(ctx context.Context, cfg *Config, refreshHyper HyperTokenRefresher) ([]catwalk.Provider, error) {
 	_ = ctx
 	_ = cfg
 	_ = refreshHyper
-	return nil, nil
+	return signInProviders(), nil
 }
 
 // UpdateProviderInList replaces 提供方 在 memoized 提供方 list

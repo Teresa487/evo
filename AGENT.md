@@ -88,7 +88,7 @@ evo 是基于 Crush 的二次开发：保留上游的 agent 编排、会话与�
 ## internal/config — 配置
 
 - 配置结构、加载、校验、默认值、重载钩子
-- `provider.go` — provider 目录入口；本仓库只认用户手写的 provider，`LoadProviders` 恒返回空列表
+- `provider.go` — provider 目录入口；本仓库只认用户手写的 provider，目录只保留可登录的 openai、xai、copilot、hyper
 - `timeouts` 相关默认值在 `config.go`（`DefaultRequestTimeout` 为基础额度，实际按上下文放大）
 
 ## internal/hooks — Hook 系统

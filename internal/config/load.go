@@ -325,8 +325,8 @@ func Load(ctx context.Context, workingDir, dataDir string, debug bool) (*ConfigS
 		assignIfNil(&cfg.Options.TUI.Transparent, true)
 	}
 
-	// 不使用内置/远程 provider 目录，加载结果恒为空；provider 一律来自
-	// 用户在配置文件里的手写定义。
+	// 只保留可登录 provider 的内置目录，其余 provider 一律来自用户配置里的
+	// 手写定义。
 	providers, err := LoadProviders(ctx, cfg, func(ctx context.Context) error {
 		return store.RefreshOAuthToken(ctx, ScopeGlobal, "hyper")
 	})
@@ -338,16 +338,14 @@ func Load(ctx context.Context, workingDir, dataDir string, debug bool) (*ConfigS
 	}
 	store.knownProviders = providers
 
-	// When Catwalk refreshed 它的 catalog 这 运行, give 模型
-	// catalogs 那 shadow Catwalk's same treatment: ChatGPT 和
-	// Grok catalogs 是 otherwise 只 fetched 在 login 和 would freeze
-	// there while Catwalk 保持 moving. Best effort; failed fetch 保持
-	// catalog loaded 从 配置.
+	// 登录类 provider 的模型目录在登录时拉取一次，之后不会自己更新；每次启动
+	// 重新拉一遍，免得目录一直停在登录那一刻。best effort：拉取失败就继续用
+	// 配置里已有的目录。
 	//
 	// refetches 发布 copy-在-写入 配置, 所以 re-读取 it
 	// afterwards: mutations below must land 在 live 配置 rather
 	// than snapshot 存储 has already replaced.
-	if CatwalkUpdated() {
+	{
 		fetchCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 		store.refetchOpenAIModels(fetchCtx, ScopeGlobal)
 		store.refetchGrokModels(fetchCtx, ScopeGlobal)
@@ -460,10 +458,8 @@ func (c *Config) configureProviders(ctx context.Context, store *ConfigStore, env
 	restore := PushPopCrushEnv()
 	defer restore()
 
-	// 本仓库不使用任何内置/远程 provider 目录：生产路径下 LoadProviders
-	// 恒返回空列表，下面的已知 provider 合并循环不会执行，所有 provider
-	// 都走后面的自定义校验分支。这里仍然保留该循环，供调用方显式传入
-	// 目录时使用（测试通过它验证合并逻辑）。
+	// 目录里只剩可登录的 provider：下面的已知 provider 合并循环会为它们补上
+	// 端点与模型列表，其余 provider 都走后面的自定义校验分支。
 	for _, p := range knownProviders {
 		knownProviderNames[string(p.ID)] = true
 		config, configExists := c.Providers.Get(string(p.ID))

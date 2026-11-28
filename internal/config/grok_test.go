@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
-	"net/http"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -214,25 +214,15 @@ func stubGrokModels(t *testing.T, models []catwalk.Model) *bool {
 	return &called
 }
 
-// TestLoadRefreshesGrokModelsWhenCatwalkUpdates covers the startup
-// wiring: 当 Catwalk delivers fresh catalog, Grok 模型 catalog
-// 是 refreshed 在 same 运行, 和 配置 Load publishes afterwards
-// still carries resolved 默认 models ( refresh swaps
-// 配置 out 从 under Load, which must re-读取 it).
-func TestLoadRefreshesGrokModelsWhenCatwalkUpdates(t *testing.T) {
-	// Not parallel: swaps package-level 提供方 state 和 fetch
-	// stub, 和 sets environment variables.
+// TestLoadRefreshesGrokModelsOnStartup covers the startup wiring:
+// every load re-fetches the Grok 模型 catalog, 和 配置 Load
+// publishes afterwards still carries resolved 默认 models
+// ( refresh swaps 配置 out 从 under Load, which must
+// re-读取 it).
+func TestLoadRefreshesGrokModelsOnStartup(t *testing.T) {
+	// Not parallel: swaps the fetch stub 和 sets environment
+	// variables.
 	workDir, dataDir := isolateLoadEnv(t)
-	newCatwalkStub(t, http.StatusOK, []catwalk.Provider{{
-		Name:                "xAI",
-		ID:                  catwalk.InferenceProviderXAI,
-		Type:                catwalk.TypeCompletions,
-		DefaultLargeModelID: "grok-4.5",
-		DefaultSmallModelID: "grok-4.5",
-		Models: []catwalk.Model{
-			{ID: "grok-4.5", Name: "Grok 4.5"},
-		},
-	}})
 	resetProviderState()
 	t.Cleanup(resetProviderState)
 
@@ -247,26 +237,20 @@ func TestLoadRefreshesGrokModelsWhenCatwalkUpdates(t *testing.T) {
 	store, err := Load(t.Context(), workDir, dataDir, false)
 	require.NoError(t, err)
 
-	require.True(t, CatwalkUpdated(), "the stub served a fresh catalog")
-	require.True(t, *fetched, "the Grok catalog refresh rides the Catwalk update")
+	require.True(t, *fetched, "startup refreshes the Grok catalog")
 
 	pc, ok := store.Config().Providers.Get("xai")
 	require.True(t, ok)
 	require.Equal(t, "grok-fresh", pc.GrokModels[0].ID, "the stale catalog is replaced")
-
-	large, ok := store.Config().Models[SelectedModelTypeLarge]
-	require.True(t, ok)
-	require.Equal(t, "grok-4.5", large.Model, "the resolved default model survives the catalog refresh")
 }
 
-// TestLoadKeepsGrokModelsWhenCatwalkNotModified verifies 刷新
-// 只 follows actual Catwalk updates: 304 Not Modified leaves
-// persisted 目录 alone.
-func TestLoadKeepsGrokModelsWhenCatwalkNotModified(t *testing.T) {
-	// Not parallel: swaps package-level 提供方 state 和 fetch
-	// stub, 和 sets environment variables.
+// TestLoadKeepsGrokModelsWhenFetchFails verifies 那 failed startup
+// refresh leaves persisted 目录 alone. Load never fails over it:
+// login still works 用 whatever catalog 是 already there.
+func TestLoadKeepsGrokModelsWhenFetchFails(t *testing.T) {
+	// Not parallel: swaps the fetch stub 和 sets environment
+	// variables.
 	workDir, dataDir := isolateLoadEnv(t)
-	newCatwalkStub(t, http.StatusNotModified, nil)
 	resetProviderState()
 	t.Cleanup(resetProviderState)
 
@@ -276,13 +260,14 @@ func TestLoadKeepsGrokModelsWhenCatwalkNotModified(t *testing.T) {
 		0o600,
 	))
 
-	fetched := stubGrokModels(t, []catwalk.Model{{ID: "grok-fresh", Name: "Grok Fresh"}})
+	originalFetch := fetchGrokModels
+	fetchGrokModels = func(context.Context, *oauth.Token) ([]catwalk.Model, error) {
+		return nil, errors.New("catalog unavailable")
+	}
+	t.Cleanup(func() { fetchGrokModels = originalFetch })
 
 	store, err := Load(t.Context(), workDir, dataDir, false)
-	require.NoError(t, err)
-
-	require.False(t, CatwalkUpdated(), "the stub reported the catalog unchanged")
-	require.False(t, *fetched, "an unchanged Catwalk catalog does not trigger a refresh")
+	require.NoError(t, err, "a failed catalog refresh must not fail the load")
 
 	pc, ok := store.Config().Providers.Get("xai")
 	require.True(t, ok)

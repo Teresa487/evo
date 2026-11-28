@@ -13,7 +13,6 @@ import (
 
 func resetProviderState() {
 	providerList = nil
-	catwalkSyncer = &catwalkSync{}
 	hyperSyncer = &hyperSync{}
 }
 
@@ -315,4 +314,26 @@ func TestCacheStore_ReplacesFileInsteadOfRewritingIt(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, entries, 1, "only the cache file should remain")
 	require.Equal(t, "providers.json", entries[0].Name())
+}
+
+// TestLoadProvidersKeepsOnlySignInProviders pins 那目录 只保留可登录的
+// provider。登录类 provider 的端点与模型列表无法写进 evo.json，目录必须
+// 继续提供它们，否则登录后 SetProviderAPIKey 会找不到 provider 而失败；
+// 其余 provider 只能来自用户配置文件。
+func TestLoadProvidersKeepsOnlySignInProviders(t *testing.T) {
+	t.Parallel()
+
+	providers, err := LoadProviders(t.Context(), &Config{}, nil)
+	require.NoError(t, err)
+
+	ids := make([]string, 0, len(providers))
+	for _, p := range providers {
+		ids = append(ids, string(p.ID))
+	}
+	require.Equal(t, signInProviderIDs, ids, "only the sign-in providers keep an embedded catalog")
+
+	for _, p := range providers {
+		require.NotEmpty(t, p.APIEndpoint, "provider %s needs an endpoint", p.ID)
+		require.NotEmpty(t, p.Models, "provider %s needs a model catalog", p.ID)
+	}
 }
