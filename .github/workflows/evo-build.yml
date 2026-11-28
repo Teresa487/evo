@@ -1,16 +1,9 @@
 name: evo build
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version label for artifacts (e.g. 0.1.0)"
-        required: false
-        default: "dev"
   push:
     branches: [main]
-    tags:
-      - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -51,18 +44,6 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Resolve version
-        id: ver
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "value=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.ref_type }}" = "tag" ]; then
-            echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=dev-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Build
         shell: bash
         env:
@@ -71,7 +52,7 @@ jobs:
           CGO_ENABLED: "0"
         run: |
           go build -trimpath \
-            -ldflags "-s -w -X github.com/charmbracelet/crush/internal/version.Version=${{ steps.ver.outputs.value }}" \
+            -ldflags "-s -w -X github.com/charmbracelet/crush/internal/version.Version=0.1.0" \
             -o "dist/evo" .
           ls -la dist
 
@@ -84,12 +65,11 @@ jobs:
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: evo-${{ matrix.suffix }}-${{ steps.ver.outputs.value }}
+          name: evo-${{ matrix.suffix }}
           path: out/*
           if-no-files-found: error
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -101,5 +81,7 @@ jobs:
           merge-multiple: true
       - uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
         with:
+          tag_name: v0.1.0
+          name: v0.1.0
           files: artifacts/*
           generate_release_notes: true
