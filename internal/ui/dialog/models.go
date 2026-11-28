@@ -6,7 +6,9 @@ import (
 	"cmp"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"slices"
+	"strings"
 
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
@@ -14,6 +16,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/catwalk/v3/pkg/catwalk"
 	"github.com/charmbracelet/crush/internal/config"
+	"github.com/charmbracelet/crush/internal/home"
 	"github.com/charmbracelet/crush/internal/ui/common"
 	"github.com/charmbracelet/crush/internal/ui/util"
 	uv "github.com/charmbracelet/ultraviolet"
@@ -94,6 +97,10 @@ type Models struct {
 	list  *ModelsList
 	input textinput.Model
 	help  help.Model
+
+	// noConfiguredProviders 表示 onboarding 时用户尚未配置任何 provider。
+	// 此时不展示内置的登录 provider 模型，改为提示用户写配置。
+	noConfiguredProviders bool
 }
 
 var _ Dialog = (*Models)(nil)
@@ -104,6 +111,7 @@ func NewModels(com *common.Common, isOnboarding bool) (*Models, error) {
 	m := &Models{}
 	m.com = com
 	m.isOnboarding = isOnboarding
+	m.noConfiguredProviders = isOnboarding && !com.Config().IsConfigured()
 
 	help := help.New()
 	help.Styles = t.DialogHelpStyles()
@@ -176,6 +184,9 @@ func (m *Models) HandleMsg(msg tea.Msg) Action {
 		case key.Matches(msg, m.keyMap.Close):
 			return ActionClose{}
 		case key.Matches(msg, m.keyMap.Previous):
+			if m.noConfiguredProviders {
+				break
+			}
 			m.list.Focus()
 			if m.list.IsSelectedFirst() {
 				m.list.SelectLast()
@@ -184,6 +195,9 @@ func (m *Models) HandleMsg(msg tea.Msg) Action {
 			}
 			m.list.ScrollToSelected()
 		case key.Matches(msg, m.keyMap.Next):
+			if m.noConfiguredProviders {
+				break
+			}
 			m.list.Focus()
 			if m.list.IsSelectedLast() {
 				m.list.SelectFirst()
@@ -192,6 +206,9 @@ func (m *Models) HandleMsg(msg tea.Msg) Action {
 			}
 			m.list.ScrollToSelected()
 		case key.Matches(msg, m.keyMap.Select, m.keyMap.Edit):
+			if m.noConfiguredProviders {
+				break
+			}
 			selectedItem := m.list.SelectedItem()
 			if selectedItem == nil {
 				break
@@ -211,7 +228,7 @@ func (m *Models) HandleMsg(msg tea.Msg) Action {
 				ReAuthenticate: isEdit,
 			}
 		case key.Matches(msg, m.keyMap.Tab):
-			if m.isOnboarding {
+			if m.isOnboarding || m.noConfiguredProviders {
 				break
 			}
 			if m.modelType == ModelTypeLarge {
@@ -223,6 +240,9 @@ func (m *Models) HandleMsg(msg tea.Msg) Action {
 				return util.ReportError(err)
 			}
 		default:
+			if m.noConfiguredProviders {
+				break
+			}
 			prevValue := m.input.Value()
 			var cmd tea.Cmd
 			m.input, cmd = m.input.Update(msg)
@@ -264,9 +284,31 @@ func (m *Models) modelTypeRadioView() string {
 		smallRadio, textStyle.Render(ModelTypeSmall.String()))
 }
 
+func (m *Models) noProviderConfigHint() string {
+	globalConfig := filepath.Join(home.Config(), "evo", "evorc")
+	t := m.com.Styles.Dialog
+	lines := []string{
+		t.PrimaryText.Render("No provider configured."),
+		t.SecondaryText.Render("Configure a third-party provider in evorc or evo.json, then restart."),
+		t.SecondaryText.Render(home.Short(globalConfig)),
+		t.SecondaryText.Render(`provider add <id> --type completions --base-url URL --api-key KEY`),
+		t.SecondaryText.Render(`model add <id>/<model> --name NAME`),
+	}
+	return strings.Join(lines, "\n")
+}
+
 // Draw implements [Dialog].
 func (m *Models) Draw(scr uv.Screen, area uv.Rectangle) *tea.Cursor {
 	t := m.com.Styles
+	if m.noConfiguredProviders {
+		rc := NewRenderContext(t, max(0, min(defaultModelsDialogMaxWidth, area.Dx())))
+		rc.IsOnboarding = true
+		rc.AddPart(m.noProviderConfigHint())
+		view := rc.Render()
+		DrawOnboardingCursor(scr, area, view, nil)
+		return nil
+	}
+
 	width := max(0, min(defaultModelsDialogMaxWidth, area.Dx()-t.Dialog.View.GetHorizontalBorderSize()))
 	height := max(0, min(defaultDialogHeight, area.Dy()-t.Dialog.View.GetVerticalBorderSize()))
 	innerWidth := width - t.Dialog.View.GetHorizontalFrameSize()
@@ -310,6 +352,9 @@ func (m *Models) Draw(scr uv.Screen, area uv.Rectangle) *tea.Cursor {
 
 // ShortHelp returns the short help view.
 func (m *Models) ShortHelp() []key.Binding {
+	if m.noConfiguredProviders {
+		return nil
+	}
 	if m.isOnboarding {
 		return []key.Binding{
 			m.keyMap.UpDown,
