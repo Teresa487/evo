@@ -1,3 +1,6 @@
+// config_test.go —— 验证配置写入会向客户端发布 ConfigChanged 事件，
+// 覆盖 API key、模型、MCP 开关等写入路径及事件订阅的生命周期。
+
 package backend
 
 import (
@@ -17,9 +20,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// awaitConfigChanged drains events until ConfigChanged 是 received
-// 为 given 工作区 ID, 或 fails 测试 在 超时. Other
-// 事件 types 是 ignored.
+// awaitConfigChanged 等待指定 workspace 的 ConfigChanged 事件，
+// 忽略其他事件类型；超时则测试失败。
 func awaitConfigChanged(t *testing.T, evc <-chan pubsub.Event[tea.Msg], workspaceID string) {
 	t.Helper()
 	deadline := time.After(2 * time.Second)
@@ -41,15 +43,14 @@ func awaitConfigChanged(t *testing.T, evc <-chan pubsub.Event[tea.Msg], workspac
 	}
 }
 
-// newPublishingWorkspace creates real 工作区 through backend
-// 所以 它的 embedded *app.App 是 wired up 和 SendEvent works. 它 returns
-// backend, 工作区, 和 fresh 事件 subscription.
+// newPublishingWorkspace 通过 backend 创建真实 workspace，使内嵌的
+// *app.App 完成初始化，SendEvent 可以正常工作。返回 backend、workspace
+// 和新的事件订阅 channel。
 //
-// CreateWorkspace 只给 客户端 一个限时 creation hold; 如果 no SSE
-// 流 attaches 在 grace 窗口 内, backend tears 工作区 down 和 closes
-// its 事件 broker. 测试 doesn't run SSE, 所以 attach 这里 到 pin
-// 工作区 open 为 duration 的 测试. drainBackend 在 cleanup releases
-// 这 claim.
+// CreateWorkspace 只给客户端一个限时 creation hold；如果宽限期内没有
+// SSE 流接入，backend 会销毁 workspace 并关闭事件总线。测试不启动 SSE，
+// 因此这里 attach 客户端以保持 workspace 存活。cleanup 时 drainBackend
+// 会释放该引用。
 func newPublishingWorkspace(t *testing.T) (*Backend, *Workspace, <-chan pubsub.Event[tea.Msg]) {
 	t.Helper()
 	xdgIsolated(t)
@@ -64,7 +65,8 @@ func newPublishingWorkspace(t *testing.T) (*Backend, *Workspace, <-chan pubsub.E
 	cid := uuid.New().String()
 	ws, _, err := b.CreateWorkspace(protoWS(cwd, dataDir, cid))
 	require.NoError(t, err)
-	require.NoError(t, b.AttachClient(ws.ID, cid)) // pin 工作区 open; no SSE in test
+	// 保持 workspace 存活；测试不启动 SSE。
+	require.NoError(t, b.AttachClient(ws.ID, cid))
 
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
