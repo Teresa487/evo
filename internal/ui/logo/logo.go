@@ -149,7 +149,7 @@ func Render(base lipgloss.Style, version string, compact bool, o Opts) string {
 func SmallRender(t *styles.Styles, width int, o Opts) string {
 	name := "Evo"
 	if o.Hyper {
-		name = "HYPERCRUSH"
+		name = "HYPERVO"
 	}
 	charm := "Charm™"
 	title := t.Logo.SmallCharm.Render(charm)

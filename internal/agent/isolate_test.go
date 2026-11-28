@@ -8,7 +8,7 @@ import (
 
 // runIsolated keeps tests off developer's own global 配置 和 data.
 func runIsolated(m *testing.M) int {
-	home, err := os.MkdirTemp("", "crush-agent-test")
+	home, err := os.MkdirTemp("", "evo-agent-test")
 	if err != nil {
 		panic(err)
 	}

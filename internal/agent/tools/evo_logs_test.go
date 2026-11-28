@@ -17,7 +17,7 @@ import (
 func createTestLogFile(t *testing.T, entries []map[string]any) string {
 	t.Helper()
 	tempDir := t.TempDir()
-	logFile := filepath.Join(tempDir, "crush.log")
+	logFile := filepath.Join(tempDir, "evo.log")
 
 	file, err := os.Create(logFile)
 	require.NoError(t, err)
@@ -123,14 +123,14 @@ func TestEvoLogs_MaxCap(t *testing.T) {
 
 func TestEvoLogs_MissingFile(t *testing.T) {
 	t.Parallel()
-	result := runEvoLogs("/nonexistent/path/crush.log", EvoLogsParams{Lines: 50})
+	result := runEvoLogs("/nonexistent/path/evo.log", EvoLogsParams{Lines: 50})
 	require.Contains(t, result, "No log file found")
 }
 
 func TestEvoLogs_EmptyFile(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
-	logFile := filepath.Join(tempDir, "crush.log")
+	logFile := filepath.Join(tempDir, "evo.log")
 	_, err := os.Create(logFile)
 	require.NoError(t, err)
 
@@ -141,7 +141,7 @@ func TestEvoLogs_EmptyFile(t *testing.T) {
 func TestEvoLogs_MalformedLines(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
-	logFile := filepath.Join(tempDir, "crush.log")
+	logFile := filepath.Join(tempDir, "evo.log")
 
 	file, err := os.Create(logFile)
 	require.NoError(t, err)
@@ -301,7 +301,7 @@ func TestEvoLogs_ReservedFields(t *testing.T) {
 func TestEvoLogs_OversizedLines(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
-	logFile := filepath.Join(tempDir, "crush.log")
+	logFile := filepath.Join(tempDir, "evo.log")
 
 	file, err := os.Create(logFile)
 	require.NoError(t, err)
@@ -343,7 +343,7 @@ func TestEvoLogs_OversizedLines(t *testing.T) {
 func TestEvoLogs_PartialTrailingLine(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
-	logFile := filepath.Join(tempDir, "crush.log")
+	logFile := filepath.Join(tempDir, "evo.log")
 
 	file, err := os.Create(logFile)
 	require.NoError(t, err)

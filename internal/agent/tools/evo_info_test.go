@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCrushInfo_MinimalConfig(t *testing.T) {
+func TestEvoInfo_MinimalConfig(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -32,21 +32,21 @@ func TestCrushInfo_MinimalConfig(t *testing.T) {
 	require.NotContains(t, output, "[tools]")
 }
 
-func TestCrushInfo_ConfigFiles(t *testing.T) {
+func TestEvoInfo_ConfigFiles(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(
 		&config.Config{Providers: csync.NewMap[string, config.ProviderConfig]()},
-		"/home/user/.config/crush/crush.json",
-		"/project/.evo/crush.json",
+		"/home/user/.config/evo/evo.json",
+		"/project/.evo/evo.json",
 	)
 	output := buildEvoInfo(cfg, nil, nil, nil, nil)
 	require.Contains(t, output, "[config_files]")
-	require.Contains(t, output, "/home/user/.config/crush/crush.json")
-	require.Contains(t, output, "/project/.evo/crush.json")
+	require.Contains(t, output, "/home/user/.config/evo/evo.json")
+	require.Contains(t, output, "/project/.evo/evo.json")
 }
 
-func TestCrushInfo_Models(t *testing.T) {
+func TestEvoInfo_Models(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -62,7 +62,7 @@ func TestCrushInfo_Models(t *testing.T) {
 	require.Contains(t, output, "small = claude-haiku-3-20250307 (anthropic)")
 }
 
-func TestCrushInfo_Providers(t *testing.T) {
+func TestEvoInfo_Providers(t *testing.T) {
 	t.Parallel()
 
 	providers := csync.NewMap[string, config.ProviderConfig]()
@@ -81,7 +81,7 @@ func TestCrushInfo_Providers(t *testing.T) {
 	require.Contains(t, output, "openai = enabled (8 models)")
 }
 
-func TestCrushInfo_DisabledProvidersOmitted(t *testing.T) {
+func TestEvoInfo_DisabledProvidersOmitted(t *testing.T) {
 	t.Parallel()
 
 	providers := csync.NewMap[string, config.ProviderConfig]()
@@ -94,7 +94,7 @@ func TestCrushInfo_DisabledProvidersOmitted(t *testing.T) {
 	require.NotContains(t, output, "openai")
 }
 
-func TestCrushInfo_LSPStates(t *testing.T) {
+func TestEvoInfo_LSPStates(t *testing.T) {
 	t.Parallel()
 
 	mgr := lsp.NewManager(config.NewTestStore(&config.Config{
@@ -118,7 +118,7 @@ func TestCrushInfo_LSPStates(t *testing.T) {
 	require.Less(t, goplsIdx, pyrightIdx, "gopls should appear before pyright")
 }
 
-func TestCrushInfo_MCPStates(t *testing.T) {
+func TestEvoInfo_MCPStates(t *testing.T) {
 	t.Parallel()
 
 	connectedAt := time.Date(2025, 1, 15, 15, 4, 5, 0, time.UTC)
@@ -151,7 +151,7 @@ func TestCrushInfo_MCPStates(t *testing.T) {
 	require.Less(t, filesystemIdx, githubIdx, "filesystem should appear before github")
 }
 
-func TestCrushInfo_YoloMode(t *testing.T) {
+func TestEvoInfo_YoloMode(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -165,7 +165,7 @@ func TestCrushInfo_YoloMode(t *testing.T) {
 	require.Contains(t, output, "mode = yolo")
 }
 
-func TestCrushInfo_SysadminMode(t *testing.T) {
+func TestEvoInfo_SysadminMode(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -179,7 +179,7 @@ func TestCrushInfo_SysadminMode(t *testing.T) {
 	require.Contains(t, output, "mode = sysadmin")
 }
 
-func TestCrushInfo_AllowedTools(t *testing.T) {
+func TestEvoInfo_AllowedTools(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -192,7 +192,7 @@ func TestCrushInfo_AllowedTools(t *testing.T) {
 	require.Contains(t, output, "allowed_tools = bash, edit:write")
 }
 
-func TestCrushInfo_DisabledTools(t *testing.T) {
+func TestEvoInfo_DisabledTools(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -205,7 +205,7 @@ func TestCrushInfo_DisabledTools(t *testing.T) {
 	require.Contains(t, output, "disabled = agentic_fetch, sourcegraph")
 }
 
-func TestCrushInfo_Options(t *testing.T) {
+func TestEvoInfo_Options(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -225,7 +225,7 @@ func TestCrushInfo_Options(t *testing.T) {
 	require.Contains(t, output, "debug = true")
 }
 
-func TestCrushInfo_TUIOptions(t *testing.T) {
+func TestEvoInfo_TUIOptions(t *testing.T) {
 	t.Parallel()
 
 	transparent := true
@@ -254,7 +254,7 @@ func TestCrushInfo_TUIOptions(t *testing.T) {
 	require.Contains(t, output, "completions_max_items = 42")
 }
 
-func TestCrushInfo_TUIOptionsUnpinnedCompletionsOmitted(t *testing.T) {
+func TestEvoInfo_TUIOptionsUnpinnedCompletionsOmitted(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -268,7 +268,7 @@ func TestCrushInfo_TUIOptionsUnpinnedCompletionsOmitted(t *testing.T) {
 	require.NotContains(t, output, "completions_max_items")
 }
 
-func TestCrushInfo_AutoSummarizeInversion(t *testing.T) {
+func TestEvoInfo_AutoSummarizeInversion(t *testing.T) {
 	t.Parallel()
 
 	cfgFalse := config.NewTestStore(&config.Config{
@@ -286,7 +286,7 @@ func TestCrushInfo_AutoSummarizeInversion(t *testing.T) {
 	require.Contains(t, outputTrue, "auto_summarize = true")
 }
 
-func TestCrushInfo_NoSecrets(t *testing.T) {
+func TestEvoInfo_NoSecrets(t *testing.T) {
 	t.Parallel()
 
 	providers := csync.NewMap[string, config.ProviderConfig]()
@@ -302,7 +302,7 @@ func TestCrushInfo_NoSecrets(t *testing.T) {
 	require.Contains(t, output, "openai = enabled (8 models)")
 }
 
-func TestCrushInfo_DeterministicOrdering(t *testing.T) {
+func TestEvoInfo_DeterministicOrdering(t *testing.T) {
 	t.Parallel()
 
 	providers := csync.NewMap[string, config.ProviderConfig]()
@@ -343,7 +343,7 @@ func TestCrushInfo_DeterministicOrdering(t *testing.T) {
 	require.Contains(t, output, "allowed_tools = a-perm, z-perm")
 }
 
-func TestCrushInfo_EmptySectionsOmitted(t *testing.T) {
+func TestEvoInfo_EmptySectionsOmitted(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -360,7 +360,7 @@ func TestCrushInfo_EmptySectionsOmitted(t *testing.T) {
 	require.NotContains(t, output, "[skills]")
 }
 
-func TestCrushInfo_ConfigStaleness_Clean(t *testing.T) {
+func TestEvoInfo_ConfigStaleness_Clean(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -381,7 +381,7 @@ func TestCrushInfo_ConfigStaleness_Clean(t *testing.T) {
 	require.NotContains(t, output, "missing_paths")
 }
 
-func TestCrushInfo_ConfigStaleness_Dirty(t *testing.T) {
+func TestEvoInfo_ConfigStaleness_Dirty(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -406,7 +406,7 @@ func TestCrushInfo_ConfigStaleness_Dirty(t *testing.T) {
 	require.Contains(t, output, configPath)
 }
 
-func TestCrushInfo_ConfigStaleness_MissingPath(t *testing.T) {
+func TestEvoInfo_ConfigStaleness_MissingPath(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
@@ -430,7 +430,7 @@ func TestCrushInfo_ConfigStaleness_MissingPath(t *testing.T) {
 	require.Contains(t, output, configPath)
 }
 
-func TestCrushInfo_Skills_NoSkills(t *testing.T) {
+func TestEvoInfo_Skills_NoSkills(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -440,7 +440,7 @@ func TestCrushInfo_Skills_NoSkills(t *testing.T) {
 	require.NotContains(t, output, "[skills]")
 }
 
-func TestCrushInfo_Skills_MixedLoadedUnloaded(t *testing.T) {
+func TestEvoInfo_Skills_MixedLoadedUnloaded(t *testing.T) {
 	t.Parallel()
 
 	allSkills := []*skills.Skill{
@@ -464,7 +464,7 @@ func TestCrushInfo_Skills_MixedLoadedUnloaded(t *testing.T) {
 	require.Contains(t, output, "go-doc = user, unloaded")
 }
 
-func TestCrushInfo_Skills_DisabledSkills(t *testing.T) {
+func TestEvoInfo_Skills_DisabledSkills(t *testing.T) {
 	t.Parallel()
 
 	allSkills := []*skills.Skill{
@@ -490,7 +490,7 @@ func TestCrushInfo_Skills_DisabledSkills(t *testing.T) {
 	require.Contains(t, output, "image-convert = user, disabled")
 }
 
-func TestCrushInfo_Skills_Ordering(t *testing.T) {
+func TestEvoInfo_Skills_Ordering(t *testing.T) {
 	t.Parallel()
 
 	allSkills := []*skills.Skill{
@@ -513,7 +513,7 @@ func TestCrushInfo_Skills_Ordering(t *testing.T) {
 	require.Less(t, mIdx, zIdx)
 }
 
-func TestCrushInfo_Skills_BuiltinOrigin(t *testing.T) {
+func TestEvoInfo_Skills_BuiltinOrigin(t *testing.T) {
 	t.Parallel()
 
 	allSkills := []*skills.Skill{
@@ -531,7 +531,7 @@ func TestCrushInfo_Skills_BuiltinOrigin(t *testing.T) {
 	require.Contains(t, output, "my-skill = user, unloaded")
 }
 
-func TestCrushInfo_Hooks(t *testing.T) {
+func TestEvoInfo_Hooks(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
@@ -550,7 +550,7 @@ func TestCrushInfo_Hooks(t *testing.T) {
 	require.Contains(t, output, "PreToolUse = audit.sh")
 }
 
-func TestCrushInfo_Hooks_NoHooks(t *testing.T) {
+func TestEvoInfo_Hooks_NoHooks(t *testing.T) {
 	t.Parallel()
 
 	cfg := config.NewTestStore(&config.Config{
