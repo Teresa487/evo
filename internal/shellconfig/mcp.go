@@ -12,13 +12,13 @@ import (
 // Usage:
 //
 //	mcp add <name> --type stdio|sse|http [--command CMD] [--args ARG ...]
-// [--env KEY 值 ...] [--url URL] [--header KEY 值 ...]
-// [--超时 N] [--disabled true|false]
-// [--disabled-tools 工具 ...] [--enabled-tools 工具 ...]
+//	    [--env KEY 值 ...] [--url URL] [--header KEY 值 ...]
+//	    [--超时 N] [--disabled true|false]
+//	    [--disabled-tools 工具 ...] [--enabled-tools 工具 ...]
 //	    [--sessionless true|false]
-// [--渠道 true|false] [--渠道-reply JSON]
-// [--oauth true|false] [--oauth-客户端-id ID]
-// [--oauth-客户端-secret SECRET] [--oauth-callback-port PORT]
+//	    [--渠道 true|false] [--渠道-reply JSON]
+//	    [--oauth true|false] [--oauth-客户端-id ID]
+//	    [--oauth-客户端-secret SECRET] [--oauth-callback-port PORT]
 //	mcp remove <name>   (alias: rm)
 //
 // "add" defines 或 updates MCP 服务端; repeated calls 用 same <name>

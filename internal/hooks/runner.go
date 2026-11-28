@@ -188,11 +188,11 @@ func (r *Runner) matcher(h HookConfig) *regexp.Regexp {
 // after abandonGrace 所以 caller never blocks longer than
 // 超时 + abandonGrace. Ownership 的 stdout 和 stderr buffers 是
 // strictly single-goroutine:
-// - before receiving 从 `done`, 只 goroutine writes 到 them;
-// - after `done` delivers 值, goroutine 是 finished 和
-//     outer frame reads them;
-// - 在 abandon 路径, goroutine may still 是 writing 和
-// outer frame must 不 touch them again.
+//   - before receiving 从 `done`, 只 goroutine writes 到 them;
+//   - after `done` delivers 值, goroutine 是 finished 和 outer frame
+//     reads them;
+//   - 在 abandon 路径, goroutine may still 是 writing 和 outer frame
+//     must 不 touch them again.
 func (r *Runner) runOne(parentCtx context.Context, hook HookConfig, envVars []string, payload []byte) HookResult {
 	timeout := hook.TimeoutDuration()
 	ctx, cancel := context.WithTimeout(parentCtx, timeout)

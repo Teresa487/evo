@@ -12,8 +12,8 @@ import (
 //
 // Usage:
 //
-// permissions allow <工具> [<工具> ...]
-// permissions deny <工具> [<工具> ...]
+//	permissions allow <工具> [<工具> ...]
+//	permissions deny <工具> [<工具> ...]
 //	permissions safe <command line> [<command line> ...]
 //	permissions block <command> [<command> ...]
 //	permissions unblock <command> [<command> ...]

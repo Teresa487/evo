@@ -13,14 +13,14 @@ import (
 // 提示词 用 用户's secret.
 //
 // @摘要 Answer SSH 提示词
-//	@Tags			ssh
+// @Tags			ssh
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.SSHAnswer true "SSH answer"
-//	@Success		200	{object}	proto.SSHResponse
+// @Success		200	{object}	proto.SSHResponse
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/ssh/answer [post]
+// @Router			/workspaces/{id}/ssh/answer [post]
 func (c *controllerV1) handlePostWorkspaceSSHAnswer(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
@@ -43,10 +43,10 @@ func (c *controllerV1) handlePostWorkspaceSSHAnswer(w http.ResponseWriter, r *ht
 // 提示词 为 工作区.
 //
 // @摘要 取消 SSH 提示词
-//	@Tags			ssh
+// @Tags			ssh
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.SSHCancel true "SSH 取消"
-//	@Success		200	{object}	proto.SSHResponse
+// @Success		200	{object}	proto.SSHResponse
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误

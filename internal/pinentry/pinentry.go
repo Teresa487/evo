@@ -10,11 +10,11 @@
 // 提示词 是 活跃), 和 publishes [事件] whenever derived state
 // changes:
 //
-// - 活跃: 终态 pinentry dialog 是 present (或 transitioning
-// between dialogs) 和 needs exclusive control 的 终态.
-// - TouchPending: passphrase dialog closed (或 never appeared
-// because credentials 是 cached 通过 gpg-agent) 但 gpg 是 still
-// waiting, which almost always means security key 是 waiting 为
+//   - 活跃: 终态 pinentry dialog 是 present (或 transitioning
+//     between dialogs) 和 needs exclusive control 的 终态.
+//   - TouchPending: passphrase dialog closed (或 never appeared
+//     because credentials 是 cached 通过 gpg-agent) 但 gpg 是 still
+//     waiting, which almost always means security key 是 waiting 为
 //     touch.
 package pinentry
 

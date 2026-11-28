@@ -62,17 +62,15 @@ func (r *renderCountingItem) Highlight() (int, int, int, int) {
 // Chat.applyHighlightRange does 在 production) 和 verifies
 // resulting 缓存 behaviour:
 //
-// - Items inside 活跃 range pick up SetHighlight 调用,
-// their version bumps, F6 缓存 invalidates, 和 list
-// re-renders them 在 next draw, 所以 存储 output reflects
-//     the highlight.
-// - Subsequent draws while range 是 unchanged 是 缓存 hits:
-// callback's SetHighlight 调用 dedupes (same range),
-// version 是 stable, 和 list serves previous output
-//     verbatim without calling Render.
+//   - Items inside 活跃 range pick up SetHighlight 调用, their version
+//     bumps, F6 缓存 invalidates, 和 list re-renders them 在 next draw,
+//     所以 存储 output reflects the highlight.
+//   - Subsequent draws while range 是 unchanged 是 缓存 hits: callback's
+//     SetHighlight 调用 dedupes (same range), version 是 stable, 和 list
+//     serves previous output verbatim without calling Render.
 //   - When the range moves OFF an item, the callback clears the
-// highlight, version bumps, 和 item re-renders once;
-// further draws 是 缓存 hits.
+//     highlight, version bumps, 和 item re-renders once; further draws 是
+//     缓存 hits.
 func TestList_CallbackDrivenHighlightCaching(t *testing.T) {
 	t.Parallel()
 

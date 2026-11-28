@@ -76,16 +76,16 @@ var gitCodeExecFlags = []string{
 //
 // Deliberately absent:
 //
-// - env, nice, nohup, 超时: these execute arbitrary command given
-// 到 them. They 是 resolved 通过 shell.ResolveArgv instead, which peels
-// them 和 re-checks whatever 是 inside. (`time` needs no 条目: it
-// 是 shell keyword, handled 在 safeStmt.)
+//   - env, nice, nohup, 超时: these execute arbitrary command given 到
+//     them. They 是 resolved 通过 shell.ResolveArgv instead, which peels
+//     them 和 re-checks whatever 是 inside. (`time` needs no 条目: it
+//     是 shell keyword, handled 在 safeStmt.)
 //   - kill, killall: signal arbitrary processes.
 //   - set, unset: mutate shell state.
-// - git branch/tag/remote 用 operands, 和 any git subcommand 那
+//   - git branch/tag/remote 用 operands, 和 any git subcommand 那
 //     writes: see the restricted entries below.
-// - git ls-remote, 和 nslookup/ping 在 Windows: these reach
-// network, which sits badly beside block list 那 bans curl/wget.
+//   - git ls-remote, 和 nslookup/ping 在 Windows: these reach network,
+//     which sits badly beside block list 那 bans curl/wget.
 var safeCommands = []safeCommand{
 	// Bash builtins 和 core utils. Every flag these 受理 是 读取-只,
 	// 所以 they carry no flag restrictions.

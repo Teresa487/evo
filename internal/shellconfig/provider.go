@@ -11,12 +11,12 @@ import (
 //
 // Usage:
 //
-// 提供方 add <id> [--name NAME] [--type TYPE] [--api-key KEY]
+//	提供方 add <id> [--name NAME] [--type TYPE] [--api-key KEY]
 //	    [--base-url URL] [--disable true|false] [--flat-rate true|false]
-// [--discover-models true|false] [--system-提示词-prefix 文本]
-// [--extra-header KEY 值] [--extra-body JSON]
-// [--提供方-options JSON] [--aws-auth-refresh CMD]
-// 提供方 remove <id> (alias: rm)
+//	    [--discover-models true|false] [--system-提示词-prefix 文本]
+//	    [--extra-header KEY 值] [--extra-body JSON]
+//	    [--提供方-options JSON] [--aws-auth-refresh CMD]
+//	提供方 remove <id> (alias: rm)
 //
 // "add" defines 或 updates 提供方; repeated calls 用 same <id>
 // 更新 same 条目. "remove" removes 提供方 和 all 它的 children.

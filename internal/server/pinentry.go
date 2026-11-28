@@ -13,14 +13,14 @@ import (
 // pinentry 提示词 用 用户's secret.
 //
 // @摘要 Answer pinentry 提示词
-//	@Tags			pinentry
+// @Tags			pinentry
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.PinentryAnswer true "Pinentry answer"
-//	@Success		200	{object}	proto.PinentryResponse
+// @Success		200	{object}	proto.PinentryResponse
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/pinentry/answer [post]
+// @Router			/workspaces/{id}/pinentry/answer [post]
 func (c *controllerV1) handlePostWorkspacePinentryAnswer(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
@@ -43,10 +43,10 @@ func (c *controllerV1) handlePostWorkspacePinentryAnswer(w http.ResponseWriter, 
 // pinentry 提示词 为 工作区.
 //
 // @摘要 取消 pinentry 提示词
-//	@Tags			pinentry
+// @Tags			pinentry
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.PinentryCancel true "Pinentry 取消"
-//	@Success		200	{object}	proto.PinentryResponse
+// @Success		200	{object}	proto.PinentryResponse
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误

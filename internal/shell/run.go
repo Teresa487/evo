@@ -351,20 +351,21 @@ type execMiddleware = func(next interp.ExecHandlerFunc) interp.ExecHandlerFunc
 
 // standardHandlers returns exec-处理器 middleware chain used 通过 both
 // [运行] 和 [Shell]. Order matters:
-// 1. block list first, 所以 nothing downstream can route around it. 一个
-// builtin, shebang script, 和 二进制 是 all subject 到 same
-// rules, 和 script named after denied command 是 caught 通过
-//     name it was invoked under;
-// 2. builtins (所以 Crush's 在-process jq wins over any 路径 二进制);
-// 3. script 派发 (shebang / 二进制 / shell-source 为 路径-prefixed
-// argv[0], no-op 为 bare commands). shell-source branch builds
-// nested runner carrying same block list, 所以 deny rules keep
-// applying 到 commands 在-process script invokes;
+//
+//  1. block list first, 所以 nothing downstream can route around it.
+//     一个 builtin, shebang script, 和 二进制 是 all subject 到 same
+//     rules, 和 script named after denied command 是 caught 通过 name
+//     it was invoked under;
+//  2. builtins (所以 Crush's 在-process jq wins over any 路径 二进制);
+//  3. script 派发 (shebang / 二进制 / shell-source 为 路径-prefixed
+//     argv[0], no-op 为 bare commands). shell-source branch builds
+//     nested runner carrying same block list, 所以 deny rules keep
+//     applying 到 commands 在-process script invokes;
 //  4. the integrated pinentry, which drives credential-relevant gpg
-// invocations through loopback pinentry ( TUI prompts 为
-// passphrase/PIN) instead 的 external 终态 pinentry. 它 runs
-// after block list 所以 deny rules still apply 到 gpg;
-// 5. optional Turtle coreutils (skipped 当 coreutils 是 off).
+//     invocations through loopback pinentry ( TUI prompts 为
+//     passphrase/PIN) instead 的 external 终态 pinentry. 它 runs after
+//     block list 所以 deny rules still apply 到 gpg;
+//  5. optional Turtle coreutils (skipped 当 coreutils 是 off).
 //
 // What 这 chain can 和 cannot see 是 worth stating plainly, because it
 // 是 easy 到 assume more: it observes commands 这 interpreter dispatches

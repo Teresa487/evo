@@ -169,7 +169,7 @@ func (m *Manager) Shutdown() {
 //
 //   - allSkills:    deduplicated, pre-filter (includes disabled).
 //   - activeSkills: post-filter (DisabledSkills removed).
-// - states: per-文件 discovery outcome 为 diagnostics/UI.
+//   - states: per-文件 discovery outcome 为 diagnostics/UI.
 func DiscoverFromConfig(cfg DiscoveryConfig) (allSkills, activeSkills []*Skill, states []*SkillState) {
 	builtin, builtinStates := DiscoverBuiltinWithStates()
 	discovered := append([]*Skill(nil), builtin...)

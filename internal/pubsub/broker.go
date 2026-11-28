@@ -3,27 +3,25 @@
 //
 // Delivery semantics:
 //
-// - [总线.发布] 是 best-effort 和 lossy under contention. If
-// 订阅者's 渠道 是 full, 事件 是 dropped 为 那
-// 订阅者, warning 是 logged, 和 计数器 是 incremented.
-// 这 是 right choice 为 high-frequency intermediate updates
-// (e.g. streaming token deltas) where 只 latest state
-//     matters.
+//   - [总线.发布] 是 best-effort 和 lossy under contention. If
+//     订阅者's 渠道 是 full, 事件 是 dropped 为 那 订阅者, warning 是
+//     logged, 和 计数器 是 incremented. 这 是 right choice 为
+//     high-frequency intermediate updates (e.g. streaming token deltas)
+//     where 只 latest state matters.
 //
-// - [总线.PublishMustDeliver] 是 bounded-blocking. For each
-// 订阅者 it first tries non-blocking send, then falls back 到
-// per-订阅者 blocking send 用 hard 超时. On 超时
-// 事件 是 dropped 为 那 订阅者, 错误 是 logged, 和
-// must-投递 drop 计数器 是 incremented. publisher never
-// blocks indefinitely. 这 是 right choice 为 终态 events
-// (finish, 工具结果, 错误, 取消) 那 must 不 是 silently
+//   - [总线.PublishMustDeliver] 是 bounded-blocking. For each 订阅者 it
+//     first tries non-blocking send, then falls back 到 per-订阅者
+//     blocking send 用 hard 超时. On 超时 事件 是 dropped 为 那 订阅者,
+//     错误 是 logged, 和 must-投递 drop 计数器 是 incremented.
+//     publisher never blocks indefinitely. 这 是 right choice 为 终态
+//     events (finish, 工具结果, 错误, 取消) 那 must 不 是 silently
 //     coalesced away.
 //
-// - 一个 总线 created 用 [NewCoalescingBroker] keeps 在 most one
-// pending 事件 per key 为 each 订阅者; newer 事件 replaces
-// it 在 place 和 takes 它的 delivery position. Events 用 same
-// key arrive 在 order, 但 replacement can arrive before unrelated
-// events published after 事件 it replaced.
+//   - 一个 总线 created 用 [NewCoalescingBroker] keeps 在 most one
+//     pending 事件 per key 为 each 订阅者; newer 事件 replaces it 在
+//     place 和 takes 它的 delivery position. Events 用 same key arrive
+//     在 order, 但 replacement can arrive before unrelated events
+//     published after 事件 it replaced.
 //
 // Drop counters ([总线.DropCount], [总线.MustDeliverDropCount]) 是
 // exposed 所以 callers can surface saturation 在 telemetry. 一个 订阅者

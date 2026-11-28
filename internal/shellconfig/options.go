@@ -27,19 +27,19 @@ import (
 //
 // Examples:
 //
-// option data-目录 .crush
-// option 上下文-路径 .cursorrules
-// option reset skill-路径
+//	option data-目录 .crush
+//	option 上下文-路径 .cursorrules
+//	option reset skill-路径
 //	option metrics false
 //	option debug true
 //	option auto-lsp false
-// option 请求-超时 300
-// option 请求-超时 0
-// option max-后台-jobs 200
+//	option 请求-超时 300
+//	option 请求-超时 0
+//	option max-后台-jobs 200
 //	option pinentry-integrated false
-// option pinentry-缓存-超时 300
+//	option pinentry-缓存-超时 300
 //	option coreutils turtle
-// option experimental 客户端-服务端 true
+//	option experimental 客户端-服务端 true
 //
 // Boolean shortcuts: 为 boolean fields, omitting 值 sets it 到 true.
 func handleOption(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {

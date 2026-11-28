@@ -731,11 +731,12 @@ func (rt *metadataFixupRoundTripper) RoundTrip(req *http.Request) (*http.Respons
 // newOAuthMetadataClient creates HTTP 客户端 为 OAuth flow 那
 // smooths over two nonstandard behaviors seen behind corporate proxies:
 //
-// 1. Trailing-slash issuers 在 metadata responses, normalized 通过
-// metadataFixupRoundTripper 所以 they pass SDK's strict RFC 8414
+//  1. Trailing-slash issuers 在 metadata responses, normalized 通过
+//     metadataFixupRoundTripper 所以 they pass SDK's strict RFC 8414
 //     validation.
-// 2. Metadata discovery requests 那 get 3xx-redirected 到
-// unreachable internal 主机 (e.g. cluster address behind proxy).
+//  2. Metadata discovery requests 那 get 3xx-redirected 到
+//     unreachable internal 主机 (e.g. cluster address behind proxy).
+//
 // Well-known discovery 是 never supposed 到 hop hosts via redirects
 // ( authorization 服务端 location comes 从 metadata body,
 // 不 Location header), 所以 为 metadata endpoints we rewrite

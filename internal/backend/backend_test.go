@@ -1714,7 +1714,7 @@ func TestRegisterClient_RearmsGraceAndCancelsRelease(t *testing.T) {
 	require.False(t, ws2.clients[cid].released)
 	ws2.clientsMu.Unlock()
 
-	// nolint:forbidigo // superseded 50ms timer has 到 是 given 它的 chance 到 fire.
+	//nolint:forbidigo // superseded 50ms timer has 到 是 given 它的 chance 到 fire.
 	time.Sleep(200 * time.Millisecond)
 	require.Equal(t, int32(0), ws2Shutdowns.Load(),
 		"the re-armed claim must outlive the timer it replaced")

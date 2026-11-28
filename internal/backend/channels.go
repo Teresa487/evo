@@ -104,16 +104,15 @@ func (b *Backend) injectChannelMessage(ws *Workspace, serverName, content string
 // have open; start one 如果 none 是 open") 作为 closely 作为 multi-客户端
 // 服务端 can:
 //
-// - exactly one 会话 是 being viewed 通过 attached clients: use it;
-// - several distinct sessions 是 viewed: use most recently
-// updated 的 them (ties broken 通过 smallest ID 为 determinism);
-// - none viewed (all clients 在 landing screen, 或 no clients):
-// most recent top-level 会话 already bound 到 这 渠道
-// wins, 所以 push lands 在 conversation it has been driving
-// rather than whatever unrelated 会话 local edit touched last;
-// otherwise most recently updated top-level 会话, 所以
-//     repeated pushes coalesce into one conversation, creating a
-// 会话 只 当 工作区 has none.
+//   - exactly one 会话 是 being viewed 通过 attached clients: use it;
+//   - several distinct sessions 是 viewed: use most recently
+//     updated 的 them (ties broken 通过 smallest ID 为 determinism);
+//   - none viewed (all clients 在 landing screen, 或 no clients):
+//     most recent top-level 会话 already bound 到 这 渠道 wins, 所以
+//     push lands 在 conversation it has been driving rather than
+//     whatever unrelated 会话 local edit touched last; otherwise most
+//     recently updated top-level 会话, 所以 repeated pushes coalesce
+//     into one conversation, creating a 会话 只 当 工作区 has none.
 //
 // fallback relies 在 会话.Service.List returning 只 top-level
 // sessions (no 子代理 sessions) ordered 通过 updated_at DESC, 所以

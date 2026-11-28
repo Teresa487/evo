@@ -13,18 +13,18 @@ import (
 //
 // Usage:
 //
-// 模型 add <提供方>/<id> [--name NAME] [--上下文-窗口 N]
-// [--默认-max-tokens N] [--thinking always|never|toggleable]
+//	模型 add <提供方>/<id> [--name NAME] [--上下文-窗口 N]
+//	    [--默认-max-tokens N] [--thinking always|never|toggleable]
 //	    [--supports-images true|false] [--price-input F]
-// [--price-output F] [--price-缓存-创建 F]
-// [--price-缓存-hit F] [--reasoning-effort low|medium|high]
+//	    [--price-output F] [--price-缓存-创建 F]
+//	    [--price-缓存-hit F] [--reasoning-effort low|medium|high]
 //	    [--max-attachments N]
-// 模型 remove <提供方>/<id> (alias: rm)
-// 模型 large [<提供方>/<id>] [--think] [--reasoning-effort L]
+//	模型 remove <提供方>/<id> (alias: rm)
+//	模型 large [<提供方>/<id>] [--think] [--reasoning-effort L]
 //	    [--max-tokens N] [--temperature F] [--top-p F] [--top-k N]
 //	    [--frequency-penalty F] [--presence-penalty F]
-// [--提供方-options JSON]
-// 模型 small [<提供方>/<id>] [...]
+//	    [--提供方-options JSON]
+//	模型 small [<提供方>/<id>] [...]
 //
 // "add" registers 模型 在 existing 提供方 ( 提供方 must have
 // been declared 用 `提供方 add` first). "remove" removes it. "large" 和

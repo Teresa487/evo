@@ -29,13 +29,13 @@ import (
 //
 // Invariants:
 //
-// - stablePrefix 是 always literal byte prefix 的 most
-// recently rendered content. If new content does 不 have
-// stablePrefix 作为 它的 prefix 缓存 是 dropped.
-// - stablePrefixRender 是 raw glamour render 的 stablePrefix 作为
+//   - stablePrefix 是 always literal byte prefix 的 most recently
+//     rendered content. If new content does 不 have stablePrefix 作为
+//     它的 prefix 缓存 是 dropped.
+//   - stablePrefixRender 是 raw glamour render 的 stablePrefix 作为
 //     it appears within the whole document.
-// - width 是 glamour wrap width 那 produced
-// stablePrefixRender. 一个 width change drops 缓存.
+//   - width 是 glamour wrap width 那 produced stablePrefixRender. 一个
+//     width change drops 缓存.
 type streamingMarkdown struct {
 	width              int
 	stablePrefix       string
@@ -440,30 +440,30 @@ func trimGlamourMargins(s string) string {
 //
 // Decision tree, 在 order 的 preference (latest boundary wins):
 //
-// 1. Walk backward through every "blank line" position p such 那
-// content[:p] ends 用 "\n\n" (或 "\n[ \t]*\n").
-// 2. For each candidate, check 那 content[:p] has even
-// number 的 triple-backtick fence lines (no open fenced
-// block). Any odd count means we'd 是 cutting inside fence
-// 和 mis-syntax-highlighting trailing partial.
-// 2b. Reject 如果 any line 在 content[:p] (outside fenced blocks)
-// 是 list-marker line, HTML-block opener, 或 link
-// reference definition. See [prefixHasOpenHazard] 为
-// reasoning behind these "anywhere 在 prefix" rejects.
-// 3. Reject 如果 last non-blank line 的 content[:p] 是:
+//  1. Walk backward through every "blank line" position p such 那
+//     content[:p] ends 用 "\n\n" (或 "\n[ \t]*\n").
+//  2. For each candidate, check 那 content[:p] has even number 的
+//     triple-backtick fence lines (no open fenced block). Any odd count
+//     means we'd 是 cutting inside fence 和 mis-syntax-highlighting
+//     trailing partial.
+//  3. Reject 如果 any line 在 content[:p] (outside fenced blocks) 是
+//     list-marker line, HTML-block opener, 或 link reference definition.
+//     See [prefixHasOpenHazard] 为 reasoning behind these "anywhere 在
+//     prefix" rejects.
+//  4. Reject 如果 last non-blank line 的 content[:p] 是:
 //     - a list item marker line ("^\s*([-*+]|\d+\.)\s")
-// - 表 line (contains "|")
+//     - a 表 line (contains "|")
 //     - a block quote ("^\s*>")
-// - setext header underline ("^=+\s*$" 或 "^-+\s*$")
-// - indented code line (4+ leading spaces 或 tab)
-// 4. Reject 如果 line immediately AFTER boundary (skipping
-//     leading blank lines) looks like a setext underline (a line
-// 的 '=' 或 '-' 只). Rendering prefix 作为 paragraph
-// would change once underline arrived; 那's exactly
-//     "splitting changes the prefix render" hazard §4.4 calls out.
+//     - setext header underline ("^=+\s*$" 或 "^-+\s*$")
+//     - indented code line (4+ leading spaces 或 tab)
+//  5. Reject 如果 line immediately AFTER boundary (skipping leading
+//     blank lines) looks like a setext underline (a line 的 '=' 或 '-'
+//     只). Rendering prefix 作为 paragraph would change once underline
+//     arrived; 那's exactly "splitting changes the prefix render" hazard
+//     §4.4 calls out.
 //
-// Returns byte offset 的 first character AFTER blank
-// line, i.e. start 的 trailing segment.
+// Returns byte offset 的 first character AFTER blank line, i.e. start
+// 的 trailing segment.
 func findSafeMarkdownBoundary(content string) int {
 	if len(content) == 0 {
 		return -1
@@ -576,104 +576,65 @@ func isSafeBoundaryAt(content string, p int) bool {
 }
 
 // prefixHasOpenHazard reports whether prefix contains any 的 three
-// constructs 那 cannot 是 safely cut 在 blank-line boundary
-// even 当 immediately preceding line looks fine. Each check
-// uses the SIMPLEST viable conservative rule per the F8 round-2
-// review:
+// constructs 那 cannot 是 safely cut 在 blank-line boundary even 当
+// immediately preceding line looks fine. Each check uses the SIMPLEST
+// viable conservative rule per the F8 round-2 review:
 //
-// B1 (loose lists). 一个 loose list has blank line between item
-// 和 continuation paragraph 那 begins 用 indentation
-// 但 no list marker. If candidate boundary lands 在 那
-// blank line, prefix's trailing non-blank line 是
-// continuation paragraph, NOT list marker, 所以 last-line
-// check would 受理 it even though list 是 still open.
+// B1 (loose lists). 一个 loose list has blank line between item 和
+// continuation paragraph 那 begins 用 indentation 但 no list marker. If
+// candidate boundary lands 在 那 blank line, prefix's trailing non-blank
+// line 是 continuation paragraph, NOT list marker, 所以 last-line check
+// would 受理 it even though list 是 still open.
 //
-// Rule chosen: any list-marker line ANYWHERE 在 prefix
-// forces -1. 这 是 overly conservative — it forfeits
-// boundary advancement past closed list — 但 it eliminates
-// entire bug class 用 zero parsing 的 CommonMark's
-//	   loose-list closure semantics. We retain the most useful
-// boundary 在 practice: one BEFORE list opens (no
-// marker has appeared 在 prefix yet).
+// Rule chosen: any list-marker line ANYWHERE 在 prefix forces -1. 这 是
+// overly conservative — it forfeits boundary advancement past closed list
+// — 但 it eliminates entire bug class 用 zero parsing 的 CommonMark's
+// loose-list closure semantics. We retain the most useful boundary 在
+// practice: one BEFORE list opens (no marker has appeared 在 prefix yet).
 //
-//	B2 (HTML blocks). CommonMark defines seven HTML-block opener
-//	   patterns (script/pre/style/textarea, comments, processing
-//	   instructions, CDATA, declarations, recognised tag names).
-// If prefix opens HTML block 那 suffix closes,
-// splitting renders prefix 作为 raw HTML 和 suffix 作为
-//	   prose.
+// B2 (HTML blocks). CommonMark defines seven HTML-block opener patterns
+// (script/pre/style/textarea, comments, processing instructions, CDATA,
+// declarations, recognised tag names). If prefix opens HTML block 那
+// suffix closes, splitting renders prefix 作为 raw HTML 和 suffix 作为
+// prose.
 //
-// Rule chosen: any HTML-block opener anywhere 在 prefix
-// forces -1. Same trade-off 作为 B1 — typical 助手
-// output contains no raw HTML, 所以 perf cost 是 zero 在
-//	   the common case.
+// Rule chosen: any HTML-block opener anywhere 在 prefix forces -1. Same
+// trade-off 作为 B1 — typical 助手 output contains no raw HTML, 所以 perf
+// cost 是 zero 在 the common case.
 //
-// B3 (reference link definitions). 一个 line 的 form
-// "[label]: <url>" defines link reference 那 suffix
-// may later use 作为 "[文本][label]". Splitting document
-// loses definition because each half 是 rendered 作为
-//	   independent glamour document.
+// B3 (reference link definitions). 一个 line 的 form "[label]: <url>"
+// defines link reference 那 suffix may later use 作为 "[文本][label]".
+// Splitting document loses definition because each half 是 rendered 作为
+// independent glamour document.
 //
-// Rule chosen: any reference link definition line anywhere 在
-// prefix forces -1. Suffix-side reference detection 是
-// fragile (three syntaxes: [文本][label], [label][], [label]),
-// 所以 prefix-side check 是 simpler safe choice.
+// Rule chosen: any reference link definition line anywhere 在 prefix
+// forces -1. Suffix-side reference detection 是 fragile (three syntaxes:
+// [文本][label], [label][], [label]), 所以 prefix-side check 是 simpler
+// safe choice.
 //
-// All three rules 受理 perf hit 的 "no boundary after
-// list / HTML block / link def" 在 exchange 为 guaranteed
-// soundness. If profiling shows 这 kills F8 win 在 real
-// streaming traces, next iteration can promote each rule 到
-// 它的 less-conservative variant (closure-aware list tracking,
+// All three rules 受理 perf hit 的 "no boundary after list / HTML block /
+// link def" 在 exchange 为 guaranteed soundness. If profiling shows 这
+// kills F8 win 在 real streaming traces, next iteration can promote each
+// rule 到 它的 less-conservative variant (closure-aware list tracking,
 // per-tag HTML close detection, suffix-aware ref tracking).
-// prefixHasOpenHazard reports whether prefix contains any 的 three
-// constructs 那 cannot 是 safely cut 在 blank-line boundary
-// even 当 immediately preceding line looks fine.
 //
-// B1 (loose lists, refined). 一个 loose list has blank line between
-// item 和 continuation paragraph 那 begins 用
-// indentation 但 no list marker. If candidate boundary lands
-// 在 那 blank line, prefix's trailing non-blank line 是
-// continuation paragraph, NOT list marker, 所以 last-line
-// check 在 lineOpensConstruct would 受理 it even though
-// list 是 still open.
+// 精化后的 B1 (loose lists). 一个 loose list has blank line between item
+// 和 continuation paragraph 那 begins 用 indentation 但 no list marker. If
+// candidate boundary lands 在 那 blank line, prefix's trailing non-blank
+// line 是 continuation paragraph, NOT list marker, 所以 last-line check
+// 在 lineOpensConstruct would 受理 it even though list 是 still open.
 //
-// Rule chosen: track whether any list-marker line appears 在
-// prefix. If one does AND last non-blank line 是 indented
-// (但 是 不 itself list marker), list 是 potentially
-// open 和 we reject. 这 catches loose-list continuation
-// paragraphs (indented, no marker) 那 lineOpensConstruct
-// misses (it 只 flags 4+ spaces), without forfeiting every
-// boundary after CLOSED list. 一个 list followed 通过 blank line
-// 和 then non-indented paragraph 是 closed; boundary
-// after 那 paragraph 是 safe.
+// Rule chosen: track whether any list-marker line appears 在 prefix. If
+// one does AND last non-blank line 是 indented (但 是 不 itself list
+// marker), list 是 potentially open 和 we reject. 这 catches loose-list
+// continuation paragraphs (indented, no marker) 那 lineOpensConstruct
+// misses (it 只 flags 4+ spaces), without forfeiting every boundary after
+// CLOSED list. 一个 list followed 通过 blank line 和 then non-indented
+// paragraph 是 closed; boundary after 那 paragraph 是 safe.
 //
-// previous rule rejected 在 any list marker anywhere 在
-// prefix, which killed streaming 缓存 为 every document
-// 那 ever contained list — dominant case 为 LLM
-//	   thinking blocks. See CHARM-1785.
-//
-//	B2 (HTML blocks). CommonMark defines seven HTML-block opener
-//	   patterns (script/pre/style/textarea, comments, processing
-//	   instructions, CDATA, declarations, recognised tag names).
-// If prefix opens HTML block 那 suffix closes,
-// splitting renders prefix 作为 raw HTML 和 suffix 作为
-//	   prose.
-//
-// Rule chosen: any HTML-block opener anywhere 在 prefix
-// forces -1. Same trade-off 作为 B1 — typical 助手
-// output contains no raw HTML, 所以 perf cost 是 zero 在
-//	   the common case.
-//
-// B3 (reference link definitions). 一个 line 的 form
-// "[label]: <url>" defines link reference 那 suffix
-// may later use 作为 "[文本][label]". Splitting document
-// loses definition because each half 是 rendered 作为
-//	   independent glamour document.
-//
-// Rule chosen: any reference link definition line anywhere 在
-// prefix forces -1. Suffix-side reference detection 是
-// fragile (three syntaxes: [文本][label], [label][], [label]),
-// 所以 prefix-side check 是 simpler safe choice.
+// previous rule rejected 在 any list marker anywhere 在 prefix, which
+// killed streaming 缓存 为 every document 那 ever contained list —
+// dominant case 为 LLM thinking blocks. See CHARM-1785.
 func prefixHasOpenHazard(prefix string) bool {
 	inFence := false
 	hasListMarker := false

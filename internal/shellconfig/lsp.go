@@ -11,9 +11,9 @@ import (
 //
 // Usage:
 //
-// lsp add <name> --command CMD [--args ARG ...] [--env KEY 值 ...]
+//	lsp add <name> --command CMD [--args ARG ...] [--env KEY 值 ...]
 //	    [--filetypes TYPE ...] [--root-markers MARKER ...]
-// [--超时 N] [--disabled true|false]
+//	    [--超时 N] [--disabled true|false]
 //	    [--init-options JSON] [--options JSON]
 //	lsp remove <name>   (alias: rm)
 //

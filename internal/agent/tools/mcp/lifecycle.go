@@ -32,15 +32,14 @@ const (
 // PendingConfig. Reconcile compares live 配置 against whichever 是
 // relevant 为 服务端's state:
 //
-// - 一个 starting 服务端 是 left alone 只 while it 是 connecting 用
-// current 配置. If 配置 changed since it started, it restarts 所以
-// new 配置 takes effect instead 的 being lost 到 在-flight
-//     attempt.
-// - 一个 connected 服务端 restarts 当 它的 配置 differs 从 one it
-// connected 用.
-//   - Every other state (new, errored, needs-auth, disabled) restarts: new
-// 和 disabled servers carry no 配置, 和 retrying failed 服务端 在
-// each 配置 写入 是 desired recovery 路径.
+//   - 一个 starting 服务端 是 left alone 只 while it 是 connecting 用
+//     current 配置. If 配置 changed since it started, it restarts 所以
+//     new 配置 takes effect instead 的 being lost 到 在-flight attempt.
+//   - 一个 connected 服务端 restarts 当 它的 配置 differs 从 one it
+//     connected 用.
+//   - Every other state (new, errored, needs-auth, disabled) restarts:
+//     new 和 disabled servers carry no 配置, 和 retrying failed 服务端
+//     在 each 配置 写入 是 desired recovery 路径.
 //
 // Servers gone 从 配置 是 removed entirely; enabled-在-配置 servers
 // marked disabled 是 disabled.

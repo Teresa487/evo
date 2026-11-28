@@ -221,12 +221,12 @@ func (c *controllerV1) handlePostWorkspaceMCPDisableDocker(w http.ResponseWriter
 // 为 工作区's repository.
 //
 // @摘要 List disabled MCP servers
-//	@Tags			mcp
+// @Tags			mcp
 // @Param id 路径 string true "工作区 ID"
-//	@Success		200	{array}	string
+// @Success		200	{array}	string
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/mcp/disabled [get]
+// @Router			/workspaces/{id}/mcp/disabled [get]
 func (c *controllerV1) handleGetWorkspaceMCPServersDisabled(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	servers, err := c.backend.MCPServersDisabled(r.Context(), id)
@@ -241,15 +241,15 @@ func (c *controllerV1) handleGetWorkspaceMCPServersDisabled(w http.ResponseWrite
 // override.
 //
 // @摘要 Toggle MCP 服务端 为 repository
-//	@Tags			mcp
+// @Tags			mcp
 // @受理 json
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.MCPSetServerDisabledRequest true "Toggle 请求"
-//	@Success		200
+// @Success		200
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/mcp/disabled [post]
+// @Router			/workspaces/{id}/mcp/disabled [post]
 func (c *controllerV1) handlePostWorkspaceMCPSetServerDisabled(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
@@ -274,11 +274,11 @@ func (c *controllerV1) handlePostWorkspaceMCPSetServerDisabled(w http.ResponseWr
 // disabled flag 在 global 配置.
 //
 // @摘要 Toggle MCP 服务端 在 配置
-//	@Tags			mcp
+// @Tags			mcp
 // @受理 json
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.MCPSetServerDisabledRequest true "Toggle 请求"
-//	@Success		200
+// @Success		200
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
@@ -307,12 +307,12 @@ func (c *controllerV1) handlePostWorkspaceMCPSetServerConfigDisabled(w http.Resp
 // repository-scoped enabled override 为 工作区's repository.
 //
 // @摘要 List enabled-override MCP servers
-//	@Tags			mcp
+// @Tags			mcp
 // @Param id 路径 string true "工作区 ID"
-//	@Success		200	{array}	string
+// @Success		200	{array}	string
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/mcp/enabled [get]
+// @Router			/workspaces/{id}/mcp/enabled [get]
 func (c *controllerV1) handleGetWorkspaceMCPServersEnabled(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	servers, err := c.backend.MCPServersEnabled(r.Context(), id)
@@ -327,15 +327,15 @@ func (c *controllerV1) handleGetWorkspaceMCPServersEnabled(w http.ResponseWriter
 // 它的 配置 条目 是 disabled.
 //
 // @摘要 Start MCP 服务端
-//	@Tags			mcp
+// @Tags			mcp
 // @受理 json
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.MCPNameRequest true "MCP name 请求"
-//	@Success		200
+// @Success		200
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/mcp/start [post]
+// @Router			/workspaces/{id}/mcp/start [post]
 func (c *controllerV1) handlePostWorkspaceMCPStartServer(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
@@ -533,12 +533,12 @@ func (c *controllerV1) handlePostWorkspaceMCPRefreshResources(w http.ResponseWri
 // 工作区's repository.
 //
 // @摘要 List disabled skills
-//	@Tags			skills
+// @Tags			skills
 // @Param id 路径 string true "工作区 ID"
-//	@Success		200	{array}	string
+// @Success		200	{array}	string
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/skills/disabled [get]
+// @Router			/workspaces/{id}/skills/disabled [get]
 func (c *controllerV1) handleGetWorkspaceSkillsDisabled(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	names, err := c.backend.SkillsDisabled(r.Context(), id)
@@ -553,15 +553,15 @@ func (c *controllerV1) handleGetWorkspaceSkillsDisabled(w http.ResponseWriter, r
 // override.
 //
 // @摘要 Toggle skill 为 repository
-//	@Tags			skills
+// @Tags			skills
 // @受理 json
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.SkillSetDisabledRequest true "Toggle 请求"
-//	@Success		200
+// @Success		200
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/skills/disabled [post]
+// @Router			/workspaces/{id}/skills/disabled [post]
 func (c *controllerV1) handlePostWorkspaceSetSkillDisabled(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
@@ -586,12 +586,12 @@ func (c *controllerV1) handlePostWorkspaceSetSkillDisabled(w http.ResponseWriter
 // repository-scoped enabled override 为 工作区's repository.
 //
 // @摘要 List enabled-override skills
-//	@Tags			skills
+// @Tags			skills
 // @Param id 路径 string true "工作区 ID"
-//	@Success		200	{array}	string
+// @Success		200	{array}	string
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/skills/enabled [get]
+// @Router			/workspaces/{id}/skills/enabled [get]
 func (c *controllerV1) handleGetWorkspaceSkillsEnabled(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	names, err := c.backend.SkillsEnabled(r.Context(), id)
@@ -606,11 +606,11 @@ func (c *controllerV1) handleGetWorkspaceSkillsEnabled(w http.ResponseWriter, r 
 // flag 在 global 配置.
 //
 // @摘要 Toggle skill 在 配置
-//	@Tags			skills
+// @Tags			skills
 // @受理 json
 // @Param id 路径 string true "工作区 ID"
 // @Param 请求 body proto.SkillSetDisabledRequest true "Toggle 请求"
-//	@Success		200
+// @Success		200
 // @Failure 400 {object} proto.错误
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误

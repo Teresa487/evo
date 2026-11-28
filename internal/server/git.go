@@ -12,12 +12,12 @@ import (
 // 工作区's working 目录.
 //
 // @摘要 Get current Git branch
-//	@Tags			git
+// @Tags			git
 // @Param id 路径 string true "工作区 ID"
-//	@Success		200	{object}	proto.GitBranchResponse
+// @Success		200	{object}	proto.GitBranchResponse
 // @Failure 404 {object} proto.错误
 // @Failure 500 {object} proto.错误
-//	@Router			/workspaces/{id}/git/branch [get]
+// @Router			/workspaces/{id}/git/branch [get]
 func (c *controllerV1) handleGetWorkspaceGitBranch(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	branch, err := c.backend.GitBranch(id)

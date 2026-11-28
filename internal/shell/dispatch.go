@@ -32,14 +32,14 @@ const probeWindow = 128
 // 路径-prefixed argv[0] (e.g. ./foo.sh, /opt/bin/工具, C:\foo\bar.exe) 和
 // dispatches based 在 文件's contents:
 //
-//  1. Shebang line (#!...) → exec the named interpreter via os/exec. The
-// interpreter 是 resolved literally first, then via 路径 在
-// basename 作为 permissive fallback (所以 #!/bin/bash works 在 Windows
-// boxes where Git 为 Windows puts bash.exe 在 路径).
-// 2. Known 二进制 magic (MZ, ELF, Mach-O) 或 NUL byte 在 probe
-// 窗口 → pass through 到 next 处理器 (mvdan's 默认 exec).
-// 3. Otherwise → treat 文件 作为 shell source 和 运行 it 在-process via
-// nested interp.Runner 那 reuses same 处理器 stack.
+//  1. Shebang line (#!...) → exec the named interpreter via os/exec.
+//     The interpreter 是 resolved literally first, then via 路径 在
+//     basename 作为 permissive fallback (所以 #!/bin/bash works 在
+//     Windows boxes where Git 为 Windows puts bash.exe 在 路径).
+//  2. Known 二进制 magic (MZ, ELF, Mach-O) 或 NUL byte 在 probe
+//     窗口 → pass through 到 next 处理器 (mvdan's 默认 exec).
+//  3. Otherwise → treat 文件 作为 shell source 和 运行 it 在-process
+//     via nested interp.Runner 那 reuses same 处理器 stack.
 //
 // Non-路径-prefixed argv[0] 和 empty args 是 passed straight through; 这
 // 处理器 是 no-op 为 ordinary commands like `echo` 或 `jq`.

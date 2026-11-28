@@ -1362,7 +1362,7 @@ func TestClientWorkspace_ShutdownWaitsForInFlightRecovery(t *testing.T) {
 		case r.Method == http.MethodPost && r.URL.Path == "/v1/workspaces":
 			once.Do(func() { close(creating) })
 			// Slow enough 那 Shutdown lands mid-创建.
-			// nolint:forbidigo // overlap 是 point 的 测试.
+			//nolint:forbidigo // overlap 是 point 的 测试.
 			time.Sleep(300 * time.Millisecond)
 			mu.Lock()
 			ops = append(ops, "create")

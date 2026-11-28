@@ -132,13 +132,13 @@ const maxResolveErrBytes = 512
 // surface) 和 bounded, scrubbed rendering 的 inner 错误 消息.
 // Contract:
 //
-// - Never includes resolved (post-expansion) 值. 这 helper
-// 只 receives template 和 err, 所以 successful expansion
-// 结果 cannot reach it.
+//   - Never includes resolved (post-expansion) 值. 这 helper 只
+//     receives template 和 err, 所以 successful expansion 结果 cannot
+//     reach it.
 //   - May include the template verbatim.
-// - Truncates inner 错误's 消息 到 maxResolveErrBytes 和
-// replaces embedded NULs 和 other non-printables (except tab 和
-// newline) 用 '?'.
+//   - Truncates inner 错误's 消息 到 maxResolveErrBytes 和 replaces
+//     embedded NULs 和 other non-printables (except tab 和 newline)
+//     用 '?'.
 //
 // returned 错误 still unwraps 到 original 为 errors.Is/As 所以
 // callers can inspect typed sentinels; 只 rendered 消息 是

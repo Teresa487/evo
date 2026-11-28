@@ -179,27 +179,27 @@ type Backend struct {
 
 // clientState tracks one 客户端's claim 在 工作区.
 //
-// - streams counts number 的 live SSE 事件 streams 客户端
-// currently has open against 工作区.
-// - holdTimer 是 non-nil 在 two timer-held states: 客户端
-// created 工作区 但 has 不 yet attached SSE 流
-// (fires after createGrace), 或 客户端's last SSE 流 dropped
+//   - streams counts number 的 live SSE 事件 streams 客户端
+//     currently has open against 工作区.
+//   - holdTimer 是 non-nil 在 two timer-held states: 客户端
+//     created 工作区 但 has 不 yet attached SSE 流
+//     (fires after createGrace), 或 客户端's last SSE 流 dropped
 //     without an explicit release (fires after detachGrace, giving the
-// 客户端's reconnect loop 窗口 到 re-attach). Either way
-// timer releases claim 当 it expires.
-// - currentSessionID records which 会话 这 客户端 是 currently
-// viewing. Empty string means 客户端 has no 会话 selected
-// (e.g. landing screen). Cleared automatically 当
-// clientState 条目 是 removed.
-// - sessionReported records whether 客户端 has ever reported
-// current 会话 via [Backend.SetCurrentSession]. Clients 那
-// never 报告 one (e.g. API clients predating 会话 reporting)
-// 是 indistinguishable 从 landing-screen clients 通过 会话 ID
-// alone; 这 flag lets SSE filter fail open 为 them.
-// - released marks 那 客户端 gave up 它的 claim explicitly while
-// streams were still open, which clean exit does. final 流
-// detach then tears down immediately instead 的 waiting out
-// detach grace 为 客户端 那 是 不 coming back.
+//     客户端's reconnect loop 窗口 到 re-attach). Either way
+//     timer releases claim 当 it expires.
+//   - currentSessionID records which 会话 这 客户端 是 currently
+//     viewing. Empty string means 客户端 has no 会话 selected
+//     (e.g. landing screen). Cleared automatically 当
+//     clientState 条目 是 removed.
+//   - sessionReported records whether 客户端 has ever reported
+//     current 会话 via [Backend.SetCurrentSession]. Clients 那
+//     never 报告 one (e.g. API clients predating 会话 reporting)
+//     是 indistinguishable 从 landing-screen clients 通过 会话 ID
+//     alone; 这 flag lets SSE filter fail open 为 them.
+//   - released marks 那 客户端 gave up 它的 claim explicitly while
+//     streams were still open, which clean exit does. final 流
+//     detach then tears down immediately instead 的 waiting out
+//     detach grace 为 客户端 那 是 不 coming back.
 //
 // streams 和 holdTimer 是 mutually exclusive 在 practice ( hold
 // timer 是 stopped moment SSE 流 attaches), 但 both being
@@ -307,14 +307,14 @@ func (w *Workspace) invokeShutdown() {
 // shadows promoted [app.App.Shutdown] 所以 callers reaching
 // ws.Shutdown() always observe 这 ordering:
 //
-// 1. 标记 工作区 closing 所以 no new agent runs 是 accepted.
-// 2. 取消 工作区 运行 上下文 所以 any dispatched goroutine
-// 那 has 不 yet registered 它的 per-会话 取消 still
-//     observes cancellation.
-// 3. 取消 活跃 coordinator work 为 runs 那 already
-// registered their per-会话 取消 function.
-// 4. Wait 为 dispatched agent goroutines 到 return.
-// 5. 运行 embedded [app.App.Shutdown] 清理 (DB, LSP, etc).
+//  1. 标记 工作区 closing 所以 no new agent runs 是 accepted.
+//  2. 取消 工作区 运行 上下文 所以 any dispatched goroutine
+//     那 has 不 yet registered 它的 per-会话 取消 still observes
+//     cancellation.
+//  3. 取消 活跃 coordinator work 为 runs 那 already registered
+//     their per-会话 取消 function.
+//  4. Wait 为 dispatched agent goroutines 到 return.
+//  5. 运行 embedded [app.App.Shutdown] 清理 (DB, LSP, etc).
 //
 // CancelAll 是 idempotent, 所以 second 调用 inside app.App.Shutdown
 // 是 harmless; important guarantee 是 那 取消 -> CancelAll ->
