@@ -203,3 +203,37 @@ func TestGetToolInteractionSignature(t *testing.T) {
 		}
 	})
 }
+
+func TestToolCallsReachedLimit(t *testing.T) {
+	t.Run("no steps", func(t *testing.T) {
+		if toolCallsReachedLimit(nil, 50) {
+			t.Error("expected false for empty steps")
+		}
+	})
+
+	t.Run("below the limit", func(t *testing.T) {
+		steps := []fantasy.StepResult{
+			makeToolStep("read", `{"file":"a.go"}`, "content"),
+			makeToolStep("write", `{"file":"b.go"}`, "ok"),
+		}
+		if toolCallsReachedLimit(steps, 50) {
+			t.Error("expected false below the limit")
+		}
+	})
+
+	t.Run("parallel calls in one step are all counted", func(t *testing.T) {
+		// 一个 step 里的多个并行调用都要计入总数。
+		var content fantasy.ResponseContent
+		for i := range 3 {
+			content = append(content, fantasy.ToolCallContent{
+				ToolCallID: fmt.Sprintf("call-%d", i),
+				ToolName:   "read",
+				Input:      `{"file":"a.go"}`,
+			})
+		}
+		steps := []fantasy.StepResult{{Response: fantasy.Response{Content: content}}}
+		if !toolCallsReachedLimit(steps, 3) {
+			t.Error("expected true once the accumulated calls reach the limit")
+		}
+	})
+}

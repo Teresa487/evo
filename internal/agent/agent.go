@@ -1250,14 +1250,27 @@ func (a *sessionAgent) Run(ctx context.Context, call SessionAgentCall) (result *
 					threshold = int64(float64(cw) * smallContextWindowRatio)
 				}
 				if (remaining <= threshold) && !a.disableAutoSummarize {
+					slog.Info("Turn interrupted for automatic compaction",
+						"session_id", call.SessionID,
+						"tokens", tokens, "context_window", cw, "threshold", threshold)
 					shouldSummarize = true
 					return true
 				}
 				return false
 			},
 			func(steps []fantasy.StepResult) bool {
-				return toolCallsReachedLimit(steps, maxToolCallsPerTurn) ||
-					hasRepeatedToolCalls(steps, loopDetectionWindowSize, loopDetectionMaxRepeats)
+				if toolCallsReachedLimit(steps, maxToolCallsPerTurn) {
+					slog.Warn("Turn stopped: tool call limit reached",
+						"session_id", call.SessionID, "limit", maxToolCallsPerTurn)
+					return true
+				}
+				if hasRepeatedToolCalls(steps, loopDetectionWindowSize, loopDetectionMaxRepeats) {
+					slog.Warn("Turn stopped: repeated tool calls",
+						"session_id", call.SessionID,
+						"window", loopDetectionWindowSize, "max_repeats", loopDetectionMaxRepeats)
+					return true
+				}
+				return false
 			},
 		},
 	})
