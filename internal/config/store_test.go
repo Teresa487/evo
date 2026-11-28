@@ -339,6 +339,7 @@ func TestReloadFromDisk_UsesNewConfigValues(t *testing.T) {
 		"providers": {
 			"openai": {
 				"api_key": "test-key",
+				"base_url": "https://api.openai.com/v1",
 				"models": [{"id": "gpt-4", "name": "GPT-4"}]
 			}
 		}
@@ -365,10 +366,12 @@ func TestReloadFromDisk_UsesNewConfigValues(t *testing.T) {
 		"providers": {
 			"openai": {
 				"api_key": "test-key",
+				"base_url": "https://api.openai.com/v1",
 				"models": [{"id": "gpt-4", "name": "GPT-4"}]
 			},
 			"anthropic": {
 				"api_key": "test-key-2",
+				"base_url": "https://api.anthropic.com",
 				"models": [{"id": "claude-3", "name": "Claude 3"}]
 			}
 		}

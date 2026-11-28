@@ -28,6 +28,7 @@ func BenchmarkUpdatePreferredModel(b *testing.B) {
 		"providers": {
 			"openai": {
 				"api_key": "test-key",
+				"base_url": "https://api.openai.com/v1",
 				"models": [
 					{"id": "gpt-4", "name": "GPT-4"},
 					{"id": "gpt-4o", "name": "GPT-4o"},
@@ -36,6 +37,7 @@ func BenchmarkUpdatePreferredModel(b *testing.B) {
 			},
 			"anthropic": {
 				"api_key": "test-key-2",
+				"base_url": "https://api.anthropic.com",
 				"models": [
 					{"id": "claude-3", "name": "Claude 3"},
 					{"id": "claude-3-5", "name": "Claude 3.5"}

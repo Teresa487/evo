@@ -11,6 +11,7 @@ import (
 
 // twoProviderConfig 是 配置 文件 naming large 作为 given
 // 提供方/模型, 用 both providers available 所以 either choice resolves.
+// base_url 是必填：这两个 provider 都不在目录里，只能靠手写定义。
 func twoProviderConfig(provider, model string) string {
 	return `{
 		"models": {
@@ -19,10 +20,12 @@ func twoProviderConfig(provider, model string) string {
 		"providers": {
 			"openai": {
 				"api_key": "test-key",
+				"base_url": "https://api.openai.com/v1",
 				"models": [{"id": "gpt-4", "name": "GPT-4"}]
 			},
 			"anthropic": {
 				"api_key": "test-key-2",
+				"base_url": "https://api.anthropic.com",
 				"models": [{"id": "claude-3", "name": "Claude 3"}]
 			}
 		}
