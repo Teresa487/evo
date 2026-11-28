@@ -41,8 +41,8 @@ func TestModelSelectionSurvivesPeerWrite(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "evo.json")
 
-	t.Setenv("CRUSH_GLOBAL_CONFIG", dir)
-	t.Setenv("CRUSH_GLOBAL_DATA", dir)
+	t.Setenv("EVO_GLOBAL_CONFIG", dir)
+	t.Setenv("EVO_GLOBAL_DATA", dir)
 	resetProviderState()
 	t.Cleanup(resetProviderState)
 
@@ -73,13 +73,13 @@ func TestModelSelectionSurvivesPeerWrite(t *testing.T) {
 
 // TestModelSelectionYieldsToDiskWhenUnchosen verifies other half 的
 // rule: 模型 type 这 instance never selected still follows 配置
-// 文件, 所以 external edits 和 `crush login` defaults keep working.
+// 文件, 所以 external edits 和 `evo login` defaults keep working.
 func TestModelSelectionYieldsToDiskWhenUnchosen(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "evo.json")
 
-	t.Setenv("CRUSH_GLOBAL_CONFIG", dir)
-	t.Setenv("CRUSH_GLOBAL_DATA", dir)
+	t.Setenv("EVO_GLOBAL_CONFIG", dir)
+	t.Setenv("EVO_GLOBAL_DATA", dir)
 	resetProviderState()
 	t.Cleanup(resetProviderState)
 

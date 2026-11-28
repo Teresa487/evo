@@ -1,4 +1,4 @@
-// crush_logs.go —— crush_logs 工具：读取 Crush 自身日志。
+// evo_logs.go —— evo_logs 工具：读取 Crush 自身日志。
 
 package tools
 
@@ -19,23 +19,23 @@ import (
 	"charm.land/fantasy"
 )
 
-const CrushLogsToolName = "crush_logs"
+const EvoLogsToolName = "evo_logs"
 
-//go:embed crush_logs.md.tpl
-var crushLogsDescriptionTmpl []byte
+//go:embed evo_logs.md.tpl
+var evoLogsDescriptionTmpl []byte
 
-var crushLogsDescriptionTpl = template.Must(
-	template.New("crushLogsDescription").
-		Parse(string(crushLogsDescriptionTmpl)),
+var evoLogsDescriptionTpl = template.Must(
+	template.New("evoLogsDescription").
+		Parse(string(evoLogsDescriptionTmpl)),
 )
 
-type crushLogsDescriptionData struct {
+type evoLogsDescriptionData struct {
 	DefaultLines int
 	MaxLines     int
 }
 
-func crushLogsDescription() string {
-	return renderTemplate(crushLogsDescriptionTpl, crushLogsDescriptionData{
+func evoLogsDescription() string {
+	return renderTemplate(evoLogsDescriptionTpl, evoLogsDescriptionData{
 		DefaultLines: defaultLogLines,
 		MaxLines:     maxLogLines,
 	})
@@ -71,23 +71,23 @@ var sensitiveKeys = []string{
 	"credential",
 }
 
-type CrushLogsParams struct {
+type EvoLogsParams struct {
 	Lines int `json:"lines,omitempty" description:"Number of recent log entries to return (default 50, max 100)"`
 }
 
-func NewCrushLogsTool(logFile string) fantasy.AgentTool {
+func NewEvoLogsTool(logFile string) fantasy.AgentTool {
 	return fantasy.NewAgentTool(
-		CrushLogsToolName,
-		crushLogsDescription(),
-		func(ctx context.Context, params CrushLogsParams, call fantasy.ToolCall) (fantasy.ToolResponse, error) {
-			result := runCrushLogs(logFile, params)
+		EvoLogsToolName,
+		evoLogsDescription(),
+		func(ctx context.Context, params EvoLogsParams, call fantasy.ToolCall) (fantasy.ToolResponse, error) {
+			result := runEvoLogs(logFile, params)
 			return fantasy.NewTextResponse(result), nil
 		},
 	)
 }
 
-// runCrushLogs reads 和 formats last N log entries 从 given 文件.
-func runCrushLogs(logFile string, params CrushLogsParams) string {
+// runEvoLogs reads 和 formats last N log entries 从 given 文件.
+func runEvoLogs(logFile string, params EvoLogsParams) string {
 	// Validate 和 clamp lines parameter.
 	lines := params.Lines
 	if lines <= 0 {

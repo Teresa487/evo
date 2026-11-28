@@ -107,7 +107,7 @@ type ConfigStore struct {
 	workingDir         string
 	resolver           VariableResolver
 	globalDataPath     string   // ~/.local/share/crush/crush.json
-	workspacePath      string   // .crush/crush.json
+	workspacePath      string   // .evo/crush.json
 	loadedPaths        []string // config files that were successfully loaded
 	knownProviders     []catwalk.Provider
 	overrides          RuntimeOverrides
@@ -853,7 +853,7 @@ func (s *ConfigStore) RefetchGrokModels(ctx context.Context) {
 //
 // Providers like Hyper rotate 刷新 tokens: each exchange consumes
 // caller's refresh token, issues new pair, 和 revokes old one. If
-// two crush instances (或 two goroutines) refresh concurrently 用
+// two evo instances (或 two goroutines) refresh concurrently 用
 // same 存储 refresh token, second exchange reuses already-revoked
 // token, trips 提供方's reuse detection, 和 revokes entire
 // token family — leaving both 用 dead tokens even though each refresh

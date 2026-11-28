@@ -16,10 +16,10 @@ import (
 
 // ErrDataDirLocked 是 returned 通过 Connect 当 data 目录 是
 // already 在 use 通过 another crush process.
-var ErrDataDirLocked = errors.New("data directory already in use by another crush process")
+var ErrDataDirLocked = errors.New("data directory already in use by another evo process")
 
 // dataDirLockFile 是 name 的 锁 文件 inside data
-// 目录. 它 lives next 到 crush.db 所以 users can `ls` 和 find it.
+// 目录. 它 lives next 到 evo.db 所以 users can `ls` 和 find it.
 const dataDirLockFile = "crush.lock"
 
 // dataDirOwnerInfo 是 JSON payload written into 锁 文件 通过
@@ -45,7 +45,7 @@ type dataDirLock struct {
 // includes whatever owner info 那 process wrote.
 //
 // Acquisition 是 skipped (returning no-op 锁) 当
-// CRUSH_SKIP_DATADIR_LOCK 是 set 到 truthy 值. 这 是 intended
+// EVO_SKIP_DATADIR_LOCK 是 set 到 truthy 值. 这 是 intended
 // 作为 escape hatch 为 hostile filesystems 那 do 不 implement
 // advisory locking; it should 不 是 used 在 normal operation.
 func acquireDataDirLock(dataDir string) (*dataDirLock, error) {
@@ -81,7 +81,7 @@ func acquireDataDirLock(dataDir string) (*dataDirLock, error) {
 
 // skipDataDirLock reports whether data-dir 锁 should 是 bypassed.
 func skipDataDirLock() bool {
-	v, _ := strconv.ParseBool(os.Getenv("CRUSH_SKIP_DATADIR_LOCK"))
+	v, _ := strconv.ParseBool(os.Getenv("EVO_SKIP_DATADIR_LOCK"))
 	return v
 }
 

@@ -1,4 +1,4 @@
-// server.go —— `crush server` 子命令：以服务端模式运行，供远端客户端连接。
+// server.go —— `evo server` 子命令：以服务端模式运行，供远端客户端连接。
 
 package cmd
 
@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/crush/internal/config"
-	crushlog "github.com/charmbracelet/crush/internal/log"
+	evolog "github.com/charmbracelet/crush/internal/log"
 	"github.com/charmbracelet/crush/internal/server"
 	"github.com/charmbracelet/x/term"
 	"github.com/spf13/cobra"
@@ -34,13 +34,13 @@ var serverCmd = &cobra.Command{
 Usage:
 
   # Serve over HTTP
-  crush server --host http://127.0.0.1:8080
+  evo server --host http://127.0.0.1:8080
 
   # Serve over TCP
-  crush server --host tcp://127.0.0.1:8080
+  evo server --host tcp://127.0.0.1:8080
 
   # Serve over a Unix socket (default)
-  crush server --host unix:///tmp/crush.sock
+  evo server --host unix:///tmp/evo.sock
 
 While the server is running, browse the HTTP API docs at /v1/docs/
 (e.g. http://127.0.0.1:8080/v1/docs/). The OpenAPI 3.1 spec is served
@@ -76,9 +76,9 @@ started this way does not reap itself or its workspaces when idle.
 		logFile := serverLogFile(hostURL)
 
 		if term.IsTerminal(os.Stderr.Fd()) {
-			crushlog.Setup(logFile, debug, os.Stderr)
+			evolog.Setup(logFile, debug, os.Stderr)
 		} else {
-			crushlog.Setup(logFile, debug)
+			evolog.Setup(logFile, debug)
 		}
 
 		srv := server.NewServer(cfg, hostURL.Scheme, hostURL.Host)

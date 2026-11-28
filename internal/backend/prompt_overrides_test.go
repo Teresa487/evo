@@ -19,8 +19,8 @@ func isolatePromptOverrideEnv(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(hostHome, ".config"))
 	t.Setenv("XDG_DATA_HOME", filepath.Join(hostHome, ".local", "share"))
 	t.Setenv("XDG_CACHE_HOME", filepath.Join(hostHome, ".cache"))
-	t.Setenv("CRUSH_SKILLS_DIR", t.TempDir())
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_SKILLS_DIR", t.TempDir())
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 }
 
 // 一个 --提示词 flag sent 通过 客户端 must land 在 工作区's runtime
@@ -40,7 +40,7 @@ func TestBackend_CreateWorkspacePromptOverrides(t *testing.T) {
 	ws, created, err := b.CreateWorkspace(proto.Workspace{
 		ClientID: cid,
 		Path:     wd,
-		DataDir:  filepath.Join(wd, ".crush"),
+		DataDir:  filepath.Join(wd, ".evo"),
 		Prompts:  config.PromptPaths{"coder": coder},
 	})
 	require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestBackend_CreateWorkspacePromptMismatch(t *testing.T) {
 		ws, _, err := b.CreateWorkspace(proto.Workspace{
 			ClientID: cid,
 			Path:     wd,
-			DataDir:  filepath.Join(wd, ".crush"),
+			DataDir:  filepath.Join(wd, ".evo"),
 			Prompts:  prompts,
 		})
 		if err == nil {
@@ -107,7 +107,7 @@ func TestBackend_CreateWorkspaceRejectsUnknownPrompt(t *testing.T) {
 	_, _, err = b.CreateWorkspace(proto.Workspace{
 		ClientID: uuid.New().String(),
 		Path:     wd,
-		DataDir:  filepath.Join(wd, ".crush"),
+		DataDir:  filepath.Join(wd, ".evo"),
 		Prompts:  config.PromptPaths{"codr": "/tmp/x.md"},
 	})
 	require.ErrorContains(t, err, `unknown prompt "codr"`)

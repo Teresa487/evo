@@ -1,4 +1,4 @@
-// run.go —— 非交互式 `crush run`：不启动 TUI，直接跑一轮并打印结果。
+// run.go —— 非交互式 `evo run`：不启动 TUI，直接跑一轮并打印结果。
 //
 // 从产物反推：它自己实现了一条精简版产物链：
 //   connectToServer → overrideModels/restoreModelFromSession
@@ -44,33 +44,33 @@ var runCmd = &cobra.Command{
 The prompt can be provided as arguments or piped from stdin.`,
 	Example: `
 # Run a simple prompt
-crush run "Guess my 5 favorite Pokémon"
+evo run "Guess my 5 favorite Pokémon"
 
 # Pipe input from stdin
-curl https://charm.land | crush run "Summarize this website"
+curl https://charm.land | evo run "Summarize this website"
 
 # Read from a file
-crush run "What is this code doing?" <<< prrr.go
+evo run "What is this code doing?" <<< prrr.go
 
 # Redirect output to a file
-crush run "Generate a hot README for this project" > MY_HOT_README.md
+evo run "Generate a hot README for this project" > MY_HOT_README.md
 
 # Run in quiet mode (hide the spinner)
-crush run --quiet "Generate a README for this project"
+evo run --quiet "Generate a README for this project"
 
 # Run in verbose mode (show logs)
-crush run --verbose "Generate a README for this project"
+evo run --verbose "Generate a README for this project"
 
 # Use a specific reasoning effort
 # Levels depend on the model, unsupported values are rejected
 # with the accepted values listed
-crush run --reasoning-effort high "What is the meaning of life?"
+evo run --reasoning-effort high "What is the meaning of life?"
 
 # Continue a previous session
-crush run --session {session-id} "Follow up on your last response"
+evo run --session {session-id} "Follow up on your last response"
 
 # Continue the most recent session
-crush run --continue "Follow up on your last response"
+evo run --continue "Follow up on your last response"
 
   `,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -378,7 +378,7 @@ func runNonInteractive(
 				}
 				// Otherwise 服务端 died 或 ended 流 before
 				// our RunComplete, 所以 运行 cannot pass 作为 finished.
-				return fmt.Errorf("lost connection to the crush server before the run completed")
+				return fmt.Errorf("lost connection to the evo server before the run completed")
 			}
 
 			// Forward events 到 herdr 如果 running inside herdr pane.

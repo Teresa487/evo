@@ -71,7 +71,7 @@ func init() {
 
 // codeBlockSlotName 是 registry name 的 code block placeholder.
 func codeBlockSlotName(slot int) string {
-	return fmt.Sprintf("crush-code-block-%d", slot)
+	return fmt.Sprintf("evo-code-block-%d", slot)
 }
 
 // codeBlockConfig returns cfg ready 到 hand 到 glamour: chroma settings 在

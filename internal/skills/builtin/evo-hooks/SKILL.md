@@ -1,5 +1,5 @@
 ---
-name: crush-hooks
+name: evo-hooks
 description: Use when the user wants to add, write, debug, or configure a Crush hook — gating or blocking tool calls, approving or rewriting tool input before execution, injecting context into tool results, or troubleshooting hook behavior in evo.json.
 ---
 
@@ -74,16 +74,16 @@ the input/output contract is identical regardless of language.
 
 | Variable                     | Description                              |
 | ---------------------------- | ---------------------------------------- |
-| `CRUSH_EVENT`                | Event name (e.g. `PreToolUse`)           |
-| `CRUSH_TOOL_NAME`            | Tool being called (e.g. `bash`)          |
-| `CRUSH_SESSION_ID`           | Current session ID                       |
-| `CRUSH_CWD`                  | Working directory                        |
-| `CRUSH_PROJECT_DIR`          | Project root directory                   |
+| `EVO_EVENT`                | Event name (e.g. `PreToolUse`)           |
+| `EVO_TOOL_NAME`            | Tool being called (e.g. `bash`)          |
+| `EVO_SESSION_ID`           | Current session ID                       |
+| `EVO_CWD`                  | Working directory                        |
+| `EVO_PROJECT_DIR`          | Project root directory                   |
 | `CLAUDE_PROJECT_DIR`         | Same value, for Claude Code scripts      |
-| `CRUSH_TOOL_INPUT_COMMAND`   | For `bash` calls: the shell command      |
-| `CRUSH_TOOL_INPUT_FILE_PATH` | For file tools: the target file path     |
+| `EVO_TOOL_INPUT_COMMAND`   | For `bash` calls: the shell command      |
+| `EVO_TOOL_INPUT_FILE_PATH` | For file tools: the target file path     |
 
-The `CRUSH_TOOL_*` variables are only set on events that carry a tool call.
+The `EVO_TOOL_*` variables are only set on events that carry a tool call.
 
 **JSON on stdin:**
 
@@ -163,7 +163,7 @@ Composed in **config order**:
 #!/usr/bin/env bash
 set -euo pipefail
 
-if echo "$CRUSH_TOOL_INPUT_COMMAND" | grep -qE 'rm\s+-(rf|fr)\s+/'; then
+if echo "$EVO_TOOL_INPUT_COMMAND" | grep -qE 'rm\s+-(rf|fr)\s+/'; then
   echo "Refusing to run rm -rf against root" >&2
   exit 2
 fi
@@ -187,7 +187,7 @@ Emit only `context` — omit `decision` so the normal permission flow still runs
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ "$CRUSH_TOOL_INPUT_FILE_PATH" == *.go ]]; then
+if [[ "$EVO_TOOL_INPUT_FILE_PATH" == *.go ]]; then
   echo '{"context": "Remember: run gofumpt after editing Go files."}'
 else
   echo '{}'

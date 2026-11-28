@@ -21,7 +21,7 @@ type IntegrationConfig struct {
 	// WrapperPath 是 路径 到 git gpg wrapper script. Empty 在
 	// platforms without POSIX shell (integration 是 disabled there).
 	WrapperPath string
-	// SocketPath 是 CRUSH_PINENTRY_SOCK socket 路径.
+	// SocketPath 是 EVO_PINENTRY_SOCK socket 路径.
 	SocketPath string
 }
 
@@ -87,7 +87,7 @@ func GitWrapperEnv() []string {
 		"GIT_CONFIG_COUNT=1",
 		"GIT_CONFIG_KEY_0=gpg.program",
 		"GIT_CONFIG_VALUE_0=" + integrationCfg.WrapperPath,
-		"CRUSH_PINENTRY_SOCK=" + integrationCfg.SocketPath,
+		"EVO_PINENTRY_SOCK=" + integrationCfg.SocketPath,
 	}
 }
 

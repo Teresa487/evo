@@ -60,7 +60,7 @@ func TestConnect_PathWithURIMetacharacters(t *testing.T) {
 	_, err := Connect(context.Background(), dataDir)
 	require.NoError(t, err)
 	require.NoError(t, Release(dataDir))
-	require.FileExists(t, filepath.Join(dataDir, "crush.db"))
+	require.FileExists(t, filepath.Join(dataDir, "evo.db"))
 }
 
 func TestRelease_NoopForUnknownDataDir(t *testing.T) {
@@ -69,7 +69,7 @@ func TestRelease_NoopForUnknownDataDir(t *testing.T) {
 	require.NoError(t, Release("/nonexistent/path"), "releasing unknown data dir should not error")
 }
 
-// TestConnect_FailsWhenDataDirLocked simulates second crush process 通过
+// TestConnect_FailsWhenDataDirLocked simulates second evo process 通过
 // taking data-dir 锁 directly via OS primitive 在 separate
 // 文件 descriptor 和 then asserting 那 Connect surfaces clean
 // ErrDataDirLocked instead 的 opening 数据库 under contention.
@@ -198,7 +198,7 @@ func TestConnect_SkipLockEnvBypassesAcquisition(t *testing.T) {
 	require.NoError(t, err)
 	t.Cleanup(release)
 
-	t.Setenv("CRUSH_SKIP_DATADIR_LOCK", "1")
+	t.Setenv("EVO_SKIP_DATADIR_LOCK", "1")
 
 	conn, err := Connect(context.Background(), dataDir, WithDataDirLock(true))
 	require.NoError(t, err, "skip-lock env should bypass contention")

@@ -15,7 +15,7 @@ import (
 // 报告 那 pipe does 不 exist.
 func TestStatServerEndpoint_NamedPipe(t *testing.T) {
 	// Not parallel: it swaps probePipe.
-	hostURL := &url.URL{Scheme: "npipe", Host: "//./pipe/crush-test.sock"}
+	hostURL := &url.URL{Scheme: "npipe", Host: "//./pipe/evo-test.sock"}
 	orig := probePipe
 	t.Cleanup(func() { probePipe = orig })
 

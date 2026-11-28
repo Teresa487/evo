@@ -22,7 +22,7 @@ func newGateTestCoordinator(t *testing.T, interactive bool) *coordinator {
 
 	env := testEnv(t)
 
-	crushJSON := `{
+	evoJSON := `{
   "options": {"disable_default_providers": true, "disable_provider_auto_update": true},
   "providers": {"mock": {"id": "mock", "name": "Mock", "type": "openai",
     "base_url": "http://127.0.0.1:9/v1", "api_key": "test-key",
@@ -30,7 +30,7 @@ func newGateTestCoordinator(t *testing.T, interactive bool) *coordinator {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
              "small": {"provider": "mock", "model": "mock-model"}}
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(crushJSON), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(evoJSON), 0o644))
 
 	cfg, err := config.Init(t.Context(), env.workingDir, "", false)
 	require.NoError(t, err)
@@ -132,8 +132,8 @@ func TestRefreshSkillPromptRebuildsOnlyAfterToggle(t *testing.T) {
 	require.NoError(t, coord.refreshSkillPrompt(t.Context(), agent, config.AgentCoder))
 	require.Equal(t, "stale", agent.systemPrompt.Get(), "unchanged toggles must keep the prompt")
 
-	require.NoError(t, coord.sessions.SetSkillDisabled(t.Context(), "crush-config", true, false))
+	require.NoError(t, coord.sessions.SetSkillDisabled(t.Context(), "evo-config", true, false))
 	require.NoError(t, coord.refreshSkillPrompt(t.Context(), agent, config.AgentCoder))
 	require.NotEqual(t, "stale", agent.systemPrompt.Get(), "a toggle must rebuild the prompt")
-	require.NotContains(t, agent.systemPrompt.Get(), "<name>crush-config</name>")
+	require.NotContains(t, agent.systemPrompt.Get(), "<name>evo-config</name>")
 }

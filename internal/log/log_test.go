@@ -28,7 +28,7 @@ func TestTrimSourcePath(t *testing.T) {
 // debug logging 是 在, 和 那 it 是 trimmed then. Logging 是 set up once
 // per process, 所以 each case runs 在 child process.
 func TestSetupSourceHandling(t *testing.T) {
-	if os.Getenv("CRUSH_LOG_TEST_CHILD") == "1" {
+	if os.Getenv("EVO_LOG_TEST_CHILD") == "1" {
 		setupChild(t)
 		return
 	}
@@ -39,8 +39,8 @@ func TestSetupSourceHandling(t *testing.T) {
 			require.NoError(t, err)
 			c := exec.CommandContext(t.Context(), exe, "-test.run=^TestSetupSourceHandling$")
 			c.Env = append(os.Environ(),
-				"CRUSH_LOG_TEST_CHILD=1",
-				"CRUSH_LOG_TEST_DEBUG="+boolString(debug),
+				"EVO_LOG_TEST_CHILD=1",
+				"EVO_LOG_TEST_DEBUG="+boolString(debug),
 			)
 			out, err := c.CombinedOutput()
 			require.NoError(t, err, "child test failed:\n%s", out)
@@ -50,7 +50,7 @@ func TestSetupSourceHandling(t *testing.T) {
 
 func setupChild(t *testing.T) {
 	logFile := filepath.Join(t.TempDir(), "crush.log")
-	Setup(logFile, os.Getenv("CRUSH_LOG_TEST_DEBUG") == "true")
+	Setup(logFile, os.Getenv("EVO_LOG_TEST_DEBUG") == "true")
 
 	// Close log 文件 before TempDir 清理 removes it: 在 Windows,
 	// open files cannot 是 deleted.
@@ -62,7 +62,7 @@ func setupChild(t *testing.T) {
 	require.NoError(t, err)
 	line := string(got)
 	require.Contains(t, line, `"msg":"ModelProvider called"`)
-	if os.Getenv("CRUSH_LOG_TEST_DEBUG") == "true" {
+	if os.Getenv("EVO_LOG_TEST_DEBUG") == "true" {
 		require.Contains(t, line, `"source"`)
 		require.Contains(t, line, `"file":"internal/log/log_test.go"`)
 		require.NotContains(t, line, "src/crush-log-source", "the source path must be trimmed")

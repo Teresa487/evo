@@ -103,7 +103,7 @@ func BenchmarkLoadFromConfigPaths_Empty(b *testing.B) {
 	}
 }
 
-// BenchmarkLoadFromConfigPaths_ShellConfig measures the crushrc execution
+// BenchmarkLoadFromConfigPaths_ShellConfig measures the evorc execution
 // 路径 (shell interpreter + 配置 builtins + JSON marshal), which now sits 在
 // startup 和 reload critical 路径 alongside JSON parsing. Keeps
 // regression 在 shell 配置 loading 从 going unnoticed.
@@ -115,7 +115,7 @@ func BenchmarkLoadFromConfigPaths_ShellConfig(b *testing.B) {
 provider add anthropic --api-key "$ANTHROPIC_API_KEY"
 model large openai/gpt-4o --think
 permissions allow bash view
-option data-directory .crush
+option data-directory .evo
 option metrics false`)
 
 	if err := os.WriteFile(rcPath, rcContent, 0o644); err != nil {

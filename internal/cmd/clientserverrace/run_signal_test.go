@@ -22,14 +22,14 @@ import (
 // SIGTERM 和 SIGHUP, which root command catches, 和 streaming 在
 // until 它的 agent finishes.
 func TestRunStopsOnTerminationSignal(t *testing.T) {
-	bin := crushBinary(t)
+	bin := evoBinary(t)
 	for _, clientServer := range []bool{false, true} {
 		for _, sig := range []syscall.Signal{syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP} {
 			t.Run(fmt.Sprintf("client-server=%t/%v", clientServer, sig), func(t *testing.T) {
 				streaming, cancelled, url := startSlowLLM(t)
 				sb := newSandbox(t, bin,
-					"CRUSH_CLIENT_SERVER="+strconv.FormatBool(clientServer),
-					"CRUSH_DISABLE_DEFAULT_PROVIDERS=1")
+					"EVO_CLIENT_SERVER="+strconv.FormatBool(clientServer),
+					"EVO_DISABLE_DEFAULT_PROVIDERS=1")
 				writeMockConfig(t, sb, url)
 				if clientServer {
 					sb.start(t, "server", "server", "--host", sb.host)

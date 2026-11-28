@@ -18,15 +18,15 @@ func TestReloadConfig_ReloadsEachWorkspace(t *testing.T) {
 	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
 	t.Setenv("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
-	t.Setenv("CRUSH_GLOBAL_CONFIG", filepath.Join(home, ".config", "crush"))
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(home, ".local", "share", "crush"))
+	t.Setenv("EVO_GLOBAL_CONFIG", filepath.Join(home, ".config", "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(home, ".local", "share", "crush"))
 
 	b, _ := newTestBackend(t)
 	good := insertReloadWorkspace(t, b)
 	bad := insertReloadWorkspace(t, b)
 
-	writeCrushrc(t, good, "option notifications osc\n")
-	writeCrushrc(t, bad, "exit 1\n")
+	writeEvorc(t, good, "option notifications osc\n")
+	writeEvorc(t, bad, "exit 1\n")
 
 	err := b.ReloadConfig(t.Context())
 	require.ErrorContains(t, err, bad.ID)
@@ -39,7 +39,7 @@ func insertReloadWorkspace(t *testing.T, b *Backend) *Workspace {
 	t.Helper()
 	wd := t.TempDir()
 	ws := &Workspace{ID: uuid.New().String(), Path: wd}
-	writeCrushrc(t, ws, "option notifications bell\n")
+	writeEvorc(t, ws, "option notifications bell\n")
 	cfg, err := config.Init(t.Context(), wd, "", false)
 	require.NoError(t, err)
 	ws.Cfg = cfg
@@ -47,7 +47,7 @@ func insertReloadWorkspace(t *testing.T, b *Backend) *Workspace {
 	return ws
 }
 
-func writeCrushrc(t *testing.T, ws *Workspace, body string) {
+func writeEvorc(t *testing.T, ws *Workspace, body string) {
 	t.Helper()
 	require.NoError(t, os.WriteFile(filepath.Join(ws.Path, "evorc"), []byte(body), 0o644))
 }

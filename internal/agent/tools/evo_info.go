@@ -1,4 +1,4 @@
-// crush_info.go —— crush_info 工具：报告当前 Crush 运行环境信息。
+// evo_info.go —— evo_info 工具：报告当前 Crush 运行环境信息。
 
 package tools
 
@@ -18,14 +18,14 @@ import (
 	"github.com/charmbracelet/crush/internal/skills"
 )
 
-const CrushInfoToolName = "crush_info"
+const EvoInfoToolName = "evo_info"
 
-//go:embed crush_info.md
-var crushInfoDescription string
+//go:embed evo_info.md
+var evoInfoDescription string
 
-type CrushInfoParams struct{}
+type EvoInfoParams struct{}
 
-func NewCrushInfoTool(
+func NewEvoInfoTool(
 	cfg *config.ConfigStore,
 	lspManager *lsp.Manager,
 	allSkills []*skills.Skill,
@@ -33,15 +33,15 @@ func NewCrushInfoTool(
 	skillTracker *skills.Tracker,
 ) fantasy.AgentTool {
 	return fantasy.NewAgentTool(
-		CrushInfoToolName,
-		crushInfoDescription,
-		func(ctx context.Context, _ CrushInfoParams, _ fantasy.ToolCall) (fantasy.ToolResponse, error) {
-			return fantasy.NewTextResponse(buildCrushInfo(cfg, lspManager, allSkills, activeSkills, skillTracker)), nil
+		EvoInfoToolName,
+		evoInfoDescription,
+		func(ctx context.Context, _ EvoInfoParams, _ fantasy.ToolCall) (fantasy.ToolResponse, error) {
+			return fantasy.NewTextResponse(buildEvoInfo(cfg, lspManager, allSkills, activeSkills, skillTracker)), nil
 		},
 	)
 }
 
-func buildCrushInfo(cfg *config.ConfigStore, lspManager *lsp.Manager, allSkills []*skills.Skill, activeSkills []*skills.Skill, skillTracker *skills.Tracker) string {
+func buildEvoInfo(cfg *config.ConfigStore, lspManager *lsp.Manager, allSkills []*skills.Skill, activeSkills []*skills.Skill, skillTracker *skills.Tracker) string {
 	var b strings.Builder
 
 	writeConfigFiles(&b, cfg)

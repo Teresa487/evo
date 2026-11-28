@@ -14,7 +14,7 @@ import (
 )
 
 // TestBuildAgentReadinessSurvivesCallerCancellation 是 regression 测试 为
-// CRUSH_CLIENT_SERVER=1 "new 会话 hangs" bug.
+// EVO_CLIENT_SERVER=1 "new 会话 hangs" bug.
 //
 // buildAgent starts readiness goroutines 那 build 系统提示词 和
 // initial 工具 list. Several 服务端 条目 points build agent 从
@@ -40,7 +40,7 @@ func TestBuildAgentReadinessSurvivesCallerCancellation(t *testing.T) {
 	// succeed. No MCP servers 是 configured, 所以 initialization would 完成
 	// instantly 如果 we let it — we arm gate anyway 到 prove readiness
 	// goroutines no longer block 在 it.
-	crushJSON := `{
+	evoJSON := `{
   "options": {"disable_default_providers": true, "disable_provider_auto_update": true},
   "providers": {"mock": {"id": "mock", "name": "Mock", "type": "openai",
     "base_url": "http://127.0.0.1:9/v1", "api_key": "test-key",
@@ -48,7 +48,7 @@ func TestBuildAgentReadinessSurvivesCallerCancellation(t *testing.T) {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
              "small": {"provider": "mock", "model": "mock-model"}}
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(crushJSON), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(evoJSON), 0o644))
 
 	cfg, err := config.Init(t.Context(), env.workingDir, "", false)
 	require.NoError(t, err)
@@ -108,7 +108,7 @@ func TestBuildAgentReadinessSurvivesCallerCancellation(t *testing.T) {
 func TestTaskAgentsDoNotJoinCoordinatorReadiness(t *testing.T) {
 	env := testEnv(t)
 
-	crushJSON := `{
+	evoJSON := `{
   "options": {"disable_default_providers": true, "disable_provider_auto_update": true},
   "providers": {"mock": {"id": "mock", "name": "Mock", "type": "openai",
     "base_url": "http://127.0.0.1:9/v1", "api_key": "test-key",
@@ -116,7 +116,7 @@ func TestTaskAgentsDoNotJoinCoordinatorReadiness(t *testing.T) {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
              "small": {"provider": "mock", "model": "mock-model"}}
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(crushJSON), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(evoJSON), 0o644))
 
 	cfg, err := config.Init(t.Context(), env.workingDir, "", false)
 	require.NoError(t, err)

@@ -13,7 +13,7 @@ func TestParseHostURL(t *testing.T) {
 
 	// 一个 路径 without drive letter 是 不 absolute 在 Windows, 所以 it 是
 	// resolved against the current drive.
-	unixSock, err := filepath.Abs("/tmp/crush.sock")
+	unixSock, err := filepath.Abs("/tmp/evo.sock")
 	require.NoError(t, err)
 
 	cases := []struct {
@@ -28,7 +28,7 @@ func TestParseHostURL(t *testing.T) {
 		{name: "tcp with base path", host: "tcp://127.0.0.1:8080/api", scheme: "tcp", addr: "127.0.0.1:8080", basePath: "/api"},
 		{name: "http aliases tcp", host: "http://127.0.0.1:8080", scheme: "tcp", addr: "127.0.0.1:8080"},
 		{name: "http with base path", host: "http://127.0.0.1:8080/api", scheme: "tcp", addr: "127.0.0.1:8080", basePath: "/api"},
-		{name: "unix", host: "unix:///tmp/crush.sock", scheme: "unix", addr: unixSock},
+		{name: "unix", host: "unix:///tmp/evo.sock", scheme: "unix", addr: unixSock},
 		{name: "missing separator", host: "127.0.0.1:8080", wantErr: true},
 	}
 

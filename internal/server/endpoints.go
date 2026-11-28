@@ -331,7 +331,7 @@ func (c *controllerV1) endpoints() []apigen.Endpoint {
 		apigen.Post("/v1/workspaces/{id}/sessions/{sid}/auto-approve").
 			Summary("Auto-approve a session's permissions").
 			Description("Grants every permission request the session raises from "+
-				"now on without prompting, as `crush run` does for its own session. "+
+				"now on without prompting, as `evo run` does for its own session. "+
 				"Other sessions keep prompting. The approval lasts while the "+
 				"workspace is hosted.").
 			Tags("permissions").

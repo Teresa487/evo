@@ -20,7 +20,7 @@ func TestChannelsFlagAvailableOnRunCmd(t *testing.T) {
 	require.True(t, runCmd.Flags().HasFlags(), "runCmd flags should be accessible")
 
 	flag := runCmd.Flags().Lookup("channels")
-	require.NotNil(t, flag, "the --channels flag must be available on `crush run` (register it as a persistent flag on rootCmd)")
+	require.NotNil(t, flag, "the --channels flag must be available on `evo run` (register it as a persistent flag on rootCmd)")
 	require.Equal(t, "stringSlice", flag.Value.Type(), "--channels must be a string slice flag")
 }
 

@@ -57,14 +57,14 @@ func TestConfigValidateCoreutils(t *testing.T) {
 }
 
 func TestShellConfigOptionCoreutils(t *testing.T) {
-	store := loadCrushSh(t, `option coreutils turtle`)
+	store := loadEvoSh(t, `option coreutils turtle`)
 
 	require.Equal(t, config.CoreutilsTurtle, store.Config().Options.Coreutils)
 	require.Equal(t, config.CoreutilsTurtle, store.Config().Options.GetCoreutils())
 }
 
 func TestShellConfigOptionCoreutilsRejectsInvalidValue(t *testing.T) {
-	_, err := loadCrushShErr(t, `option coreutils bogus`)
+	_, err := loadEvoShErr(t, `option coreutils bogus`)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "expects turtle, system, auto, or off")
 }

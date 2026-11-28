@@ -20,10 +20,10 @@ func TestRegisterAndList(t *testing.T) {
 
 	// Override projects 文件 路径 为 testing
 	t.Setenv("XDG_DATA_HOME", tmpDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
 
 	// 测试 registering project
-	err := Register("/home/user/project1", "/home/user/project1/.crush")
+	err := Register("/home/user/project1", "/home/user/project1/.evo")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -42,12 +42,12 @@ func TestRegisterAndList(t *testing.T) {
 		t.Errorf("Expected path /home/user/project1, got %s", projects[0].Path)
 	}
 
-	if projects[0].DataDir != "/home/user/project1/.crush" {
-		t.Errorf("Expected data_dir /home/user/project1/.crush, got %s", projects[0].DataDir)
+	if projects[0].DataDir != "/home/user/project1/.evo" {
+		t.Errorf("Expected data_dir /home/user/project1/.evo, got %s", projects[0].DataDir)
 	}
 
 	// Register another project
-	err = Register("/home/user/project2", "/home/user/project2/.crush")
+	err = Register("/home/user/project2", "/home/user/project2/.evo")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -70,10 +70,10 @@ func TestRegisterAndList(t *testing.T) {
 func TestRegisterUpdatesExisting(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
 
 	// Register a project
-	err := Register("/home/user/project1", "/home/user/project1/.crush")
+	err := Register("/home/user/project1", "/home/user/project1/.evo")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -84,7 +84,7 @@ func TestRegisterUpdatesExisting(t *testing.T) {
 	// Wait bit 和 re-register
 	time.Sleep(10 * time.Millisecond)
 
-	err = Register("/home/user/project1", "/home/user/project1/.crush-new")
+	err = Register("/home/user/project1", "/home/user/project1/.evo-new")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -95,7 +95,7 @@ func TestRegisterUpdatesExisting(t *testing.T) {
 		t.Fatalf("Expected 1 project after update, got %d", len(projects))
 	}
 
-	if projects[0].DataDir != "/home/user/project1/.crush-new" {
+	if projects[0].DataDir != "/home/user/project1/.evo-new" {
 		t.Errorf("Expected updated data_dir, got %s", projects[0].DataDir)
 	}
 
@@ -107,7 +107,7 @@ func TestRegisterUpdatesExisting(t *testing.T) {
 func TestLoadEmptyFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
 
 	// List before any projects exist
 	projects, err := List()
@@ -123,7 +123,7 @@ func TestLoadEmptyFile(t *testing.T) {
 func TestProjectsFilePath(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
 
 	expected := filepath.Join(tmpDir, "crush", "projects.json")
 	actual := projectsFilePath()
@@ -136,11 +136,11 @@ func TestProjectsFilePath(t *testing.T) {
 func TestRegisterWithParentDataDir(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
 
-	// Register project where .crush 是 在 parent 目录.
-	// e.g., working 在 /home/用户/monorepo/packages/app 但 .crush 是 在 /home/用户/monorepo/.crush
-	err := Register("/home/user/monorepo/packages/app", "/home/user/monorepo/.crush")
+	// Register project where .evo 是 在 parent 目录.
+	// e.g., working 在 /home/用户/monorepo/packages/app 但 .evo 是 在 /home/用户/monorepo/.evo
+	err := Register("/home/user/monorepo/packages/app", "/home/user/monorepo/.evo")
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -158,17 +158,17 @@ func TestRegisterWithParentDataDir(t *testing.T) {
 		t.Errorf("Expected path /home/user/monorepo/packages/app, got %s", projects[0].Path)
 	}
 
-	if projects[0].DataDir != "/home/user/monorepo/.crush" {
-		t.Errorf("Expected data_dir /home/user/monorepo/.crush, got %s", projects[0].DataDir)
+	if projects[0].DataDir != "/home/user/monorepo/.evo" {
+		t.Errorf("Expected data_dir /home/user/monorepo/.evo, got %s", projects[0].DataDir)
 	}
 }
 
 func TestRegisterWithExternalDataDir(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
 
-	// Register project where .crush 是 在 completely different location.
+	// Register project where .evo 是 在 completely different location.
 	// e.g., project 在 /home/用户/project 但 data 存储 在 /var/data/crush/myproject
 	err := Register("/home/user/project", "/var/data/crush/myproject")
 	if err != nil {
@@ -196,10 +196,10 @@ func TestRegisterWithExternalDataDir(t *testing.T) {
 func TestRegisterOrdersByRecency(t *testing.T) {
 	tmpDir := t.TempDir()
 	t.Setenv("XDG_DATA_HOME", tmpDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(tmpDir, "crush"))
 
 	for _, path := range []string{"/p1", "/p2", "/p3", "/p1"} {
-		if err := Register(path, path+"/.crush"); err != nil {
+		if err := Register(path, path+"/.evo"); err != nil {
 			t.Fatalf("Register failed: %v", err)
 		}
 	}
@@ -219,25 +219,25 @@ func TestRegisterOrdersByRecency(t *testing.T) {
 	}
 }
 
-// TestRegister_ConcurrentProcesses guards 那 crush processes registering
+// TestRegister_ConcurrentProcesses guards 那 evo processes registering
 // projects 在 once neither corrupt projects.json nor lose entries.
 func TestRegister_ConcurrentProcesses(t *testing.T) {
 	const (
-		dirEnv   = "CRUSH_TEST_PROJECTS_DIR"
-		idEnv    = "CRUSH_TEST_PROJECTS_CHILD"
+		dirEnv   = "EVO_TEST_PROJECTS_DIR"
+		idEnv    = "EVO_TEST_PROJECTS_CHILD"
 		children = 8
 		paths    = 5
 	)
 
 	if dir := os.Getenv(dirEnv); dir != "" {
-		// Child process. internal/home clears CRUSH_GLOBAL_DATA 在 tests.
-		t.Setenv("CRUSH_GLOBAL_DATA", dir)
+		// Child process. internal/home clears EVO_GLOBAL_DATA 在 tests.
+		t.Setenv("EVO_GLOBAL_DATA", dir)
 		// Block until parent releases every child 在 once.
 		_, err := io.Copy(io.Discard, os.Stdin)
 		require.NoError(t, err)
 		for i := range 2 * paths { // Two rounds widen the race window.
 			path := fmt.Sprintf("/project/%s/%d", os.Getenv(idEnv), i%paths)
-			require.NoError(t, Register(path, path+"/.crush"))
+			require.NoError(t, Register(path, path+"/.evo"))
 		}
 		return
 	}

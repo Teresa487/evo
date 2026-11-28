@@ -42,12 +42,12 @@ var defaultContextPaths = []string{
 	"CLAUDE.local.md",
 	"GEMINI.md",
 	"gemini.md",
-	"crush.md",
-	"crush.local.md",
-	"Crush.md",
-	"Crush.local.md",
-	"CRUSH.md",
-	"CRUSH.local.md",
+	"evo.md",
+	"evo.local.md",
+	"Evo.md",
+	"Evo.local.md",
+	"EVO.md",
+	"EVO.local.md",
 	"AGENTS.md",
 	"agents.md",
 	"Agents.md",
@@ -462,9 +462,9 @@ func (Attribution) JSONSchemaExtend(schema *jsonschema.Schema) {
 }
 
 type Options struct {
-	ContextPaths         []string    `json:"context_paths,omitempty" jsonschema:"description=Paths to files containing context information for the AI,example=.cursorrules,example=CRUSH.md"`
-	GlobalContextPaths   []string    `json:"global_context_paths,omitempty" jsonschema:"description=Paths to files containing global context information for the AI,default=~/.config/crush/CRUSH.md,default=~/.config/AGENTS.md"`
-	SkillsPaths          []string    `json:"skills_paths,omitempty" jsonschema:"description=Paths to directories containing Agent Skills (folders with SKILL.md files),example=~/.config/crush/skills,example=./skills"`
+	ContextPaths         []string    `json:"context_paths,omitempty" jsonschema:"description=Paths to files containing context information for the AI,example=.cursorrules,example=EVO.md"`
+	GlobalContextPaths   []string    `json:"global_context_paths,omitempty" jsonschema:"description=Paths to files containing global context information for the AI,default=~/.config/evo/EVO.md,default=~/.config/AGENTS.md"`
+	SkillsPaths          []string    `json:"skills_paths,omitempty" jsonschema:"description=Paths to directories containing Agent Skills (folders with SKILL.md files),example=~/.config/evo/skills,example=./skills"`
 	TUI                  *TUIOptions `json:"tui,omitempty" jsonschema:"description=Terminal user interface options"`
 	Debug                bool        `json:"debug,omitempty" jsonschema:"description=Enable debug logging,default=false"`
 	DebugLSP             bool        `json:"debug_lsp,omitempty" jsonschema:"description=Enable debug logging for LSP servers,default=false"`
@@ -477,11 +477,11 @@ type Options struct {
 	DisabledTools     []string     `json:"disabled_tools,omitempty" jsonschema:"description=List of built-in tools to disable and hide from the agent,example=bash,example=sourcegraph"`
 	Attribution       *Attribution `json:"attribution,omitempty" jsonschema:"description=Attribution settings for generated content"`
 	DisableMetrics    bool         `json:"disable_metrics,omitempty" jsonschema:"description=Disable sending metrics,default=false"`
-	InitializeAs      string       `json:"initialize_as,omitempty" jsonschema:"description=Name of the context file to create/update during project initialization,default=AGENTS.md,example=AGENTS.md,example=CRUSH.md,example=CLAUDE.md,example=docs/LLMs.md"`
+	InitializeAs      string       `json:"initialize_as,omitempty" jsonschema:"description=Name of the context file to create/update during project initialization,default=AGENTS.md,example=AGENTS.md,example=EVO.md,example=CLAUDE.md,example=docs/LLMs.md"`
 	AutoLSP           *bool        `json:"auto_lsp,omitempty" jsonschema:"description=Automatically setup LSPs based on root markers,default=true"`
 	Progress          *bool        `json:"progress,omitempty" jsonschema:"description=Show indeterminate progress updates during long operations,default=true"`
 	Notifications     string       `json:"notifications,omitempty" jsonschema:"description=Notification style to use. Options: auto (default)\\, native\\, osc\\, bell\\, disabled. Auto selects based on environment: native for local sessions\\, osc for SSH (with automatic OSC 99/777 detection).,enum=auto,enum=native,enum=osc,enum=bell,enum=disabled,default=auto"`
-	DisabledSkills    []string     `json:"disabled_skills,omitempty" jsonschema:"description=List of skill names to disable and hide from the agent,example=crush-config"`
+	DisabledSkills    []string     `json:"disabled_skills,omitempty" jsonschema:"description=List of skill names to disable and hide from the agent,example=evo-config"`
 	RequestTimeout    *int         `json:"request_timeout,omitempty" jsonschema:"description=Timeout in seconds for each LLM API request. Streaming responses are aborted only after this much inactivity between tokens\\, so slow but active streams are never killed; the wait for the first token gets at least five minutes for prompt prefill. The budget grows with the estimated prompt size (240s above 50k tokens\\, 300s above 100k)\\, and a timed-out request is retried: 10 times for the main conversation\\, 3 times for background work. 0 disables it\\, negative values are invalid.,default=60,example=120,example=300,example=0"`
 	MaxBackgroundJobs *int         `json:"max_background_jobs,omitempty" jsonschema:"description=How many background shell jobs may run at once. Jobs that have finished never count against it. 0 or negative restores the default.,default=50,example=10,example=200"`
 	// PinentryIntegrated renders GPG passphrase/PIN prompts 作为 native
@@ -523,10 +523,10 @@ func (o *Options) GetCoreutils() CoreutilsMode {
 // ExperimentalOptions holds unfinished features. Each mirrors an environment
 // variable, which wins over 配置 值 当 set.
 type ExperimentalOptions struct {
-	ClientServer       *bool `json:"client_server,omitempty" jsonschema:"description=Run the agent in a background server that the TUI attaches to. Overridden by CRUSH_CLIENT_SERVER.,default=false"`
-	ServerReadyTimeout *int  `json:"server_ready_timeout,omitempty" jsonschema:"description=Seconds a client waits for the server to become ready. Overridden by CRUSH_SERVER_READY_TIMEOUT.,example=30"`
-	ServerIdleTimeout  *int  `json:"server_idle_timeout,omitempty" jsonschema:"description=Seconds the server stays alive after its last workspace closes. 0 shuts it down at once. Overridden by CRUSH_SERVER_IDLE_TIMEOUT.,default=60"`
-	ServerDetachGrace  *int  `json:"server_detach_grace,omitempty" jsonschema:"description=Seconds a workspace survives after a client's connection drops. 0 tears it down at once. Overridden by CRUSH_SERVER_DETACH_GRACE.,default=10"`
+	ClientServer       *bool `json:"client_server,omitempty" jsonschema:"description=Run the agent in a background server that the TUI attaches to. Overridden by EVO_CLIENT_SERVER.,default=false"`
+	ServerReadyTimeout *int  `json:"server_ready_timeout,omitempty" jsonschema:"description=Seconds a client waits for the server to become ready. Overridden by EVO_SERVER_READY_TIMEOUT.,example=30"`
+	ServerIdleTimeout  *int  `json:"server_idle_timeout,omitempty" jsonschema:"description=Seconds the server stays alive after its last workspace closes. 0 shuts it down at once. Overridden by EVO_SERVER_IDLE_TIMEOUT.,default=60"`
+	ServerDetachGrace  *int  `json:"server_detach_grace,omitempty" jsonschema:"description=Seconds a workspace survives after a client's connection drops. 0 tears it down at once. Overridden by EVO_SERVER_DETACH_GRACE.,default=10"`
 }
 
 // DefaultMaxBackgroundJobs 是 how many background shell jobs may 运行 在 once
@@ -1116,8 +1116,8 @@ func allToolNames() []string {
 		"agent_status",
 		"agent_stop",
 		"bash",
-		"crush_info",
-		"crush_logs",
+		"evo_info",
+		"evo_logs",
 		"job_output",
 		"job_kill",
 		"download",

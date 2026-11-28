@@ -1049,7 +1049,7 @@ func updateState(name string, state State, err error, client *ClientSession, cou
 		// 一个 会话 那 has errored 是 dead 到 us: close it 所以 child
 		// process 和 它的 stdio pipes 是 released, 和 clear 它的 registry
 		// entries 所以 agent stops advertising capabilities it can no
-		// longer 调用 (without 那, crush_info / `/mcp` menu 和
+		// longer 调用 (without 那, evo_info / `/mcp` menu 和
 		// 工具 list handed 到 LLM diverge). Crucially, close exactly
 		// 会话 那 errored ( 客户端 argument): 如果 registry
 		// already holds DIFFERENT 会话 — newer, healthy one another

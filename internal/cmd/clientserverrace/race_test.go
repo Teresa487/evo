@@ -1,5 +1,5 @@
 // Package clientserverrace_test 是 regression 测试 为
-// CRUSH_CLIENT_SERVER=1 socket-init race documented 在
+// EVO_CLIENT_SERVER=1 socket-init race documented 在
 // docs/备注/2026-05-11-客户端-服务端-socket-init-race.md (item F5).
 //
 // 它 lives 在 它的 own 目录 所以 it can build even 如果 other 测试
@@ -27,7 +27,7 @@ import (
 // ensureServer 当 it gives up waiting 为 服务端 socket /
 // readiness probe (internal/cmd/root.go). Seeing 这 在 any 客户端's
 // output means the race fired.
-const readinessErrSubstr = "failed to initialize crush server"
+const readinessErrSubstr = "failed to initialize evo server"
 
 // numClients 是 intentionally larger than typical CPU count 到
 // ensure spawn 锁 + readiness probe 是 exercised under
@@ -55,7 +55,7 @@ func TestClientServerSpawnRace(t *testing.T) {
 	}
 
 	repoRoot := repoRootFromTest(t)
-	bin := buildCrushBinary(t, repoRoot)
+	bin := buildEvoBinary(t, repoRoot)
 
 	// Use /tmp directly 所以 unix socket 路径 stays under
 	// 104-char sockaddr_un limit 在 darwin. t.TempDir() can return
@@ -66,7 +66,7 @@ func TestClientServerSpawnRace(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.RemoveAll(runDir) })
 
-	socketPath := filepath.Join(runDir, "crush.sock")
+	socketPath := filepath.Join(runDir, "evo.sock")
 	host := "unix://" + socketPath
 
 	// Fresh, isolated XDG/HOME 所以 we don't touch 用户's real
@@ -84,14 +84,14 @@ func TestClientServerSpawnRace(t *testing.T) {
 
 	env := append(
 		os.Environ(),
-		"CRUSH_CLIENT_SERVER=1",
+		"EVO_CLIENT_SERVER=1",
 		"XDG_CACHE_HOME="+cacheHome,
 		"XDG_DATA_HOME="+dataHome,
 		"XDG_CONFIG_HOME="+configHome,
 		"HOME="+homeDir,
 		// Belt-和-suspenders: 如果 anything tries 到 talk 到 real
 		// 提供方, fail loudly rather than make network 调用.
-		"CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1",
+		"EVO_DISABLE_PROVIDER_AUTO_UPDATE=1",
 	)
 
 	// Make sure no 服务端 是 up before we start.
@@ -164,7 +164,7 @@ func TestClientServerSpawnRace(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), clientTimeout)
 			defer cancel()
 
-			// `crush logout` exercises connectToServer (which 是
+			// `evo logout` exercises connectToServer (which 是
 			// where readiness race lives) 和, unlike `crush
 			// 运行`, spawns 服务端 当 none 是 running.
 			// 上下文 超时 above bounds 运行. We assert race
@@ -280,10 +280,10 @@ func repoRootFromTest(t *testing.T) string {
 	}
 }
 
-// buildCrushBinary builds crush 二进制 once 在 start 的
+// buildEvoBinary builds crush 二进制 once 在 start 的
 // 测试 和 returns absolute 路径. Subsequent t.清理 removes
 // the built artefact.
-func buildCrushBinary(t *testing.T, repoRoot string) string {
+func buildEvoBinary(t *testing.T, repoRoot string) string {
 	t.Helper()
 
 	binDir, err := os.MkdirTemp("", "crush-race-bin-")

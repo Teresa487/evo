@@ -123,7 +123,7 @@ func permissionEvent(id string) pubsub.Event[permission.PermissionRequest] {
 }
 
 func TestPermissionRequestReplayKeepsDialog(t *testing.T) {
-	t.Setenv("CRUSH_PERMISSIONS_PIPED", "")
+	t.Setenv("EVO_PERMISSIONS_PIPED", "")
 	u := newProgramStatusUI(t)
 	u.com.Workspace = permissionWorkspace{u.com.Workspace.(*countingWorkspace)}
 	notifier := &recordingNotifier{}

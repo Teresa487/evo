@@ -43,7 +43,7 @@ func TestRender(t *testing.T) {
 			name:   "compact with a session prints only the resume lines",
 			banner: config.ExitBannerCompact,
 			sess:   testSession(),
-			want:   []string{"Session", "Fix the flaky test", "Continue", "crush -s "},
+			want:   []string{"Session", "Fix the flaky test", "Continue", "evo -s "},
 			// No logo, 和 no padding around two lines.
 			notWant: []string{"Thanks for using Crush!"},
 		},
@@ -164,7 +164,7 @@ func TestRenderUsesActiveTheme(t *testing.T) {
 			t.Parallel()
 			got := Render(&theme, banner, testSession(), 100)
 			require.Contains(t, got, "\x1b[1mSession  \x1b[mFix the flaky test")
-			require.Contains(t, got, "\x1b[1mContinue \x1b[mcrush -s 3d4a966")
+			require.Contains(t, got, "\x1b[1mContinue \x1b[mevo -s 3d4a966")
 			if banner == config.ExitBannerDefault {
 				require.Contains(t, got, "38;2;86;205;120m")
 				require.Contains(t, got, "\n   Thanks for using Crush!")

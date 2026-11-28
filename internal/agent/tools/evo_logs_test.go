@@ -48,14 +48,14 @@ func makeLogEntry(level, msg, source string, line int, extra map[string]any) map
 	return entry
 }
 
-func TestNewCrushLogsTool(t *testing.T) {
+func TestNewEvoLogsTool(t *testing.T) {
 	t.Parallel()
-	tool := NewCrushLogsTool("/tmp/test.log")
+	tool := NewEvoLogsTool("/tmp/test.log")
 	require.NotNil(t, tool)
-	require.Equal(t, CrushLogsToolName, tool.Info().Name)
+	require.Equal(t, EvoLogsToolName, tool.Info().Name)
 }
 
-func TestCrushLogs_HappyPath(t *testing.T) {
+func TestEvoLogs_HappyPath(t *testing.T) {
 	t.Parallel()
 	entries := []map[string]any{
 		makeLogEntry("INFO", "Application started", "app.go", 42, map[string]any{"version": "1.0.0"}),
@@ -65,7 +65,7 @@ func TestCrushLogs_HappyPath(t *testing.T) {
 
 	logFile := createTestLogFile(t, entries)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 3})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 3})
 
 	lines := strings.Split(result, "\n")
 	require.Len(t, lines, 3)
@@ -83,7 +83,7 @@ func TestCrushLogs_HappyPath(t *testing.T) {
 	require.Contains(t, lines[2], "db.go:55")
 }
 
-func TestCrushLogs_DefaultLines(t *testing.T) {
+func TestEvoLogs_DefaultLines(t *testing.T) {
 	t.Parallel()
 	// 创建 100 log entries.
 	var entries []map[string]any
@@ -94,7 +94,7 @@ func TestCrushLogs_DefaultLines(t *testing.T) {
 	logFile := createTestLogFile(t, entries)
 
 	// 调用 用 Lines: 0 should 默认 到 50.
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 0})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 0})
 
 	lines := strings.Split(result, "\n")
 	require.Len(t, lines, 50)
@@ -104,7 +104,7 @@ func TestCrushLogs_DefaultLines(t *testing.T) {
 	require.Contains(t, lines[49], "Entry 99")
 }
 
-func TestCrushLogs_MaxCap(t *testing.T) {
+func TestEvoLogs_MaxCap(t *testing.T) {
 	t.Parallel()
 	// 创建 200 log entries.
 	var entries []map[string]any
@@ -115,30 +115,30 @@ func TestCrushLogs_MaxCap(t *testing.T) {
 	logFile := createTestLogFile(t, entries)
 
 	// 请求 200 lines, 但 should 只 get 100 (max cap).
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 200})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 200})
 
 	lines := strings.Split(result, "\n")
 	require.Len(t, lines, 100)
 }
 
-func TestCrushLogs_MissingFile(t *testing.T) {
+func TestEvoLogs_MissingFile(t *testing.T) {
 	t.Parallel()
-	result := runCrushLogs("/nonexistent/path/crush.log", CrushLogsParams{Lines: 50})
+	result := runEvoLogs("/nonexistent/path/crush.log", EvoLogsParams{Lines: 50})
 	require.Contains(t, result, "No log file found")
 }
 
-func TestCrushLogs_EmptyFile(t *testing.T) {
+func TestEvoLogs_EmptyFile(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "crush.log")
 	_, err := os.Create(logFile)
 	require.NoError(t, err)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 50})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 50})
 	require.Contains(t, result, "Log file is empty")
 }
 
-func TestCrushLogs_MalformedLines(t *testing.T) {
+func TestEvoLogs_MalformedLines(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "crush.log")
@@ -159,7 +159,7 @@ func TestCrushLogs_MalformedLines(t *testing.T) {
 
 	file.Close()
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 10})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 10})
 
 	lines := strings.Split(result, "\n")
 	// Only 2 valid lines should 是 returned.
@@ -168,7 +168,7 @@ func TestCrushLogs_MalformedLines(t *testing.T) {
 	require.Contains(t, lines[1], "Another valid entry")
 }
 
-func TestCrushLogs_ExtraFieldsSorted(t *testing.T) {
+func TestEvoLogs_ExtraFieldsSorted(t *testing.T) {
 	t.Parallel()
 	entries := []map[string]any{
 		makeLogEntry("INFO", "Test message", "app.go", 1, map[string]any{
@@ -180,7 +180,7 @@ func TestCrushLogs_ExtraFieldsSorted(t *testing.T) {
 
 	logFile := createTestLogFile(t, entries)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 1})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 1})
 
 	// Fields should 是 sorted alphabetically.
 	idxA := strings.Index(result, "a_field=first")
@@ -191,7 +191,7 @@ func TestCrushLogs_ExtraFieldsSorted(t *testing.T) {
 	require.True(t, idxM < idxZ, "m_field should come before z_field")
 }
 
-func TestCrushLogs_NonStringValues(t *testing.T) {
+func TestEvoLogs_NonStringValues(t *testing.T) {
 	t.Parallel()
 	entry := map[string]any{
 		"time":   time.Now().Format(time.RFC3339),
@@ -208,7 +208,7 @@ func TestCrushLogs_NonStringValues(t *testing.T) {
 
 	logFile := createTestLogFile(t, []map[string]any{entry})
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 1})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 1})
 
 	// Numbers should 是 bare (不 quoted).
 	require.Contains(t, result, "count=42")
@@ -225,7 +225,7 @@ func TestCrushLogs_NonStringValues(t *testing.T) {
 	require.Contains(t, result, `arr="[`)
 }
 
-func TestCrushLogs_Redaction(t *testing.T) {
+func TestEvoLogs_Redaction(t *testing.T) {
 	t.Parallel()
 	entries := []map[string]any{
 		makeLogEntry("INFO", "API call", "api.go", 10, map[string]any{
@@ -245,7 +245,7 @@ func TestCrushLogs_Redaction(t *testing.T) {
 
 	logFile := createTestLogFile(t, entries)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 1})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 1})
 
 	// All sensitive fields should 是 redacted.
 	require.Contains(t, result, "authorization=[REDACTED]")
@@ -266,7 +266,7 @@ func TestCrushLogs_Redaction(t *testing.T) {
 	require.NotContains(t, result, "mytoken")
 }
 
-func TestCrushLogs_ReservedFields(t *testing.T) {
+func TestEvoLogs_ReservedFields(t *testing.T) {
 	t.Parallel()
 	entries := []map[string]any{
 		{
@@ -284,7 +284,7 @@ func TestCrushLogs_ReservedFields(t *testing.T) {
 
 	logFile := createTestLogFile(t, entries)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 1})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 1})
 
 	// Reserved fields (case-insensitive) should 不 appear 在 extra fields.
 	require.NotContains(t, result, "Time=")
@@ -298,7 +298,7 @@ func TestCrushLogs_ReservedFields(t *testing.T) {
 	require.Contains(t, result, `extra="should appear"`)
 }
 
-func TestCrushLogs_OversizedLines(t *testing.T) {
+func TestEvoLogs_OversizedLines(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "crush.log")
@@ -330,7 +330,7 @@ func TestCrushLogs_OversizedLines(t *testing.T) {
 
 	file.Close()
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 10})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 10})
 
 	lines := strings.Split(result, "\n")
 
@@ -340,7 +340,7 @@ func TestCrushLogs_OversizedLines(t *testing.T) {
 	require.Contains(t, lines[1], "Second valid entry")
 }
 
-func TestCrushLogs_PartialTrailingLine(t *testing.T) {
+func TestEvoLogs_PartialTrailingLine(t *testing.T) {
 	t.Parallel()
 	tempDir := t.TempDir()
 	logFile := filepath.Join(tempDir, "crush.log")
@@ -359,7 +359,7 @@ func TestCrushLogs_PartialTrailingLine(t *testing.T) {
 	file.WriteString(`{"time": "2024-01-15T10:00:00Z", "level": "INFO", "msg": "Truncated`)
 	file.Close()
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 10})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 10})
 
 	lines := strings.Split(result, "\n")
 
@@ -370,7 +370,7 @@ func TestCrushLogs_PartialTrailingLine(t *testing.T) {
 	}
 }
 
-func TestCrushLogs_ValueQuoting(t *testing.T) {
+func TestEvoLogs_ValueQuoting(t *testing.T) {
 	t.Parallel()
 	entries := []map[string]any{
 		makeLogEntry("INFO", "Test", "app.go", 1, map[string]any{
@@ -386,7 +386,7 @@ func TestCrushLogs_ValueQuoting(t *testing.T) {
 
 	logFile := createTestLogFile(t, entries)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 1})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 1})
 
 	// Empty strings should 是 quoted.
 	require.Contains(t, result, `empty=""`)
@@ -410,7 +410,7 @@ func TestCrushLogs_ValueQuoting(t *testing.T) {
 	require.Contains(t, result, "normal=simplevalue")
 }
 
-func TestCrushLogs_ChronologicalOrder(t *testing.T) {
+func TestEvoLogs_ChronologicalOrder(t *testing.T) {
 	t.Parallel()
 	// 创建 entries 用 different timestamps.
 	baseTime := time.Date(2024, 1, 15, 10, 0, 0, 0, time.UTC)
@@ -437,7 +437,7 @@ func TestCrushLogs_ChronologicalOrder(t *testing.T) {
 
 	logFile := createTestLogFile(t, entries)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 3})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 3})
 
 	lines := strings.Split(result, "\n")
 
@@ -448,7 +448,7 @@ func TestCrushLogs_ChronologicalOrder(t *testing.T) {
 	require.Contains(t, lines[2], "Third")
 }
 
-func TestCrushLogs_TimeOnlyFormat(t *testing.T) {
+func TestEvoLogs_TimeOnlyFormat(t *testing.T) {
 	t.Parallel()
 	entry := map[string]any{
 		"time":   "2024-01-15T15:04:05Z",
@@ -459,13 +459,13 @@ func TestCrushLogs_TimeOnlyFormat(t *testing.T) {
 
 	logFile := createTestLogFile(t, []map[string]any{entry})
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 1})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 1})
 
 	// Should show time-只 format.
 	require.True(t, strings.HasPrefix(result, "15:04:05"), "Expected time-only format, got: %s", result)
 }
 
-func TestCrushLogs_LevelVariations(t *testing.T) {
+func TestEvoLogs_LevelVariations(t *testing.T) {
 	t.Parallel()
 	entries := []map[string]any{
 		makeLogEntry("DEBUG", "Debug message", "app.go", 1, nil),
@@ -477,7 +477,7 @@ func TestCrushLogs_LevelVariations(t *testing.T) {
 
 	logFile := createTestLogFile(t, entries)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 5})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 5})
 
 	lines := strings.Split(result, "\n")
 	require.Len(t, lines, 5)
@@ -490,7 +490,7 @@ func TestCrushLogs_LevelVariations(t *testing.T) {
 	require.Contains(t, lines[4], "ERROR")
 }
 
-func TestCrushLogs_SourceVariations(t *testing.T) {
+func TestEvoLogs_SourceVariations(t *testing.T) {
 	t.Parallel()
 	entries := []map[string]any{
 		// Source 作为 object 用 文件 和 line.
@@ -517,7 +517,7 @@ func TestCrushLogs_SourceVariations(t *testing.T) {
 
 	logFile := createTestLogFile(t, entries)
 
-	result := runCrushLogs(logFile, CrushLogsParams{Lines: 3})
+	result := runEvoLogs(logFile, EvoLogsParams{Lines: 3})
 
 	lines := strings.Split(result, "\n")
 	require.Len(t, lines, 3)

@@ -239,7 +239,7 @@ func TestLoadShellConfig_Option(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	script := `option data-directory .crush
+	script := `option data-directory .evo
 option metrics false
 option debug`
 	path := filepath.Join(dir, "evorc")
@@ -308,11 +308,11 @@ fi`
 	require.Contains(t, providers, "anthropic")
 }
 
-// TestLoadShellConfig_CrushVersionEnv verifies 那 CRUSH_VERSION 是 exposed
+// TestLoadShellConfig_EvoVersionEnv verifies 那 EVO_VERSION 是 exposed
 // 到 script 所以 it can feature-detect running Crush version.
-func TestLoadShellConfig_CrushVersionEnv(t *testing.T) {
+func TestLoadShellConfig_EvoVersionEnv(t *testing.T) {
 	dir := t.TempDir()
-	script := `provider add openai --api-key "$CRUSH_VERSION"`
+	script := `provider add openai --api-key "$EVO_VERSION"`
 	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
@@ -460,7 +460,7 @@ permissions allow bash view
 hook add PreToolUse --command "echo running" --matcher "bash" --timeout 10
 
 # Options
-option data-directory .crush
+option data-directory .evo
 option metrics false`
 	path := filepath.Join(dir, "evorc")
 
@@ -528,7 +528,7 @@ func TestConfigBuilder_NoBuilderInContext(t *testing.T) {
 }
 
 // TestLoadShellConfig_RespectsContextCancellation verifies 那 hanging
-// crushrc cannot block 配置 loading indefinitely. 配置 loads 运行 在
+// evorc cannot block 配置 loading indefinitely. 配置 loads 运行 在
 // startup 和 reload critical paths while 配置 存储's 写入 锁 是
 // held, 所以 runaway script ( busy loop, hung command substitution) must
 // 是 interruptible via 上下文 rather than wedging whole 存储.
@@ -550,7 +550,7 @@ func TestLoadShellConfig_RespectsContextCancellation(t *testing.T) {
 
 	select {
 	case err := <-done:
-		require.Error(t, err, "a cancelled crushrc must fail, not succeed")
+		require.Error(t, err, "a cancelled evorc must fail, not succeed")
 		require.True(t, shell.IsInterrupt(err),
 			"expected an interrupt/cancellation error, got: %v", err)
 	case <-time.After(2 * time.Second):

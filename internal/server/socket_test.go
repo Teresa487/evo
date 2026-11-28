@@ -66,7 +66,7 @@ func TestIsStaleSocketErr(t *testing.T) {
 func TestDefaultHost_UIDWithoutUserEnv(t *testing.T) {
 	t.Setenv("USER", "")
 	t.Setenv("HOME", "")
-	require.Equal(t, fmt.Sprintf("crush-%d.sock", os.Getuid()), filepath.Base(DefaultHost()))
+	require.Equal(t, fmt.Sprintf("evo-%d.sock", os.Getuid()), filepath.Base(DefaultHost()))
 }
 
 func TestDefaultHost_XDGRuntimeDir(t *testing.T) {
@@ -83,7 +83,7 @@ func TestDefaultHost_XDGRuntimeDir(t *testing.T) {
 	// 到 /tmp; 只 assert containment 当 it did 不. Recompose
 	// 路径 under dir (rather than checking returned 路径 length,
 	// which 是 short again after /tmp fallback) 到 decide whether
-	// fallback happened. socket 是 named crush-<uid>.sock.
+	// fallback happened. socket 是 named evo-<uid>.sock.
 	composed := filepath.Join(dir, filepath.Base(path))
 	if len(composed) <= maxUnixSocketPathLen {
 		require.True(t, strings.HasPrefix(path, dir),
@@ -91,8 +91,8 @@ func TestDefaultHost_XDGRuntimeDir(t *testing.T) {
 	}
 	require.True(t, strings.HasSuffix(path, ".sock"),
 		"socket path %q should end in .sock", path)
-	require.Contains(t, filepath.Base(path), "crush",
-		"socket filename should contain 'crush'")
+	require.Contains(t, filepath.Base(path), "evo",
+		"socket filename should contain 'evo'")
 }
 
 func TestDefaultHost_FallbackTemp(t *testing.T) {
@@ -106,8 +106,8 @@ func TestDefaultHost_FallbackTemp(t *testing.T) {
 	require.NotEmpty(t, path, "fallback socket path must be non-empty")
 	require.True(t, strings.HasSuffix(path, ".sock"),
 		"socket path %q should end in .sock", path)
-	require.Contains(t, filepath.Base(path), "crush",
-		"socket filename should contain 'crush'")
+	require.Contains(t, filepath.Base(path), "evo",
+		"socket filename should contain 'evo'")
 }
 
 // staleSocketPath creates deterministic stale unix socket 文件 在

@@ -25,7 +25,7 @@ import (
 // jobTestRoleEnv makes 测试 二进制 play "客户端", which spawns
 // 二进制 again 作为 "服务端" 用 startDetachedServer. 它 是 dispatched
 // 从 init because 服务端 gets crush's arguments, 不 测试 flags.
-const jobTestRoleEnv = "CRUSH_TEST_JOB_ROLE"
+const jobTestRoleEnv = "EVO_TEST_JOB_ROLE"
 
 var jobTestHost = &url.URL{Scheme: "npipe", Host: "//./pipe/crush-job-test"}
 
@@ -69,7 +69,7 @@ func TestStartDetachedServerOutlivesJob(t *testing.T) {
 	require.NoError(t, err)
 	cacheDir := t.TempDir()
 	client := exec.CommandContext(t.Context(), exe)
-	client.Env = append(os.Environ(), jobTestRoleEnv+"=client", "CRUSH_CACHE_DIR="+cacheDir)
+	client.Env = append(os.Environ(), jobTestRoleEnv+"=client", "EVO_CACHE_DIR="+cacheDir)
 	stdin, err := client.StdinPipe()
 	require.NoError(t, err)
 	var output strings.Builder

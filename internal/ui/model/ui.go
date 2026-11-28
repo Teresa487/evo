@@ -1279,11 +1279,11 @@ func (m *UI) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case pubsub.Event[pinentry.Notification]:
 		m.handlePinentryNotification(msg.Payload)
 	case pubsub.Event[question.Request]:
-		// CRUSH_QUESTIONS_PIPED=1: another 客户端 ( editor Crush runs 在)
+		// EVO_QUESTIONS_PIPED=1: another 客户端 ( editor Crush runs 在)
 		// shows questions 和 answers them, 所以 这 UI doesn't ask twice.
 		// Skip scroll 和 通知 too: 服务端 re-sends pending
 		// batch whenever 客户端 reports 它的 会话, 所以 both would repeat.
-		if piped, _ := strconv.ParseBool(os.Getenv("CRUSH_QUESTIONS_PIPED")); piped {
+		if piped, _ := strconv.ParseBool(os.Getenv("EVO_QUESTIONS_PIPED")); piped {
 			break
 		}
 		if !m.openBatchFormDialog(msg.Payload) {
@@ -3955,7 +3955,7 @@ func (m *UI) Draw(scr uv.Screen, area uv.Rectangle) *tea.Cursor {
 	}
 
 	// Debugging rendering (visually see 当 tui rerenders)
-	if os.Getenv("CRUSH_UI_DEBUG") == "true" {
+	if os.Getenv("EVO_UI_DEBUG") == "true" {
 		debugView := lipgloss.NewStyle().Background(lipgloss.ANSIColor(rand.Intn(256))).Width(4).Height(2)
 		debug := uv.NewStyledString(debugView.String())
 		debug.Draw(scr, image.Rectangle{
@@ -4028,7 +4028,7 @@ func (m *UI) View() tea.View {
 	}
 	v.MouseMode = mouseMode(m.mouseEnabled, m.activeInline != nil || m.dialog.HandlesHover())
 	v.ReportFocus = m.caps.ReportFocusEvents
-	v.WindowTitle = "crush " + home.Short(m.com.Workspace.WorkingDir())
+	v.WindowTitle = "evo " + home.Short(m.com.Workspace.WorkingDir())
 
 	key, cacheable := m.currentFrameKey()
 	if cacheable {
@@ -6082,9 +6082,9 @@ func (m *UI) openFilesDialog() tea.Cmd {
 
 // openPermissionsDialog opens permissions dialog 为 权限 请求.
 func (m *UI) openPermissionsDialog(perm permission.PermissionRequest) tea.Cmd {
-	// CRUSH_PERMISSIONS_PIPED=1: another 客户端 ( editor Crush runs 在)
+	// EVO_PERMISSIONS_PIPED=1: another 客户端 ( editor Crush runs 在)
 	// shows prompts 和 answers them, 所以 这 UI doesn't ask twice.
-	if piped, _ := strconv.ParseBool(os.Getenv("CRUSH_PERMISSIONS_PIPED")); piped {
+	if piped, _ := strconv.ParseBool(os.Getenv("EVO_PERMISSIONS_PIPED")); piped {
 		return nil
 	}
 	// Close any existing permissions dialog first.

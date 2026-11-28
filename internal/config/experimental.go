@@ -40,15 +40,15 @@ func (e *ExperimentalOptions) ExportEnv() {
 		}
 	}
 	if e.ClientServer != nil {
-		setDefault("CRUSH_CLIENT_SERVER", strconv.FormatBool(*e.ClientServer))
+		setDefault("EVO_CLIENT_SERVER", strconv.FormatBool(*e.ClientServer))
 	}
 	if e.ServerReadyTimeout != nil {
-		setDefault("CRUSH_SERVER_READY_TIMEOUT", strconv.Itoa(*e.ServerReadyTimeout)+"s")
+		setDefault("EVO_SERVER_READY_TIMEOUT", strconv.Itoa(*e.ServerReadyTimeout)+"s")
 	}
 	if e.ServerIdleTimeout != nil {
-		setDefault("CRUSH_SERVER_IDLE_TIMEOUT", strconv.Itoa(*e.ServerIdleTimeout))
+		setDefault("EVO_SERVER_IDLE_TIMEOUT", strconv.Itoa(*e.ServerIdleTimeout))
 	}
 	if e.ServerDetachGrace != nil {
-		setDefault("CRUSH_SERVER_DETACH_GRACE", strconv.Itoa(*e.ServerDetachGrace))
+		setDefault("EVO_SERVER_DETACH_GRACE", strconv.Itoa(*e.ServerDetachGrace))
 	}
 }

@@ -25,8 +25,8 @@ func TestSetProviderAPIKeyXAIIsEitherOr(t *testing.T) {
 	// Point 配置 discovery 在 测试 sandbox: 写入 below
 	// triggers auto-reload, which must 不 pick up developer's
 	// real crush.json.
-	t.Setenv("CRUSH_GLOBAL_CONFIG", t.TempDir())
-	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
+	t.Setenv("EVO_GLOBAL_CONFIG", t.TempDir())
+	t.Setenv("EVO_GLOBAL_DATA", t.TempDir())
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 
 	token := &oauth.Token{

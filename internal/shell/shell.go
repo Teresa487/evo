@@ -37,17 +37,17 @@ const (
 	ShellTypePowerShell
 )
 
-// CrushEnvMarkers returns fresh slice 的 environment variables 那
+// EvoEnvMarkers returns fresh slice 的 environment variables 那
 // Crush unconditionally sets 在 every shell it spawns — both interactive
 // bash 工具's [Shell] 和 钩子 runner's [运行] calls. Tools 那 want 到
 // detect "am I being invoked 通过 AI agent?" can check any 的 these.
 // Keeping them 在 one place guarantees two shell surfaces cannot drift.
 // 一个 fresh slice 是 returned 在 every 调用 所以 callers may append freely.
-func CrushEnvMarkers() []string {
+func EvoEnvMarkers() []string {
 	return []string{
-		"CRUSH=1",
-		"AGENT=crush",
-		"AI_AGENT=crush",
+		"EVO=1",
+		"AGENT=evo",
+		"AI_AGENT=evo",
 	}
 }
 
@@ -107,7 +107,7 @@ func NewShell(opts *Options) *Shell {
 	env = withoutHerdrEnv(env)
 
 	// Allow tools 到 detect execution 通过 Crush.
-	env = append(env, CrushEnvMarkers()...)
+	env = append(env, EvoEnvMarkers()...)
 
 	logger := opts.Logger
 	if logger == nil {

@@ -38,7 +38,7 @@ func liveSession(t *testing.T, toolName string) (*ClientSession, context.Context
 	t.Cleanup(func() { _ = serverSession.Close() })
 
 	ctx, cancel := context.WithCancel(context.Background())
-	client := mcp.NewClient(&mcp.Implementation{Name: "crush-test"}, nil)
+	client := mcp.NewClient(&mcp.Implementation{Name: "evo-test"}, nil)
 	clientSession, err := client.Connect(ctx, clientTransport, nil)
 	require.NoError(t, err)
 
@@ -77,7 +77,7 @@ func liveSessionWithCapabilities(t *testing.T, toolName, promptName, resourceURI
 	t.Cleanup(func() { _ = serverSession.Close() })
 
 	ctx, cancel := context.WithCancel(context.Background())
-	client := mcp.NewClient(&mcp.Implementation{Name: "crush-test"}, nil)
+	client := mcp.NewClient(&mcp.Implementation{Name: "evo-test"}, nil)
 	clientSession, err := client.Connect(ctx, clientTransport, nil)
 	require.NoError(t, err)
 
@@ -89,7 +89,7 @@ func liveSessionWithCapabilities(t *testing.T, toolName, promptName, resourceURI
 // close it 所以 它的 child process/pipes 是 released, 和 (3) clear 它的 tools
 // 从 registry. Before fix updateState 只 did bare
 // sessions.Del(name): 会话 was leaked 和 它的 tools lingered, 所以
-// crush_info kept reading "connected, N tools" while LLM's 工具 list 和
+// evo_info kept reading "connected, N tools" while LLM's 工具 list 和
 // live 会话 had diverged.
 func TestUpdateState_ErrorClosesSessionAndClearsTools(t *testing.T) {
 	const name = "test-error-cleanup"

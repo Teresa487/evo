@@ -52,7 +52,7 @@ func Render(t *styles.Styles, banner config.ExitBanner, sess *session.Session, w
 
 // logoSection returns ASCII art logo followed 通过 parting 消息.
 func logoSection(t *styles.Styles, contentWidth int) string {
-	crushLogo := logo.Render(t.Logo.GradCanvas, version.Version, true, logo.Opts{
+	evoLogo := logo.Render(t.Logo.GradCanvas, version.Version, true, logo.Opts{
 		FieldColor:   t.Logo.FieldColor,
 		TitleColorA:  t.Logo.TitleColorA,
 		TitleColorB:  t.Logo.TitleColorB,
@@ -62,7 +62,7 @@ func logoSection(t *styles.Styles, contentWidth int) string {
 	})
 	// Wrap greeting 和 消息 together: wrapping 只 消息
 	// leaves greeting's own width unaccounted 为 和 overflows frame.
-	return crushLogo + "\n" +
+	return evoLogo + "\n" +
 		t.ExitBanner.Text.Width(contentWidth).Render("Thanks for using Crush! "+randomExitMessage())
 }
 

@@ -10,7 +10,7 @@ type Scope int
 const (
 	// ScopeGlobal targets global data 配置 (~/.local/share/crush/crush.json).
 	ScopeGlobal Scope = iota
-	// ScopeWorkspace targets 工作区 配置 (.crush/crush.json).
+	// ScopeWorkspace targets 工作区 配置 (.evo/crush.json).
 	ScopeWorkspace
 )
 

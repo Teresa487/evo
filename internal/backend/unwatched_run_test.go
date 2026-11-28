@@ -108,7 +108,7 @@ func awaitCancelled(t *testing.T, done <-chan error, msg string) {
 // waited headless forever, 和 since 只 one 提示词 是 shown 在 time,
 // remaining 客户端's own prompts never appeared either. However
 // departing 客户端's claim ends, 运行 的 会话 it was viewing
-// must 是 cancelled, 作为 quitting crush does 在 local mode.
+// must 是 cancelled, 作为 quitting evo does 在 local mode.
 func TestClientDeparture_CancelsRunNobodyViews(t *testing.T) {
 	t.Parallel()
 
@@ -200,8 +200,8 @@ func TestClientDeparture_KeepsNonInteractiveRun(t *testing.T) {
 	run, done := coord.startRun(t, ws, "s-shared")
 
 	require.NoError(t, b.RetireClient(tui))
-	require.NoError(t, run.Err(), "a run driven by a connected crush run must keep going")
+	require.NoError(t, run.Err(), "a run driven by a connected evo run must keep going")
 
 	require.NoError(t, b.RetireClient(runner))
-	awaitCancelled(t, done, "the run must be cancelled once crush run leaves too")
+	awaitCancelled(t, done, "the run must be cancelled once evo run leaves too")
 }

@@ -56,7 +56,7 @@ func Models(ctx context.Context, token *oauth.Token) ([]catwalk.Model, error) {
 	if token.AccountID != "" {
 		req.Header.Set("chatgpt-account-id", token.AccountID)
 	}
-	req.Header.Set("originator", "crush")
+	req.Header.Set("originator", "evo")
 
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)

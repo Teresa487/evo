@@ -76,7 +76,7 @@ var DefaultCreateGrace = 30 * time.Second
 // Any 工作区 创建 within 窗口 cancels pending shutdown.
 // 一个 服务端 那 never hosts 工作区 waits it out 从 moment it
 // starts listening (see [Backend.ArmIdleShutdown]).
-// Overridable via CRUSH_SERVER_IDLE_TIMEOUT (seconds; 0 restores the
+// Overridable via EVO_SERVER_IDLE_TIMEOUT (seconds; 0 restores the
 // old shut-down-immediately behavior).
 var DefaultIdleShutdownDelay = 60 * time.Second
 
@@ -87,7 +87,7 @@ var DefaultIdleShutdownDelay = 60 * time.Second
 // 超时) into permanently lost 工作区: 客户端's reconnect comes
 // back milliseconds later 到 ID 服务端 no longer knows. 一个 客户端
 // 那 released 它的 claim first ( clean exit) skips grace. Overridable
-// via CRUSH_SERVER_DETACH_GRACE (seconds; 0 restores immediate teardown).
+// via EVO_SERVER_DETACH_GRACE (seconds; 0 restores immediate teardown).
 var DefaultDetachGrace = 10 * time.Second
 
 // ShutdownFunc 是 called 当 backend needs 到 trigger 服务端
@@ -349,7 +349,7 @@ func New(ctx context.Context, cfg *config.ConfigStore, shutdownFn ShutdownFunc) 
 		shutdownFn:   shutdownFn,
 		createGrace:  DefaultCreateGrace,
 		lingerDelay:  idleShutdownDelayFromEnv(),
-		detachGrace:  durationFromEnv("CRUSH_SERVER_DETACH_GRACE", DefaultDetachGrace),
+		detachGrace:  durationFromEnv("EVO_SERVER_DETACH_GRACE", DefaultDetachGrace),
 		idleShutdown: true,
 		autoClose:    true,
 	}
@@ -358,9 +358,9 @@ func New(ctx context.Context, cfg *config.ConfigStore, shutdownFn ShutdownFunc) 
 }
 
 // idleShutdownDelayFromEnv returns 空闲-shutdown delay, honoring
-// CRUSH_SERVER_IDLE_TIMEOUT override (在 seconds; 0 disables lingering).
+// EVO_SERVER_IDLE_TIMEOUT override (在 seconds; 0 disables lingering).
 func idleShutdownDelayFromEnv() time.Duration {
-	return durationFromEnv("CRUSH_SERVER_IDLE_TIMEOUT", DefaultIdleShutdownDelay)
+	return durationFromEnv("EVO_SERVER_IDLE_TIMEOUT", DefaultIdleShutdownDelay)
 }
 
 // durationFromEnv reads whole number 的 seconds 从 named
@@ -537,12 +537,12 @@ func (b *Backend) CreateWorkspace(args proto.Workspace) (*Workspace, proto.Works
 	cfg.Overrides().PermissionMode = proto.ProtoModeToPermission(args.PermissionMode)
 	cfg.Overrides().Prompts = args.Prompts
 
-	if err := createDotCrushDir(cfg.Config().Options.DataDirectory); err != nil {
+	if err := createDotEvoDir(cfg.Config().Options.DataDirectory); err != nil {
 		return nil, proto.Workspace{}, fmt.Errorf("failed to create data directory: %w", err)
 	}
 
-	// Record project 作为 local mode does, 所以 `crush projects` 和
-	// `crush stats --all` know about it. list 是 只 bookkeeping, 所以
+	// Record project 作为 local mode does, 所以 `evo projects` 和
+	// `evo stats --all` know about it. list 是 只 bookkeeping, 所以
 	// failing 到 更新 it must 不 keep 工作区 从 opening.
 	if err := projects.Register(args.Path, cfg.Config().Options.DataDirectory); err != nil {
 		slog.Warn("Failed to register project", "path", args.Path, "error", err)

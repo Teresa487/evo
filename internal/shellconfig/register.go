@@ -7,7 +7,7 @@
 // they 是 no-ops during normal bash 工具 execution.
 //
 // 这 package sits between shell 和 配置: it imports shell (为
-// RegisterBuiltin 和 运行), 和 配置 imports shellconfig 到 运行 crushrc
+// RegisterBuiltin 和 运行), 和 配置 imports shellconfig 到 运行 evorc
 // files.
 package shellconfig
 

@@ -28,7 +28,7 @@ import (
 )
 
 // DummyHost 是 used 到 satisfy http.客户端's requirement 为 URL.
-const DummyHost = "api.crush.localhost"
+const DummyHost = "api.evo.localhost"
 
 // 客户端 represents RPC 客户端 connected 到 Crush 服务端.
 type Client struct {

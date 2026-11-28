@@ -1,6 +1,6 @@
 // connect.go —— SQLite 连接的生命周期与共享，是消息/session 持久化的底座。
 //
-// 每个 dataDir 一个 crush.db；同一路径的多个客户端通过连接池共享同一个 DB 连接。
+// 每个 dataDir 一个 evo.db；同一路径的多个客户端通过连接池共享同一个 DB 连接。
 // message、session 等包拿到 db.Querier 后完成读写。
 package db
 
@@ -57,7 +57,7 @@ func init() {
 // 锁 是 acquired exactly once 当 条目 是 created 和 released
 // 当 last reference 是 dropped, which lets same process open
 // same data 目录 concurrently while still blocking second
-// crush process 从 racing storage.
+// evo process 从 racing storage.
 type connEntry struct {
 	db       *sql.DB
 	refCount int
@@ -81,7 +81,7 @@ type connectOptions struct {
 // WithDataDirLock toggles acquisition 的 per-data-目录 锁
 // 为 这 Connect 调用. 锁 是 off 通过 默认 所以 local-mode
 // invocations do 不 regress today's behavior; 服务端's
-// 工作区-bootstrap 路径 opts 在. CRUSH_SKIP_DATADIR_LOCK still
+// 工作区-bootstrap 路径 opts 在. EVO_SKIP_DATADIR_LOCK still
 // bypasses acquisition even 当 这 option 是 set.
 func WithDataDirLock(enable bool) ConnectOption {
 	return func(o *connectOptions) { o.lockDataDir = enable }
@@ -102,7 +102,7 @@ func Connect(ctx context.Context, dataDir string, opts ...ConnectOption) (*sql.D
 		opt(&cfg)
 	}
 
-	dbPath := filepath.Join(dataDir, "crush.db")
+	dbPath := filepath.Join(dataDir, "evo.db")
 
 	// Resolve 到 absolute 路径 所以 那 different relative paths 到
 	// same 文件 share single 连接.
@@ -121,11 +121,11 @@ func Connect(ctx context.Context, dataDir string, opts ...ConnectOption) (*sql.D
 
 	// Take per-data-目录 锁 before opening 数据库 所以
 	// we fail fast 和 用 clear 错误 rather than racing another
-	// crush process 在 same SQLite 文件. 锁 是 released 当
+	// evo process 在 same SQLite 文件. 锁 是 released 当
 	// matching Release 调用 drops refcount 到 zero. Ensuring
 	// data 目录 exists 是 required because 锁 文件
 	// lives inside it. Locking 是 opt-在 via WithDataDirLock 所以 那
-	// local-mode invocations do 不 refuse second crush against
+	// local-mode invocations do 不 refuse second evo against
 	// same data dir until 客户端/服务端 becomes 默认.
 	if err := os.MkdirAll(dataDir, 0o700); err != nil {
 		return nil, fmt.Errorf("failed to create data directory %q: %w", dataDir, err)
@@ -187,7 +187,7 @@ func Connect(ctx context.Context, dataDir string, opts ...ConnectOption) (*sql.D
 // data 目录. When count reaches zero underlying 连接
 // 是 closed 和 removed 从 pool.
 func Release(dataDir string) error {
-	dbPath := filepath.Join(dataDir, "crush.db")
+	dbPath := filepath.Join(dataDir, "evo.db")
 	absPath, err := filepath.Abs(dbPath)
 	if err != nil {
 		absPath = dbPath

@@ -20,8 +20,8 @@ func TestScopeB_InPlaceMutationRace(t *testing.T) {
 	dir := t.TempDir()
 	configPath := filepath.Join(dir, "evo.json")
 
-	t.Setenv("CRUSH_GLOBAL_CONFIG", dir)
-	t.Setenv("CRUSH_GLOBAL_DATA", dir)
+	t.Setenv("EVO_GLOBAL_CONFIG", dir)
+	t.Setenv("EVO_GLOBAL_DATA", dir)
 	resetProviderState()
 	t.Cleanup(resetProviderState)
 

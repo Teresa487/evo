@@ -28,11 +28,11 @@ const MaxAttachmentSize = int64(5 * 1024 * 1024)
 // PlanStartMarker 是 sentinel plan agent emits 在 它的 own line 在
 // very start 的 它的 final 响应, 所以 UI can tell plan document
 // apart 从 agent's intermediate exploratory replies while it streams.
-const PlanStartMarker = "<!-- CRUSH_PLAN_START -->"
+const PlanStartMarker = "<!-- EVO_PLAN_START -->"
 
 // PlanReadyMarker 是 sentinel plan agent emits 在 它的 own line 在
 // end 的 它的 final 响应 到 signal 那 plan 是 ready 为 execution.
-const PlanReadyMarker = "<!-- CRUSH_PLAN_READY -->"
+const PlanReadyMarker = "<!-- EVO_PLAN_READY -->"
 
 // PlanStartMarkerPresent reports whether 文本 contains plan-start
 // sentinel 在 line 通过 itself. See [PlanReadyMarkerPresent] 为 why

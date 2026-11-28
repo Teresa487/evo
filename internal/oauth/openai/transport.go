@@ -45,7 +45,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if t.Originator != "" {
 			clone.Header.Set("originator", t.Originator)
 		} else {
-			clone.Header.Set("originator", "crush")
+			clone.Header.Set("originator", "evo")
 		}
 		if t.Token.AccountID != "" {
 			clone.Header.Set("chatgpt-account-id", t.Token.AccountID)

@@ -149,7 +149,7 @@ func newFromEnv() *Client {
 //
 // herdr remembers highest seq it has seen per source 为
 // lifetime 的 pane 和 silently drops any 报告 用 seq 那
-// 是 不 strictly greater. Because crush seeds seq 从 wall
+// 是 不 strictly greater. Because evo seeds seq 从 wall
 // clock 在 startup (see newFromEnv), restarted crush 在 same
 // pane always reports above previous 运行's high-water 标记, 所以
 // first 报告 是 accepted instead 的 being rejected 作为 stale.

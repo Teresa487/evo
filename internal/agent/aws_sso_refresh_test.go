@@ -74,7 +74,7 @@ func (c *joinedCtx) Done() <-chan struct{} {
 func TestAWSRefreshSharesOneLoginAndHonorsCancel(t *testing.T) {
 	t.Parallel()
 	env := testEnv(t)
-	crushJSON := `{
+	evoJSON := `{
   "options": {"disable_default_providers": true, "disable_provider_auto_update": true},
   "providers": {"mock": {"id": "mock", "name": "Mock", "type": "openai",
     "base_url": "http://127.0.0.1:9/v1", "api_key": "test-key",
@@ -82,7 +82,7 @@ func TestAWSRefreshSharesOneLoginAndHonorsCancel(t *testing.T) {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
              "small": {"provider": "mock", "model": "mock-model"}}
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(crushJSON), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(evoJSON), 0o644))
 	cfg, err := config.Init(t.Context(), env.workingDir, "", false)
 	require.NoError(t, err)
 	c := &coordinator{cfg: cfg, sessions: env.sessions, messages: env.messages}

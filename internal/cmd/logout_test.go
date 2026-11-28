@@ -46,27 +46,27 @@ func TestLogoutCmd_ValidArgs(t *testing.T) {
 // 配置.
 func TestLogout_LocalModeStartsNoServer(t *testing.T) {
 	if os.Getenv(childTestEnv) == "1" {
-		logoutWithoutServer(t, os.Getenv("CRUSH_TEST_PROJECT"))
+		logoutWithoutServer(t, os.Getenv("EVO_TEST_PROJECT"))
 		return
 	}
 	t.Parallel()
 
 	runChildTest(t,
-		"CRUSH_CLIENT_SERVER=0",
-		"CRUSH_GLOBAL_CONFIG="+t.TempDir(),
-		"CRUSH_GLOBAL_DATA="+t.TempDir(),
-		"CRUSH_CACHE_DIR="+t.TempDir(),
-		"CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1",
-		"CRUSH_DISABLE_METRICS=1",
-		"CRUSH_TEST_PROJECT="+t.TempDir(),
+		"EVO_CLIENT_SERVER=0",
+		"EVO_GLOBAL_CONFIG="+t.TempDir(),
+		"EVO_GLOBAL_DATA="+t.TempDir(),
+		"EVO_CACHE_DIR="+t.TempDir(),
+		"EVO_DISABLE_PROVIDER_AUTO_UPDATE=1",
+		"EVO_DISABLE_METRICS=1",
+		"EVO_TEST_PROJECT="+t.TempDir(),
 	)
 }
 
-// logoutWithoutServer runs `crush logout` 从 project 和 fails 如果 it
+// logoutWithoutServer runs `evo logout` 从 project 和 fails 如果 it
 // tries 到 start 服务端. 它 runs 在 child process: command changes
 // into project 和 opens 它的 log 和 数据库 there.
 func logoutWithoutServer(t *testing.T, project string) {
-	clientHost = "unix://" + filepath.Join(t.TempDir(), "crush.sock")
+	clientHost = "unix://" + filepath.Join(t.TempDir(), "evo.sock")
 	spawned := 0
 	startDetachedServer = func(*cobra.Command, *url.URL) (*spawnedServer, error) {
 		spawned++
@@ -85,5 +85,5 @@ func logoutWithoutServer(t *testing.T, project string) {
 	cmd.SetContext(t.Context())
 
 	require.NoError(t, logoutCmd.RunE(cmd, []string{"hyper"}))
-	require.Zero(t, spawned, "logout started a crush server in local mode")
+	require.Zero(t, spawned, "logout started a evo server in local mode")
 }

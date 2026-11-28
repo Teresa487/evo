@@ -54,7 +54,7 @@ func TestSignInAgainMessageNamesProviderAndCommand(t *testing.T) {
 	t.Parallel()
 
 	m := Model{ModelCfg: config.SelectedModel{Provider: "copilot"}, ProviderName: "GitHub Copilot"}
-	require.Equal(t, `Please sign in to GitHub Copilot again. You can also run "crush login copilot --force".`, signInAgainMessage(m))
+	require.Equal(t, `Please sign in to GitHub Copilot again. You can also run "evo login copilot --force".`, signInAgainMessage(m))
 
 	m.ProviderName = ""
 	require.Contains(t, signInAgainMessage(m), "sign in to copilot again")

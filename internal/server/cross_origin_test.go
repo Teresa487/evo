@@ -24,7 +24,7 @@ func TestCrossOriginHandler(t *testing.T) {
 		{"cross-site metadata", "tcp", "127.0.0.1:4141", http.Header{"Sec-Fetch-Site": {"cross-site"}}, http.StatusForbidden},
 		{"listen host", "tcp", "devbox.example:4141", nil, http.StatusOK},
 		{"ip literal", "tcp", "[::1]:4141", nil, http.StatusOK},
-		{"unix socket", "unix", "%2Ftmp%2Fcrush-test.sock", nil, http.StatusOK},
+		{"unix socket", "unix", "%2Ftmp%2Fevo-test.sock", nil, http.StatusOK},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()

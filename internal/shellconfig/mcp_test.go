@@ -60,7 +60,7 @@ func TestMCPChannelFlags(t *testing.T) {
 func TestMCPChannelReplyRejectsNonObject(t *testing.T) {
 	t.Parallel()
 
-	path := t.TempDir() + "/crushrc"
+	path := t.TempDir() + "/evorc"
 	_, err := LoadShellConfig(t.Context(), path, []byte(`mcp add signal --command uv --channel-reply '[]'`))
 	require.Error(t, err)
 }
@@ -68,7 +68,7 @@ func TestMCPChannelReplyRejectsNonObject(t *testing.T) {
 func TestMCPUnknownSubcommand(t *testing.T) {
 	t.Parallel()
 
-	path := t.TempDir() + "/crushrc"
+	path := t.TempDir() + "/evorc"
 	_, err := LoadShellConfig(t.Context(), path, []byte(`mcp github --command npx`))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown subcommand")

@@ -211,7 +211,7 @@ func TestDisableDockerMCP_PublishesConfigChanged(t *testing.T) {
 // restart 服务端 disabled 为 这 repository.
 func TestGlobalToggles_KeepRepositoryMCPOverrides(t *testing.T) {
 	xdgIsolated(t)
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 	const name = "override-probe"
 	// command does 不 exist, 所以 start 只 records 错误.
 	cwd := t.TempDir()

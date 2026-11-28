@@ -21,14 +21,14 @@ func userHomeDir() (string, error) {
 	for _, key := range testIgnoredEnv {
 		os.Unsetenv(key) //nolint:errcheck
 	}
-	return os.MkdirTemp("", "crush-test-home-*")
+	return os.MkdirTemp("", "evo-test-home-*")
 }
 
 // testIgnoredEnv would point tests 在 real dirs; tests set them via t.Setenv.
 var testIgnoredEnv = []string{
-	"CRUSH_GLOBAL_CONFIG",
-	"CRUSH_GLOBAL_DATA",
-	"CRUSH_DATA_DIR",
+	"EVO_GLOBAL_CONFIG",
+	"EVO_GLOBAL_DATA",
+	"EVO_DATA_DIR",
 	"XDG_CONFIG_HOME",
 	"XDG_DATA_HOME",
 	"XDG_CACHE_HOME",

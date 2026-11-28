@@ -17,7 +17,7 @@ import (
 
 // fakeServerPIDFileEnv makes 测试 二进制, re-executed 作为 服务端,
 // 写入 它的 pid 到 named 文件 和 exit.
-const fakeServerPIDFileEnv = "CRUSH_TEST_FAKE_SERVER_PID_FILE"
+const fakeServerPIDFileEnv = "EVO_TEST_FAKE_SERVER_PID_FILE"
 
 func TestMain(m *testing.M) {
 	if pidFile := os.Getenv(fakeServerPIDFileEnv); pidFile != "" {
@@ -37,8 +37,8 @@ func TestStartDetachedServerReapsExitedServer(t *testing.T) {
 	dir := t.TempDir()
 	pidFile := filepath.Join(dir, "server.pid")
 	t.Setenv(fakeServerPIDFileEnv, pidFile)
-	t.Setenv("CRUSH_CACHE_DIR", filepath.Join(dir, "cache"))
-	hostURL, err := server.ParseHostURL("unix://" + filepath.Join(dir, "crush.sock"))
+	t.Setenv("EVO_CACHE_DIR", filepath.Join(dir, "cache"))
+	hostURL, err := server.ParseHostURL("unix://" + filepath.Join(dir, "evo.sock"))
 	require.NoError(t, err)
 	_, err = startDetachedServer(commandWithContext(t.Context()), hostURL)
 	require.NoError(t, err)

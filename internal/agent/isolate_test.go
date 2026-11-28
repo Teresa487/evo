@@ -13,7 +13,7 @@ func runIsolated(m *testing.M) int {
 		panic(err)
 	}
 	defer os.RemoveAll(home)
-	os.Setenv("CRUSH_GLOBAL_CONFIG", filepath.Join(home, "config"))
-	os.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(home, "data"))
+	os.Setenv("EVO_GLOBAL_CONFIG", filepath.Join(home, "config"))
+	os.Setenv("EVO_GLOBAL_DATA", filepath.Join(home, "data"))
 	return m.Run()
 }

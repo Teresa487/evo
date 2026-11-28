@@ -18,11 +18,11 @@ import (
 func isolateHyperCredentials(t *testing.T) {
 	t.Helper()
 	t.Setenv("HYPER_API_KEY", "")
-	t.Setenv("CRUSH_HYPER_API_KEY", "")
+	t.Setenv("EVO_HYPER_API_KEY", "")
 }
 
 // writeTokenToDisk persists token 作为 hyper 提供方 credential 在
-// 配置 文件 在 路径, mimicking what another crush instance would leave
+// 配置 文件 在 路径, mimicking what another evo instance would leave
 // behind after successful 刷新.
 func writeTokenToDisk(t *testing.T, path string, token *oauth.Token) {
 	t.Helper()

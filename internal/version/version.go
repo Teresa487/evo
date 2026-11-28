@@ -18,7 +18,7 @@ var (
 	BuildID = ""
 )
 
-// 一个 用户 may install crush using `go install github.com/charmbracelet/crush@latest`.
+// 一个 用户 may install evo using `go install github.com/charmbracelet/crush@latest`.
 // without -ldflags, 在 which case version above 是 unset. As workaround
 // we use embedded build version 那 *是* set 当 using `go install` (和
 // 是 只 set 为 `go install` 和 不 为 `go build`).

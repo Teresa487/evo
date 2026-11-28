@@ -34,7 +34,7 @@ var fastIgnoreDirs = map[string]bool{
 	".Trash":          true,
 	".Spotlight-V100": true,
 	".fseventsd":      true,
-	".crush":          true,
+	".evo":            true,
 	"OrbStack":        true,
 	".local":          true,
 	".share":          true,
@@ -108,14 +108,14 @@ var gitGlobalIgnorePatterns = sync.OnceValue(func() []gitignore.Pattern {
 	return parsePatterns(strings.Split(string(bts), "\n"), nil)
 })
 
-// crushGlobalIgnorePatterns returns patterns 从 用户's
+// evoGlobalIgnorePatterns returns patterns 从 用户's
 // ~/.配置/crush/ignore 文件.
-var crushGlobalIgnorePatterns = sync.OnceValue(func() []gitignore.Pattern {
+var evoGlobalIgnorePatterns = sync.OnceValue(func() []gitignore.Pattern {
 	name := filepath.Join(home.Config(), "crush", "ignore")
 	bts, err := os.ReadFile(name)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			slog.Debug("Failed to read crush global ignore file", "path", name, "error", err)
+			slog.Debug("Failed to read evo global ignore file", "path", name, "error", err)
 		}
 		return nil
 	}
@@ -138,7 +138,7 @@ func parsePatterns(lines []string, domain []string) []gitignore.Pattern {
 }
 
 type directoryLister struct {
-	// dirPatterns caches parsed patterns 从 .gitignore/.crushignore 为 each 目录.
+	// dirPatterns caches parsed patterns 从 .gitignore/.evoignore 为 each 目录.
 	// 这 avoids re-reading files 当 building combined matchers.
 	dirPatterns *csync.Map[string, []gitignore.Pattern]
 	// combinedMatchers caches combined matcher 为 each 目录 那 includes
@@ -165,7 +165,7 @@ func pathToComponents(path string) []string {
 }
 
 // getDirPatterns returns parsed patterns 为 specific 目录's
-// .gitignore 和 .crushignore files. Results 是 cached.
+// .gitignore 和 .evoignore files. Results 是 cached.
 func (dl *directoryLister) getDirPatterns(dir string) []gitignore.Pattern {
 	return dl.dirPatterns.GetOrSet(dir, func() []gitignore.Pattern {
 		var allPatterns []gitignore.Pattern
@@ -176,7 +176,7 @@ func (dl *directoryLister) getDirPatterns(dir string) []gitignore.Pattern {
 			domain = pathToComponents(relPath)
 		}
 
-		for _, ignoreFile := range []string{".gitignore", ".crushignore"} {
+		for _, ignoreFile := range []string{".gitignore", ".evoignore"} {
 			ignPath := filepath.Join(dir, ignoreFile)
 			if content, err := os.ReadFile(ignPath); err == nil {
 				lines := strings.Split(string(content), "\n")
@@ -197,9 +197,9 @@ func (dl *directoryLister) getCombinedMatcher(dir string) gitignore.Matcher {
 		// Add common patterns first (lowest priority).
 		allPatterns = append(allPatterns, commonIgnorePatterns()...)
 
-		// Add global ignore patterns (git core.excludesFile + crush global ignore).
+		// Add global ignore patterns (git core.excludesFile + evo global ignore).
 		allPatterns = append(allPatterns, gitGlobalIgnorePatterns()...)
-		allPatterns = append(allPatterns, crushGlobalIgnorePatterns()...)
+		allPatterns = append(allPatterns, evoGlobalIgnorePatterns()...)
 
 		// Collect patterns 从 root 到 这 目录.
 		relDir, _ := filepath.Rel(dl.rootPath, dir)

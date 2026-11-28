@@ -91,7 +91,7 @@ type SessionAgentCall struct {
 	// RunID 非空时，是调用方提供的关联标识，会随本轮发出的 notify.RunComplete
 	// 事件回传。当调用被排到繁忙 session 后面时它会被保留，这样排队轮次的
 	// 终态事件仍能被原始调用方识别。需要可靠完成契约的调用方（例如对可能繁忙的
-	// session 执行 `crush run`）必须设置它；当多个并发轮次共享同一 session 时，
+	// session 执行 `evo run`）必须设置它；当多个并发轮次共享同一 session 时，
 	// 单靠 SessionID 是有歧义的。
 	RunID             string
 	Channel           string
@@ -125,7 +125,7 @@ type SessionAgentCall struct {
 	// OnComplete 非空时，会替换默认的 RunComplete 发布路径：内部 Run 把终态
 	// 负载交给这个回调，而不是发到 RunComplete 总线上。协调器用这个钩子把
 	// 「未授权 → 重新认证 → 重试」整条链合并成单个用户可见的终态事件，
-	// 这样非交互客户端（如 `crush run`）就不会在成功重试之前因为一个过期的
+	// 这样非交互客户端（如 `evo run`）就不会在成功重试之前因为一个过期的
 	// 失败 RunComplete 而退出。把调用排到繁忙 session 后面时，会刻意去掉它
 	// （见 Run）：等排队的递归被排空时，最初的 coordinator.Run 早已返回，
 	// 因此退回默认的总线发布能让事件继续被订阅者看到。
@@ -790,7 +790,7 @@ func (a *sessionAgent) Run(ctx context.Context, call SessionAgentCall) (result *
 		//
 		// 这条路径在发布 RunComplete 的流式 defer 安装之前就返回了，所以要显式
 		// 发出终态事件。否则等待这个 RunID 的 RunComplete 的调用方（例如
-		// `crush run`，它忽略消息事件、只阻塞在 RunComplete 上）会在一个刚被
+		// `evo run`，它忽略消息事件、只阻塞在 RunComplete 上）会在一个刚被
 		// 取消的已受理运行上永久挂起。
 		call.Accepted.Close()
 		sessMu.Unlock()
@@ -1701,7 +1701,7 @@ func (a *sessionAgent) summarize(ctx context.Context, largeModel Model, sessionI
 }
 
 func (a *sessionAgent) getCacheControlOptions() fantasy.ProviderOptions {
-	if t, _ := strconv.ParseBool(os.Getenv("CRUSH_DISABLE_ANTHROPIC_CACHE")); t {
+	if t, _ := strconv.ParseBool(os.Getenv("EVO_DISABLE_ANTHROPIC_CACHE")); t {
 		return fantasy.ProviderOptions{}
 	}
 	return fantasy.ProviderOptions{
@@ -2653,6 +2653,6 @@ func sanitizeToolInput(toolName, toolCallID, input string) (string, bool) {
 // 在刷新之后仍被拒绝。
 func signInAgainMessage(m Model) string {
 	name := cmp.Or(m.ProviderName, m.ModelCfg.Provider)
-	return fmt.Sprintf("Please sign in to %s again. You can also run \"crush login %s --force\".",
+	return fmt.Sprintf("Please sign in to %s again. You can also run \"evo login %s --force\".",
 		name, m.ModelCfg.Provider)
 }

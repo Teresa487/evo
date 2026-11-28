@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestShellConfigDotCrushrcTakesPrecedence verifies 那 project-local
-// .crushrc overrides crushrc 在 same 目录 在 conflicting settings.
-func TestShellConfigDotCrushrcTakesPrecedence(t *testing.T) {
+// TestShellConfigDotEvorcTakesPrecedence verifies 那 project-local
+// .evorc overrides evorc 在 same 目录 在 conflicting settings.
+func TestShellConfigDotEvorcTakesPrecedence(t *testing.T) {
 	isolated := t.TempDir()
 	t.Setenv("HOME", isolated)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(isolated, ".config"))
@@ -31,5 +31,5 @@ func TestShellConfigDotCrushrcTakesPrecedence(t *testing.T) {
 	store, err := config.Load(t.Context(), workDir, dataDir, false)
 	require.NoError(t, err)
 	require.Equal(t, "osc", store.Config().Options.Notifications,
-		".crushrc should win over crushrc")
+		".evorc should win over evorc")
 }

@@ -18,9 +18,9 @@ import (
 )
 
 func TestSessionSetupFromSubdirectoryUsesProjectDataDir(t *testing.T) {
-	t.Setenv("CRUSH_GLOBAL_CONFIG", t.TempDir())
-	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_GLOBAL_CONFIG", t.TempDir())
+	t.Setenv("EVO_GLOBAL_DATA", t.TempDir())
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	require.NoError(t, err)
@@ -42,9 +42,9 @@ func TestSessionSetupFromSubdirectoryUsesProjectDataDir(t *testing.T) {
 }
 
 // TestUseClientServer_HostFlag covers --主机 being ignored unless
-// CRUSH_CLIENT_SERVER was set too: naming 服务端 must connect 到 it.
+// EVO_CLIENT_SERVER was set too: naming 服务端 must connect 到 it.
 func TestUseClientServer_HostFlag(t *testing.T) {
-	t.Setenv("CRUSH_CLIENT_SERVER", "")
+	t.Setenv("EVO_CLIENT_SERVER", "")
 
 	useServer := func(args ...string) bool {
 		var use bool
@@ -59,10 +59,10 @@ func TestUseClientServer_HostFlag(t *testing.T) {
 		return use
 	}
 
-	require.False(t, useServer(), "without --host or CRUSH_CLIENT_SERVER Crush must run locally")
+	require.False(t, useServer(), "without --host or EVO_CLIENT_SERVER Crush must run locally")
 	require.True(t, useServer("--host", "tcp://127.0.0.1:1"), "--host must connect to the server it names")
-	t.Setenv("CRUSH_CLIENT_SERVER", "1")
-	require.True(t, useServer(), "CRUSH_CLIENT_SERVER must connect to the default server")
+	t.Setenv("EVO_CLIENT_SERVER", "1")
+	require.True(t, useServer(), "EVO_CLIENT_SERVER must connect to the default server")
 }
 
 // TestSessionList_ClientServerModeAsksServer covers 会话 commands
@@ -70,20 +70,20 @@ func TestUseClientServer_HostFlag(t *testing.T) {
 // wrong sessions 当 服务端 runs elsewhere.
 func TestSessionList_ClientServerModeAsksServer(t *testing.T) {
 	if os.Getenv(childTestEnv) == "1" {
-		listSessionsOnServer(t, os.Getenv("CRUSH_TEST_PROJECT"), os.Getenv("CRUSH_TEST_DATA_DIR"))
+		listSessionsOnServer(t, os.Getenv("EVO_TEST_PROJECT"), os.Getenv("EVO_TEST_DATA_DIR"))
 		return
 	}
 	t.Parallel()
 
 	runChildTest(t,
-		"CRUSH_CLIENT_SERVER=1",
-		"CRUSH_CACHE_DIR="+t.TempDir(),
-		"CRUSH_GLOBAL_CONFIG="+t.TempDir(),
-		"CRUSH_GLOBAL_DATA="+t.TempDir(),
-		"CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1",
-		"CRUSH_DISABLE_METRICS=1",
-		"CRUSH_TEST_DATA_DIR="+t.TempDir(),
-		"CRUSH_TEST_PROJECT="+t.TempDir(),
+		"EVO_CLIENT_SERVER=1",
+		"EVO_CACHE_DIR="+t.TempDir(),
+		"EVO_GLOBAL_CONFIG="+t.TempDir(),
+		"EVO_GLOBAL_DATA="+t.TempDir(),
+		"EVO_DISABLE_PROVIDER_AUTO_UPDATE=1",
+		"EVO_DISABLE_METRICS=1",
+		"EVO_TEST_DATA_DIR="+t.TempDir(),
+		"EVO_TEST_PROJECT="+t.TempDir(),
 	)
 }
 
@@ -92,23 +92,23 @@ func TestSessionList_ClientServerModeAsksServer(t *testing.T) {
 // `crush 运行` 在 客户端/服务端 mode.
 func TestSessionList_ConfigOptionAsksServer(t *testing.T) {
 	if os.Getenv(childTestEnv) == "1" {
-		project := os.Getenv("CRUSH_TEST_PROJECT")
+		project := os.Getenv("EVO_TEST_PROJECT")
 		require.NoError(t, os.WriteFile(filepath.Join(project, "evo.json"),
 			[]byte(`{"options": {"experimental": {"client_server": true}}}`), 0o644))
-		listSessionsOnServer(t, project, os.Getenv("CRUSH_TEST_DATA_DIR"))
+		listSessionsOnServer(t, project, os.Getenv("EVO_TEST_DATA_DIR"))
 		return
 	}
 	t.Parallel()
 
 	runChildTest(t,
-		"CRUSH_CLIENT_SERVER=",
-		"CRUSH_CACHE_DIR="+t.TempDir(),
-		"CRUSH_GLOBAL_CONFIG="+t.TempDir(),
-		"CRUSH_GLOBAL_DATA="+t.TempDir(),
-		"CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1",
-		"CRUSH_DISABLE_METRICS=1",
-		"CRUSH_TEST_DATA_DIR="+t.TempDir(),
-		"CRUSH_TEST_PROJECT="+t.TempDir(),
+		"EVO_CLIENT_SERVER=",
+		"EVO_CACHE_DIR="+t.TempDir(),
+		"EVO_GLOBAL_CONFIG="+t.TempDir(),
+		"EVO_GLOBAL_DATA="+t.TempDir(),
+		"EVO_DISABLE_PROVIDER_AUTO_UPDATE=1",
+		"EVO_DISABLE_METRICS=1",
+		"EVO_TEST_DATA_DIR="+t.TempDir(),
+		"EVO_TEST_PROJECT="+t.TempDir(),
 	)
 }
 

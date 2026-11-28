@@ -19,7 +19,7 @@ func TestInitAgent_JoiningClientsShareCoordinator(t *testing.T) {
 	for _, existing := range []bool{true, false} {
 		t.Run(fmt.Sprintf("existing=%t", existing), func(t *testing.T) {
 			xdgIsolated(t)
-			t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+			t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 			cwd := t.TempDir()
 			cfg := `{"providers": {"mock": {"type": "openai-compat",
   "base_url": "http://127.0.0.1:1", "api_key": "k", "models": [{"id": "m"}]}},
@@ -27,7 +27,7 @@ func TestInitAgent_JoiningClientsShareCoordinator(t *testing.T) {
 			require.NoError(t, os.WriteFile(filepath.Join(cwd, "evo.json"), []byte(cfg), 0o644))
 			b := New(t.Context(), nil, func() {})
 			t.Cleanup(func() { drainBackend(t, b) })
-			ws, _, err := b.CreateWorkspace(protoWS(cwd, filepath.Join(cwd, ".crush"), uuid.NewString()))
+			ws, _, err := b.CreateWorkspace(protoWS(cwd, filepath.Join(cwd, ".evo"), uuid.NewString()))
 			require.NoError(t, err)
 
 			first := ws.Coordinator()

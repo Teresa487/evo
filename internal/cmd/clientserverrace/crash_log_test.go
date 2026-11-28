@@ -15,10 +15,10 @@ import (
 // truncating previous 服务端's stdout.log 和 stderr.log, which hold
 // 只 record 的 crash.
 func TestRespawnKeepsPreviousServerOutput(t *testing.T) {
-	sb := newSandbox(t, crushBinary(t), "CRUSH_CLIENT_SERVER=1")
+	sb := newSandbox(t, evoBinary(t), "EVO_CLIENT_SERVER=1")
 	t.Cleanup(func() { shutdownServer(t, sb.socket) })
 
-	// `crush logout` connects 到 服务端 和, unlike `crush 运行`,
+	// `evo logout` connects 到 服务端 和, unlike `crush 运行`,
 	// spawns one 当 none 是 running.
 	run := func() {
 		t.Helper()

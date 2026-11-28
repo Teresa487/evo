@@ -17,11 +17,11 @@ func TestProgramResume(t *testing.T) {
 	}
 	require.Nil(t, resume(), "no command set")
 
-	u.SetResumeCommand([]string{"crush", "--data-dir", "/data"})
-	require.Equal(t, &tea.ProgramResume{Args: []string{"crush", "--data-dir", "/data", "--session", "s1"}}, resume())
+	u.SetResumeCommand([]string{"evo", "--data-dir", "/data"})
+	require.Equal(t, &tea.ProgramResume{Args: []string{"evo", "--data-dir", "/data", "--session", "s1"}}, resume())
 
 	u.session = nil
-	require.Equal(t, &tea.ProgramResume{Args: []string{"crush", "--data-dir", "/data"}}, resume())
+	require.Equal(t, &tea.ProgramResume{Args: []string{"evo", "--data-dir", "/data"}}, resume())
 
 	// 用户 quits, 所以 终态 forgets command.
 	u.dialog.OpenDialog(dialog.NewQuit(u.com, 0))

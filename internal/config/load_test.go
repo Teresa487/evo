@@ -44,33 +44,33 @@ func TestConfig_LoadFromBytes(t *testing.T) {
 }
 
 func TestLoadDataDirEnv(t *testing.T) {
-	t.Setenv("CRUSH_GLOBAL_CONFIG", t.TempDir())
-	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_GLOBAL_CONFIG", t.TempDir())
+	t.Setenv("EVO_GLOBAL_DATA", t.TempDir())
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 
-	t.Run("CRUSH_DATA_DIR overrides the project data directory", func(t *testing.T) {
+	t.Run("EVO_DATA_DIR overrides the project data directory", func(t *testing.T) {
 		workDir := t.TempDir()
 		dataDir := t.TempDir()
-		t.Setenv("CRUSH_DATA_DIR", dataDir)
+		t.Setenv("EVO_DATA_DIR", dataDir)
 
 		store, err := Load(t.Context(), workDir, "", false)
 		require.NoError(t, err)
 		require.Equal(t, dataDir, store.Config().Options.DataDirectory)
 	})
 
-	t.Run("an explicit data directory wins over CRUSH_DATA_DIR", func(t *testing.T) {
+	t.Run("an explicit data directory wins over EVO_DATA_DIR", func(t *testing.T) {
 		workDir := t.TempDir()
 		dataDir := t.TempDir()
-		t.Setenv("CRUSH_DATA_DIR", t.TempDir())
+		t.Setenv("EVO_DATA_DIR", t.TempDir())
 
 		store, err := Load(t.Context(), workDir, dataDir, false)
 		require.NoError(t, err)
 		require.Equal(t, dataDir, store.Config().Options.DataDirectory)
 	})
 
-	t.Run("relative CRUSH_DATA_DIR resolves against the working directory", func(t *testing.T) {
+	t.Run("relative EVO_DATA_DIR resolves against the working directory", func(t *testing.T) {
 		workDir := t.TempDir()
-		t.Setenv("CRUSH_DATA_DIR", "state")
+		t.Setenv("EVO_DATA_DIR", "state")
 
 		store, err := Load(t.Context(), workDir, "", false)
 		require.NoError(t, err)
@@ -84,8 +84,8 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 	// developer's real 配置.
 	globalDir := t.TempDir()
 	dataDir := t.TempDir()
-	t.Setenv("CRUSH_GLOBAL_CONFIG", globalDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", dataDir)
+	t.Setenv("EVO_GLOBAL_CONFIG", globalDir)
+	t.Setenv("EVO_GLOBAL_DATA", dataDir)
 
 	t.Run("does not pick up crush.json above non-git project", func(t *testing.T) {
 		parent := t.TempDir()
@@ -170,17 +170,17 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 		require.Contains(t, got, GlobalConfigData())
 	})
 
-	t.Run("global shell config (crushrc) is included", func(t *testing.T) {
+	t.Run("global shell config (evorc) is included", func(t *testing.T) {
 		project := t.TempDir()
 
 		got := lookupConfigs(project)
-		// 一个 global crushrc 是 discovered 只 beside 用户 配置. data
-		// 目录 是 machine-owned state 和 must never execute crushrc.
+		// 一个 global evorc 是 discovered 只 beside 用户 配置. data
+		// 目录 是 machine-owned state 和 must never execute evorc.
 		require.Contains(t, got, shellConfigSibling(GlobalConfig()))
 		require.NotContains(t, got, shellConfigSibling(GlobalConfigData()))
 	})
 
-	t.Run("project crushrc and .crushrc are discovered", func(t *testing.T) {
+	t.Run("project evorc and .evorc are discovered", func(t *testing.T) {
 		project := t.TempDir()
 		require.NoError(t, os.WriteFile(filepath.Join(project, "evorc"), []byte(""), 0o644))
 		require.NoError(t, os.WriteFile(filepath.Join(project, ".evorc"), []byte(""), 0o644))
@@ -199,7 +199,7 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 		require.NotEmpty(t, got)
 		// system-wide 配置 must 是 first 所以 it has lowest
 		// priority 当 configs 是 merged.
-		require.Equal(t, "/etc/crush/crush.json", got[0])
+		require.Equal(t, "/etc/evo/crush.json", got[0])
 	})
 }
 
@@ -236,7 +236,7 @@ func TestLoadFromConfigPaths_InvalidJSON(t *testing.T) {
 }
 
 // TestLoadFromConfigPaths_ConflictWarningNamesKeys verifies 那 当 JSON
-// 配置 和 crushrc coexist 在 same 目录, merge warning names
+// 配置 和 evorc coexist 在 same 目录, merge warning names
 // overlapping top-level keys 所以 incremental migrations can spot stale
 // duplicates.
 func TestLoadFromConfigPaths_ConflictWarningNamesKeys(t *testing.T) {
@@ -259,7 +259,7 @@ func TestLoadFromConfigPaths_ConflictWarningNamesKeys(t *testing.T) {
 
 		_, _, err := loadFromConfigPaths(context.Background(), []string{jsonPath, rcPath})
 		require.NoError(t, err)
-		require.Contains(t, buf.String(), "crushrc taking precedence")
+		require.Contains(t, buf.String(), "evorc taking precedence")
 		require.Contains(t, buf.String(), `"conflicting_keys":"options"`)
 	})
 
@@ -273,7 +273,7 @@ func TestLoadFromConfigPaths_ConflictWarningNamesKeys(t *testing.T) {
 
 		_, _, err := loadFromConfigPaths(context.Background(), []string{jsonPath, rcPath})
 		require.NoError(t, err)
-		require.NotContains(t, buf.String(), "crushrc taking precedence",
+		require.NotContains(t, buf.String(), "evorc taking precedence",
 			"disjoint coexistence should not warn")
 	})
 }
@@ -395,10 +395,10 @@ func TestConfig_setDefaults(t *testing.T) {
 		require.Equal(t, filepath.Join(workingDir, "state"), cfg.Options.DataDirectory)
 	})
 
-	t.Run("does not adopt .crush from a parent project", func(t *testing.T) {
+	t.Run("does not adopt .evo from a parent project", func(t *testing.T) {
 		parent := t.TempDir()
 
-		// .crush 在 parent: it should 不 是 reused 通过 child
+		// .evo 在 parent: it should 不 是 reused 通过 child
 		// because there 是 no git 上下文 joining them.
 		require.NoError(t, os.Mkdir(filepath.Join(parent, defaultDataDirectory), 0o755))
 
@@ -415,14 +415,14 @@ func TestConfig_setDefaults(t *testing.T) {
 		)
 	})
 
-	t.Run("does not climb out of git worktree to find .crush", func(t *testing.T) {
+	t.Run("does not climb out of git worktree to find .evo", func(t *testing.T) {
 		if _, err := exec.LookPath("git"); err != nil {
 			t.Skip("git not available")
 		}
 
 		parent := t.TempDir()
 
-		// Stray .crush above the worktree root.
+		// Stray .evo above the worktree root.
 		require.NoError(t, os.Mkdir(filepath.Join(parent, defaultDataDirectory), 0o755))
 
 		worktree := filepath.Join(parent, "worktree")
@@ -451,7 +451,7 @@ func TestConfig_setDefaults(t *testing.T) {
 
 		strayEval, err := filepath.EvalSymlinks(filepath.Join(parent, defaultDataDirectory))
 		require.NoError(t, err)
-		require.NotEqual(t, strayEval, gotEval, "must not adopt parent .crush")
+		require.NotEqual(t, strayEval, gotEval, "must not adopt parent .evo")
 
 		subEval, err := filepath.EvalSymlinks(sub)
 		require.NoError(t, err)
@@ -465,7 +465,7 @@ func TestConfig_setDefaults(t *testing.T) {
 
 		parent := t.TempDir()
 
-		// Stray .crush above the worktree root.
+		// Stray .evo above the worktree root.
 		require.NoError(t, os.Mkdir(filepath.Join(parent, defaultDataDirectory), 0o755))
 
 		worktree := filepath.Join(parent, "Worktree")
@@ -497,7 +497,7 @@ func TestLoad_WalkLimitsFollowWorkingDir(t *testing.T) {
 		t.Skip("git not available")
 	}
 	plain, _ := isolateLoadEnv(t)
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 	repo := t.TempDir()
 	gitInit := exec.CommandContext(t.Context(), "git", "init", "-q")
 	gitInit.Dir = repo
@@ -920,7 +920,7 @@ func TestConfig_setupAgentsWithDisabledTools(t *testing.T) {
 	coderAgent, ok := cfg.Agents[AgentCoder]
 	require.True(t, ok)
 
-	assert.Equal(t, []string{"agent", "agent_dispatch", "agent_send", "agent_status", "agent_stop", "bash", "crush_info", "crush_logs", "job_output", "job_kill", "multiedit", "lsp_diagnostics", "lsp_references", "lsp_restart", "lsp_symbols", "lsp_definition", "lsp_call_hierarchy", "lsp_rename", "lsp_replace_symbol", "fetch", "agentic_fetch", "glob", "ls", "question", "sourcegraph", "todos", "view", "write", "list_mcp_resources", "read_mcp_resource"}, coderAgent.AllowedTools)
+	assert.Equal(t, []string{"agent", "agent_dispatch", "agent_send", "agent_status", "agent_stop", "bash", "evo_info", "evo_logs", "job_output", "job_kill", "multiedit", "lsp_diagnostics", "lsp_references", "lsp_restart", "lsp_symbols", "lsp_definition", "lsp_call_hierarchy", "lsp_rename", "lsp_replace_symbol", "fetch", "agentic_fetch", "glob", "ls", "question", "sourcegraph", "todos", "view", "write", "list_mcp_resources", "read_mcp_resource"}, coderAgent.AllowedTools)
 
 	taskAgent, ok := cfg.Agents[AgentTask]
 	require.True(t, ok)
@@ -952,7 +952,7 @@ func TestConfig_setupAgentsWithEveryReadOnlyToolDisabled(t *testing.T) {
 	cfg.SetupAgents()
 	coderAgent, ok := cfg.Agents[AgentCoder]
 	require.True(t, ok)
-	assert.Equal(t, []string{"agent_dispatch", "agent_send", "agent_status", "agent_stop", "crush_info", "crush_logs", "job_output", "job_kill", "download", "edit", "multiedit", "lsp_diagnostics", "lsp_references", "lsp_restart", "lsp_rename", "lsp_replace_symbol", "fetch", "agentic_fetch", "question", "todos", "write", "list_mcp_resources", "read_mcp_resource"}, coderAgent.AllowedTools)
+	assert.Equal(t, []string{"agent_dispatch", "agent_send", "agent_status", "agent_stop", "evo_info", "evo_logs", "job_output", "job_kill", "download", "edit", "multiedit", "lsp_diagnostics", "lsp_references", "lsp_restart", "lsp_rename", "lsp_replace_symbol", "fetch", "agentic_fetch", "question", "todos", "write", "list_mcp_resources", "read_mcp_resource"}, coderAgent.AllowedTools)
 
 	taskAgent, ok := cfg.Agents[AgentTask]
 	require.True(t, ok)
@@ -2652,25 +2652,25 @@ func TestNormalizeProviderType(t *testing.T) {
 }
 
 func TestConfig_PromptOverrides(t *testing.T) {
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "evorc")
-	require.NoError(t, os.WriteFile(cfgPath, []byte("option prompt coder /etc/crush/coder.md.tpl\n"), 0o644))
+	require.NoError(t, os.WriteFile(cfgPath, []byte("option prompt coder /etc/evo/coder.md.tpl\n"), 0o644))
 
 	cfg, err := Init(t.Context(), dir, "", false)
 	require.NoError(t, err)
-	require.Equal(t, "/etc/crush/coder.md.tpl", cfg.Config().Options.Prompts["coder"])
+	require.Equal(t, "/etc/evo/coder.md.tpl", cfg.Config().Options.Prompts["coder"])
 }
 
 // 一个 typo'd 提示词 name must stop startup rather than silently leaving
 // built-在 提示词 在 place.
 func TestConfig_PromptOverrideUnknownNameFails(t *testing.T) {
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 
 	dir := t.TempDir()
 	cfgPath := filepath.Join(dir, "evorc")
-	require.NoError(t, os.WriteFile(cfgPath, []byte("option prompt codr /etc/crush/coder.md.tpl\n"), 0o644))
+	require.NoError(t, os.WriteFile(cfgPath, []byte("option prompt codr /etc/evo/coder.md.tpl\n"), 0o644))
 
 	_, err := Init(t.Context(), dir, "", false)
 	require.ErrorContains(t, err, `unknown prompt "codr"`)
@@ -2679,24 +2679,24 @@ func TestConfig_PromptOverrideUnknownNameFails(t *testing.T) {
 // 一个 relative 提示词 路径 belongs 到 配置 文件 那 set it, 所以 global
 // 配置 means same 文件 在 every project.
 func TestConfig_PromptPathsAnchorToTheirConfigFile(t *testing.T) {
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 	globalDir := t.TempDir()
-	t.Setenv("CRUSH_GLOBAL_CONFIG", globalDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
+	t.Setenv("EVO_GLOBAL_CONFIG", globalDir)
+	t.Setenv("EVO_GLOBAL_DATA", t.TempDir())
 
 	require.NoError(t, os.WriteFile(filepath.Join(globalDir, "evorc"), []byte(
 		"option prompt summary prompts/summary.md\noption prompt title prompts/title.md\n"), 0o644))
 
 	project := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(project, "evo.json"), []byte(
-		`{"options":{"prompts":{"coder":".crush/coder.md.tpl","title":"~/title.md","task":"$TASK_PROMPT"}}}`), 0o644))
+		`{"options":{"prompts":{"coder":".evo/coder.md.tpl","title":"~/title.md","task":"$TASK_PROMPT"}}}`), 0o644))
 
 	cfg, err := Init(t.Context(), project, "", false)
 	require.NoError(t, err)
 
 	prompts := cfg.Config().Options.Prompts
 	require.Equal(t, filepath.Join(globalDir, "prompts", "summary.md"), prompts["summary"])
-	require.Equal(t, filepath.Join(project, ".crush", "coder.md.tpl"), prompts["coder"])
+	require.Equal(t, filepath.Join(project, ".evo", "coder.md.tpl"), prompts["coder"])
 	require.Equal(t, "~/title.md", prompts["title"], "the project wins, and ~ is expanded on read")
 	require.Equal(t, "$TASK_PROMPT", prompts["task"], "$VARS are expanded on read")
 }

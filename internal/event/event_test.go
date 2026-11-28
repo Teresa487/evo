@@ -22,7 +22,7 @@ func TestSetNonInteractive(t *testing.T) {
 	tests := []struct {
 		name                     string
 		nonInteractive           bool
-		crush                    string
+		evo                      string
 		wantNonInteractiveNested bool
 	}{
 		{
@@ -33,25 +33,25 @@ func TestSetNonInteractive(t *testing.T) {
 			nonInteractive: true,
 		},
 		{
-			name:  "interactive nested invocation",
-			crush: "1",
+			name: "interactive nested invocation",
+			evo:  "1",
 		},
 		{
 			name:                     "non-interactive nested invocation",
 			nonInteractive:           true,
-			crush:                    "1",
+			evo:                      "1",
 			wantNonInteractiveNested: true,
 		},
 		{
 			name:           "non-interactive invocation with unrecognized marker",
 			nonInteractive: true,
-			crush:          "0",
+			evo:            "0",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("CRUSH", tt.crush)
+			t.Setenv("EVO", tt.evo)
 			SetNonInteractive(tt.nonInteractive)
 
 			if got := baseProps[nonInteractiveAttrName]; got != tt.nonInteractive {

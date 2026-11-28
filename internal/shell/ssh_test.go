@@ -24,7 +24,7 @@ func configureSSHAskpass(t *testing.T) string {
 	require.NoError(t, os.WriteFile(askpass, []byte("#!/bin/sh\necho secret\n"), 0o755))
 	sshaskpass.ConfigureIntegration(sshaskpass.IntegrationConfig{
 		AskpassPath: askpass,
-		SocketPath:  "/tmp/crush-test.sock",
+		SocketPath:  "/tmp/evo-test.sock",
 	})
 	return askpass
 }
@@ -36,7 +36,7 @@ func stripSSHEnv(env []string) []string {
 	for _, kv := range env {
 		switch {
 		case strings.HasPrefix(kv, "SSH_ASKPASS"),
-			strings.HasPrefix(kv, "CRUSH_SSH_SOCK="):
+			strings.HasPrefix(kv, "EVO_SSH_SOCK="):
 			continue
 		}
 		out = append(out, kv)
@@ -93,7 +93,7 @@ func TestSSHAskpassEnvOverridesStaleValues(t *testing.T) {
 			append(stripSSHEnv(os.Environ()),
 				"SSH_ASKPASS=/nonexistent/stale-askpass",
 				"SSH_ASKPASS_REQUIRE=never"),
-			"CRUSH_SSH_SOCK=/nonexistent/old.sock",
+			"EVO_SSH_SOCK=/nonexistent/old.sock",
 		),
 	})
 
@@ -105,5 +105,5 @@ func TestSSHAskpassEnvOverridesStaleValues(t *testing.T) {
 	require.Equal(t, 1, strings.Count(joined, "SSH_ASKPASS="), "stale SSH_ASKPASS replaced, got: %s", joined)
 	require.True(t, strings.Contains(joined, "SSH_ASKPASS="+askpass), "the fresh wrapper path is present, got: %s", joined)
 	require.True(t, strings.Contains(joined, "SSH_ASKPASS_REQUIRE=force"), "the stale mode is replaced, got: %s", joined)
-	require.True(t, strings.Contains(joined, "CRUSH_SSH_SOCK=/tmp/crush-test.sock"), "the stale socket is replaced, got: %s", joined)
+	require.True(t, strings.Contains(joined, "EVO_SSH_SOCK=/tmp/evo-test.sock"), "the stale socket is replaced, got: %s", joined)
 }

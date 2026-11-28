@@ -13,15 +13,15 @@ import (
 // via RegisterBuiltin 是 dispatched through stateless 运行 路径, receiving
 // full args slice 和 I/O streams 从 interpreter 上下文.
 func TestRegisterBuiltin_DispatchedThroughRun(t *testing.T) {
-	RegisterBuiltin("crushtest-echo", func(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
+	RegisterBuiltin("evotest-echo", func(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 		io.WriteString(stdout, "builtin:"+args[1])
 		return nil
 	})
-	t.Cleanup(func() { delete(builtins, "crushtest-echo") })
+	t.Cleanup(func() { delete(builtins, "evotest-echo") })
 
 	var stdout bytes.Buffer
 	err := Run(t.Context(), RunOptions{
-		Command: "crushtest-echo hello",
+		Command: "evotest-echo hello",
 		Cwd:     t.TempDir(),
 		Stdout:  &stdout,
 	})
@@ -38,27 +38,27 @@ func TestRegisterBuiltin_DispatchedThroughRun(t *testing.T) {
 // stated design intent 的 builtinHandler sitting ahead 的 exec layer.
 func TestRegisterBuiltin_OverridesPATHBinary(t *testing.T) {
 	dir := t.TempDir()
-	// Put fake "crushtest-shadowed" 二进制 在 路径 那 would print
+	// Put fake "evotest-shadowed" 二进制 在 路径 那 would print
 	// "从-路径" 如果 it ran.
 	binDir := filepath.Join(dir, "bin")
 	if err := os.MkdirAll(binDir, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	script := filepath.Join(binDir, "crushtest-shadowed")
+	script := filepath.Join(binDir, "evotest-shadowed")
 	if err := os.WriteFile(script, []byte("#!/bin/sh\necho from-path\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 
-	RegisterBuiltin("crushtest-shadowed", func(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
+	RegisterBuiltin("evotest-shadowed", func(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.Writer) error {
 		io.WriteString(stdout, "from-builtin")
 		return nil
 	})
-	t.Cleanup(func() { delete(builtins, "crushtest-shadowed") })
+	t.Cleanup(func() { delete(builtins, "evotest-shadowed") })
 
 	var stdout bytes.Buffer
 	err := Run(t.Context(), RunOptions{
-		Command: "crushtest-shadowed",
+		Command: "evotest-shadowed",
 		Cwd:     dir,
 		Env:     os.Environ(),
 		Stdout:  &stdout,

@@ -44,17 +44,17 @@ option debug`)
 	require.Equal(t, "work", env["AWS_PROFILE"])
 	require.Equal(t, "bar", env["FOO"])
 	requireNoEnv(t, env, "NOT_EXPORTED", "PWD", "OLDPWD", "IFS", "OPTIND",
-		"HOME", "PATH", "CRUSH_VERSION", "GIT_TERMINAL_PROMPT")
+		"HOME", "PATH", "EVO_VERSION", "GIT_TERMINAL_PROMPT")
 	require.Len(t, env, 2, "only the two exports should be reported")
 }
 
 func TestExportUnchangedInheritedVarIsSkipped(t *testing.T) {
-	t.Setenv("CRUSH_TEST_INHERITED", "same")
+	t.Setenv("EVO_TEST_INHERITED", "same")
 
-	env := loadEnv(t, `export CRUSH_TEST_INHERITED
+	env := loadEnv(t, `export EVO_TEST_INHERITED
 option debug`)
 
-	requireNoEnv(t, env, "CRUSH_TEST_INHERITED")
+	requireNoEnv(t, env, "EVO_TEST_INHERITED")
 	require.Zero(t, len(env), "no env vars should be reported")
 }
 
@@ -69,9 +69,9 @@ func TestExportOnlyScriptIsNotEmpty(t *testing.T) {
 // loader expands second time, come out exactly 作为 script wrote them.
 func TestEnvValuesSurviveReexpansion(t *testing.T) {
 	tricky := `p@$$w0rd \n $(echo nope) ` + "`id`" + ` "q" 'x' \`
-	t.Setenv("CRUSH_TEST_TRICKY", tricky)
+	t.Setenv("EVO_TEST_TRICKY", tricky)
 
-	env := loadEnv(t, `export SECRET="$CRUSH_TEST_TRICKY"`)
+	env := loadEnv(t, `export SECRET="$EVO_TEST_TRICKY"`)
 
 	got, err := shell.ExpandValue(t.Context(), env["SECRET"].(string), nil)
 	require.NoError(t, err)

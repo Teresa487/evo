@@ -9,21 +9,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// loadCrushSh writes crush.sh into isolated project 和 loads it through
+// loadEvoSh writes crush.sh into isolated project 和 loads it through
 // real 配置 pipeline (discovery -> shell execution -> merge -> typed
 // 配置). Asserting 在 resulting *配置.配置 是 black-box 测试 的
 // what shell 配置 command actually produces, 和 it stays valid across
 // internal changes 到 how 配置 是 assembled.
-func loadCrushSh(t *testing.T, script string) *config.ConfigStore {
+func loadEvoSh(t *testing.T, script string) *config.ConfigStore {
 	t.Helper()
-	store, err := loadCrushShErr(t, script)
+	store, err := loadEvoShErr(t, script)
 	require.NoError(t, err)
 	return store
 }
 
-// loadCrushShErr 是 loadCrushSh without asserting success, 为 cases 那 是
+// loadEvoShErr 是 loadEvoSh without asserting success, 为 cases 那 是
 // expected 到 fail 在 load time.
-func loadCrushShErr(t *testing.T, script string) (*config.ConfigStore, error) {
+func loadEvoShErr(t *testing.T, script string) (*config.ConfigStore, error) {
 	t.Helper()
 	// Isolate 从 developer's real global 配置 所以 只 script
 	// under 测试 contributes. No t.Parallel(): these tests set env vars.
@@ -31,8 +31,8 @@ func loadCrushShErr(t *testing.T, script string) (*config.ConfigStore, error) {
 	t.Setenv("HOME", isolated)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(isolated, ".config"))
 	t.Setenv("XDG_DATA_HOME", filepath.Join(isolated, ".local", "share"))
-	t.Setenv("CRUSH_GLOBAL_CONFIG", filepath.Join(isolated, ".config", "crush"))
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(isolated, ".local", "share", "crush"))
+	t.Setenv("EVO_GLOBAL_CONFIG", filepath.Join(isolated, ".config", "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(isolated, ".local", "share", "crush"))
 
 	workDir := t.TempDir()
 	dataDir := t.TempDir()
@@ -42,14 +42,14 @@ func loadCrushShErr(t *testing.T, script string) (*config.ConfigStore, error) {
 }
 
 func TestShellConfigPermissionsAllow(t *testing.T) {
-	store := loadCrushSh(t, `permissions allow bash view`)
+	store := loadEvoSh(t, `permissions allow bash view`)
 
 	require.NotNil(t, store.Config().Permissions)
 	require.ElementsMatch(t, []string{"bash", "view"}, store.Config().Permissions.AllowedTools)
 }
 
 func TestShellConfigPermissionsAccumulateAndDedup(t *testing.T) {
-	store := loadCrushSh(t, `permissions allow bash
+	store := loadEvoSh(t, `permissions allow bash
 permissions allow view
 permissions allow bash`)
 
@@ -57,20 +57,20 @@ permissions allow bash`)
 }
 
 func TestShellConfigPermissionsLegacyFlagFails(t *testing.T) {
-	_, err := loadCrushShErr(t, `permissions --allow bash`)
+	_, err := loadEvoShErr(t, `permissions --allow bash`)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown subcommand")
 }
 
 func TestShellConfigPermissionsAllowRequiresTool(t *testing.T) {
-	_, err := loadCrushShErr(t, `permissions allow`)
+	_, err := loadEvoShErr(t, `permissions allow`)
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "usage: permissions allow")
 }
 
 // deny hides tools 从 agent 通过 writing options.disabled_tools.
 func TestShellConfigPermissionsDeny(t *testing.T) {
-	store := loadCrushSh(t, `permissions deny bash sourcegraph
+	store := loadEvoSh(t, `permissions deny bash sourcegraph
 permissions deny bash`)
 
 	require.Equal(t, []string{"bash", "sourcegraph"}, store.Config().Options.DisabledTools)
@@ -80,7 +80,7 @@ permissions deny bash`)
 // disabled_tools which removes it 从 agent entirely, regardless 的
 // 它的 presence 在 allow-list.
 func TestShellConfigPermissionsDenyWinsOverAllow(t *testing.T) {
-	store := loadCrushSh(t, `permissions allow bash view
+	store := loadEvoSh(t, `permissions allow bash view
 permissions deny bash`)
 
 	require.ElementsMatch(t, []string{"bash", "view"}, store.Config().Permissions.AllowedTools)
@@ -95,7 +95,7 @@ permissions deny bash`)
 
 func TestShellConfigPermissionsSafeCommands(t *testing.T) {
 	// 一个 command line 是 one 条目, 所以 it 是 given 作为 single quoted word.
-	store := loadCrushSh(t, `permissions safe "go build" "cargo check"
+	store := loadEvoSh(t, `permissions safe "go build" "cargo check"
 permissions safe "go vet"`)
 
 	require.NotNil(t, store.Config().Permissions)
@@ -104,7 +104,7 @@ permissions safe "go vet"`)
 }
 
 func TestShellConfigPermissionsBlockAndUnblock(t *testing.T) {
-	store := loadCrushSh(t, `permissions block kubectl terraform
+	store := loadEvoSh(t, `permissions block kubectl terraform
 permissions unblock curl`)
 
 	perms := store.Config().Permissions
@@ -114,7 +114,7 @@ permissions unblock curl`)
 }
 
 func TestShellConfigPermissionsCommandListsDedupe(t *testing.T) {
-	store := loadCrushSh(t, `permissions block kubectl
+	store := loadEvoSh(t, `permissions block kubectl
 permissions block kubectl
 permissions safe "go build"
 permissions safe "go build"`)
@@ -127,7 +127,7 @@ permissions safe "go build"`)
 func TestShellConfigPermissionsCommandListsCoexistWithTools(t *testing.T) {
 	// 工具 verbs 和 command verbs 写入 到 different places 和
 	// must 不 tread 在 each other.
-	store := loadCrushSh(t, `permissions allow view
+	store := loadEvoSh(t, `permissions allow view
 permissions deny write
 permissions safe "go build"
 permissions block kubectl`)
@@ -140,6 +140,6 @@ permissions block kubectl`)
 }
 
 func TestShellConfigPermissionsUnknownSubcommand(t *testing.T) {
-	_, err := loadCrushShErr(t, `permissions frobnicate bash`)
+	_, err := loadEvoShErr(t, `permissions frobnicate bash`)
 	require.Error(t, err)
 }

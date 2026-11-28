@@ -15,5 +15,5 @@ Get Crush's current runtime state: active model, provider, LSP/MCP status, skill
   loaded this session
 - Check [hooks] to see which hook events are configured and whether the
   hook runner is active
-- Pair with the crush-config skill to fix configuration issues
+- Pair with the evo-config skill to fix configuration issues
 </tips>

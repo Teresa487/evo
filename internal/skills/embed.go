@@ -9,7 +9,7 @@ import (
 
 // BuiltinPrefix 是 路径 prefix 为 builtin skill files. 它 是 used 通过
 // View 工具 到 distinguish embedded files 从 disk files.
-const BuiltinPrefix = "crush://skills/"
+const BuiltinPrefix = "evo://skills/"
 
 //go:embed builtin/*
 var builtinFS embed.FS
@@ -56,7 +56,7 @@ func DiscoverBuiltinWithStates() ([]*Skill, []*SkillState) {
 
 		// Set paths using the crush prefix. Strip the leading "builtin/"
 		// 所以 路径 是 relative 到 embedded root
-		// (e.g., "crush://skills/crush-配置/SKILL.md").
+		// (e.g., "evo://skills/crush-配置/SKILL.md").
 		relPath, _ := filepath.Rel("builtin", path)
 		relPath = filepath.ToSlash(relPath)
 		skill.SkillFilePath = BuiltinPrefix + relPath

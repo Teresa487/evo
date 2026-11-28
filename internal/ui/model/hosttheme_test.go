@@ -100,7 +100,7 @@ func runDialogAction(m *UI, action dialog.Action) []tea.Msg {
 // one.
 func isolateThemeFiles(t *testing.T) {
 	t.Helper()
-	t.Setenv("CRUSH_GLOBAL_CONFIG", t.TempDir())
+	t.Setenv("EVO_GLOBAL_CONFIG", t.TempDir())
 }
 
 // deliverHostTheme hands m host theme 事件 和, 当 it asks 为 styles

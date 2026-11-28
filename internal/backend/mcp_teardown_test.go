@@ -22,7 +22,7 @@ import (
 // it replaces while another 工作区 keeps MCP clients referenced.
 func TestTeardown_KeepsOtherWorkspacesMCP(t *testing.T) {
 	xdgIsolated(t)
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 	const name = "teardown-probe"
 	httpSrv := httptest.NewServer(mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server {
 		return mcp.NewServer(&mcp.Implementation{Name: name}, nil)

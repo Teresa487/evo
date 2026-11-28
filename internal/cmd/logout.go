@@ -1,4 +1,4 @@
-// logout.go —— `crush logout`：清除已保存的 provider 凭据。
+// logout.go —— `evo logout`：清除已保存的 provider 凭据。
 
 package cmd
 
@@ -33,16 +33,16 @@ If no argument is given, a list of logged-in platforms will be shown.
 Available platforms are: hyper, copilot, openai (chatgpt), grok (xai).`,
 	Example: `
 # Sign out from Charm Hyper
-crush logout hyper
+evo logout hyper
 
 # Sign out from GitHub Copilot
-crush logout copilot
+evo logout copilot
 
 # Sign out from your ChatGPT (OpenAI) account
-crush logout openai
+evo logout openai
 
 # Sign out from your Grok (xAI) account
-crush logout grok
+evo logout grok
   `,
 	ValidArgs: []cobra.Completion{
 		"hyper",

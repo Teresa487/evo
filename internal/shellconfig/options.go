@@ -27,7 +27,7 @@ import (
 //
 // Examples:
 //
-//	option data-目录 .crush
+//	option data-目录 .evo
 //	option 上下文-路径 .cursorrules
 //	option reset skill-路径
 //	option metrics false

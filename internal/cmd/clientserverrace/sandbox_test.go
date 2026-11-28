@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// crushBinary builds crush, skipping where 二进制 tests cannot 运行.
-func crushBinary(t *testing.T) string {
+// evoBinary builds crush, skipping where 二进制 tests cannot 运行.
+func evoBinary(t *testing.T) string {
 	t.Helper()
 	if testing.Short() {
 		t.Skip("skipping binary test in -short mode")
@@ -23,10 +23,10 @@ func crushBinary(t *testing.T) string {
 	if _, err := exec.LookPath("go"); err != nil {
 		t.Skip("skipping: 'go' not available on PATH")
 	}
-	return buildCrushBinary(t, repoRootFromTest(t))
+	return buildEvoBinary(t, repoRootFromTest(t))
 }
 
-// sandbox keeps crush processes away 从 用户's real state, 提供方
+// sandbox keeps evo processes away 从 用户's real state, 提供方
 // credentials 和 默认 socket.
 type sandbox struct {
 	bin, dir, project, socket, host string
@@ -36,7 +36,7 @@ type sandbox struct {
 func newSandbox(t *testing.T, bin string, env ...string) *sandbox {
 	t.Helper()
 	// 一个 /tmp 路径 keeps socket under darwin's 104-byte sun_path limit.
-	dir, err := os.MkdirTemp("/tmp", "crush-test-")
+	dir, err := os.MkdirTemp("/tmp", "evo-test-")
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = os.RemoveAll(dir) })
 
@@ -44,11 +44,11 @@ func newSandbox(t *testing.T, bin string, env ...string) *sandbox {
 		bin:     bin,
 		dir:     dir,
 		project: filepath.Join(dir, "project"),
-		socket:  filepath.Join(dir, "crush.sock"),
+		socket:  filepath.Join(dir, "evo.sock"),
 	}
 	sb.host = "unix://" + sb.socket
 	require.NoError(t, os.MkdirAll(sb.project, 0o700))
-	sb.env = []string{"CRUSH_DISABLE_METRICS=1", "CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1"}
+	sb.env = []string{"EVO_DISABLE_METRICS=1", "EVO_DISABLE_PROVIDER_AUTO_UPDATE=1"}
 	for _, name := range []string{"HOME", "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME"} {
 		d := filepath.Join(dir, strings.ToLower(name))
 		require.NoError(t, os.MkdirAll(d, 0o700))
@@ -63,7 +63,7 @@ func newSandbox(t *testing.T, bin string, env ...string) *sandbox {
 	return sb
 }
 
-// proc 是 crush process started 通过 [sandbox.start].
+// proc 是 evo process started 通过 [sandbox.start].
 type proc struct {
 	cmd  *exec.Cmd
 	done chan struct{}

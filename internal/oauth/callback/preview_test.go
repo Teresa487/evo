@@ -7,12 +7,12 @@ import (
 )
 
 // TestWritePreview 是 developer aid, 不 assertion: set
-// CRUSH_CALLBACK_PREVIEW 到 目录 和 it writes each page state
+// EVO_CALLBACK_PREVIEW 到 目录 和 it writes each page state
 // there 所以 结果 can 是 opened 在 browser 和 eyeballed.
 func TestWritePreview(t *testing.T) {
-	dir := os.Getenv("CRUSH_CALLBACK_PREVIEW")
+	dir := os.Getenv("EVO_CALLBACK_PREVIEW")
 	if dir == "" {
-		t.Skip("set CRUSH_CALLBACK_PREVIEW=<dir> to render preview pages")
+		t.Skip("set EVO_CALLBACK_PREVIEW=<dir> to render preview pages")
 	}
 	cases := map[string]Result{
 		"ok":     {Subject: "linear"},

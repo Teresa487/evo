@@ -129,7 +129,7 @@ func TestDetectOSC99Support_ValidResponse(t *testing.T) {
 	t.Parallel()
 
 	// Simulate valid OSC 99 响应 用 标题 support.
-	seq := "\x1b]99;i=crush-osc99-query:p=?;p=title\x07"
+	seq := "\x1b]99;i=evo-osc99-query:p=?;p=title\x07"
 	require.True(t, notification.DetectOSC99Support(seq))
 }
 
@@ -137,7 +137,7 @@ func TestDetectOSC99Support_MultipleCapabilities(t *testing.T) {
 	t.Parallel()
 
 	// 响应 indicating support 为 标题, body, 和 icon.
-	seq := "\x1b]99;i=crush-osc99-query:p=?;p=title,body,icon\x07"
+	seq := "\x1b]99;i=evo-osc99-query:p=?;p=title,body,icon\x07"
 	require.True(t, notification.DetectOSC99Support(seq))
 }
 
@@ -145,7 +145,7 @@ func TestDetectOSC99Support_InvalidCommand(t *testing.T) {
 	t.Parallel()
 
 	// OSC 98 instead 的 99.
-	seq := "\x1b]98;i=crush-osc99-query:p=?;p=title\x07"
+	seq := "\x1b]98;i=evo-osc99-query:p=?;p=title\x07"
 	require.False(t, notification.DetectOSC99Support(seq))
 }
 
@@ -161,7 +161,7 @@ func TestDetectOSC99Support_NoQueryFlag(t *testing.T) {
 	t.Parallel()
 
 	// Missing p=? 查询 flag.
-	seq := "\x1b]99;i=crush-osc99-query;p=title\x07"
+	seq := "\x1b]99;i=evo-osc99-query;p=title\x07"
 	require.False(t, notification.DetectOSC99Support(seq))
 }
 
@@ -169,7 +169,7 @@ func TestDetectOSC99Support_NoTitleCapability(t *testing.T) {
 	t.Parallel()
 
 	// 响应 without 标题 能力 (只 body).
-	seq := "\x1b]99;i=crush-osc99-query:p=?;p=body\x07"
+	seq := "\x1b]99;i=evo-osc99-query:p=?;p=body\x07"
 	require.False(t, notification.DetectOSC99Support(seq))
 }
 
@@ -183,7 +183,7 @@ func TestDetectOSC99Support_MalformedSequence(t *testing.T) {
 	t.Parallel()
 
 	// Missing semicolon separator.
-	seq := "\x1b]99;i=crush-osc99-query:p=?p=title\x07"
+	seq := "\x1b]99;i=evo-osc99-query:p=?p=title\x07"
 	require.False(t, notification.DetectOSC99Support(seq))
 }
 
@@ -192,7 +192,7 @@ func TestOSC99QuerySequence(t *testing.T) {
 
 	seq := notification.OSC99QuerySequence()
 	require.Contains(t, seq, "\x1b]99;")
-	require.Contains(t, seq, "i=crush-osc99-query")
+	require.Contains(t, seq, "i=evo-osc99-query")
 	require.Contains(t, seq, "p=?")
 	require.Contains(t, seq, "\x07")
 }

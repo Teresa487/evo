@@ -38,7 +38,7 @@ func runPinentryGpg(ctx context.Context, args []string) error {
 	// Prepend gpg argv 所以 runner sees full command line.
 	gpgArgs := append([]string{"gpg"}, args...)
 
-	socketPath := os.Getenv("CRUSH_PINENTRY_SOCK")
+	socketPath := os.Getenv("EVO_PINENTRY_SOCK")
 	if socketPath == "" {
 		return runPlainGpg(ctx, gpgArgs)
 	}

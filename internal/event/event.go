@@ -40,7 +40,7 @@ var (
 func SetNonInteractive(nonInteractive bool) {
 	baseProps = baseProps.
 		Set(nonInteractiveAttrName, nonInteractive).
-		Set(nonInteractiveNestedAttrName, nonInteractive && os.Getenv("CRUSH") == "1")
+		Set(nonInteractiveNestedAttrName, nonInteractive && os.Getenv("EVO") == "1")
 }
 
 func SetContinueBySessionID(continueBySessionID bool) {

@@ -121,8 +121,8 @@ func TestSetProviderAPIKeyOpenAIIsEitherOr(t *testing.T) {
 	// Point 配置 discovery 在 测试 sandbox: 写入 below
 	// triggers auto-reload, which must 不 pick up developer's
 	// real crush.json.
-	t.Setenv("CRUSH_GLOBAL_CONFIG", t.TempDir())
-	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
+	t.Setenv("EVO_GLOBAL_CONFIG", t.TempDir())
+	t.Setenv("EVO_GLOBAL_DATA", t.TempDir())
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
 
 	token := &oauth.Token{
@@ -321,8 +321,8 @@ func isolateLoadEnv(t *testing.T) (workDir, dataDir string) {
 	t.Setenv("HOME", isolated)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(isolated, ".config"))
 	t.Setenv("XDG_DATA_HOME", filepath.Join(isolated, ".local", "share"))
-	t.Setenv("CRUSH_GLOBAL_CONFIG", filepath.Join(isolated, ".config", "crush"))
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(isolated, ".local", "share", "crush"))
+	t.Setenv("EVO_GLOBAL_CONFIG", filepath.Join(isolated, ".config", "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(isolated, ".local", "share", "crush"))
 	return t.TempDir(), t.TempDir()
 }
 

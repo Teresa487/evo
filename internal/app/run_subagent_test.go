@@ -83,7 +83,7 @@ func TestRunNonInteractiveApprovesSubAgentTools(t *testing.T) {
 		// Deny it 所以 运行 still ends before 测试 cleans up.
 		app.Permissions.Deny(event.Payload)
 		require.NoError(t, <-done)
-		t.Fatalf("session %s asked about %s, and nobody can answer that in crush run", event.Payload.SessionID, event.Payload.ToolName)
+		t.Fatalf("session %s asked about %s, and nobody can answer that in evo run", event.Payload.SessionID, event.Payload.ToolName)
 	case err := <-done:
 		require.NoError(t, err)
 	}
@@ -99,11 +99,11 @@ func newRunTestApp(t *testing.T, baseURL string) *App {
 	t.Setenv("HOME", home)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(home, ".config"))
 	t.Setenv("XDG_DATA_HOME", filepath.Join(home, ".local", "share"))
-	t.Setenv("CRUSH_GLOBAL_CONFIG", filepath.Join(home, ".config", "crush"))
-	t.Setenv("CRUSH_GLOBAL_DATA", filepath.Join(home, ".local", "share", "crush"))
+	t.Setenv("EVO_GLOBAL_CONFIG", filepath.Join(home, ".config", "crush"))
+	t.Setenv("EVO_GLOBAL_DATA", filepath.Join(home, ".local", "share", "crush"))
 
 	workingDir, dataDir := t.TempDir(), t.TempDir()
-	crushJSON := fmt.Sprintf(`{
+	evoJSON := fmt.Sprintf(`{
   "options": {"disable_default_providers": true, "disable_provider_auto_update": true},
   "providers": {"mock": {"id": "mock", "name": "Mock", "type": "openai-compat",
     "base_url": %q, "api_key": "test",
@@ -111,7 +111,7 @@ func newRunTestApp(t *testing.T, baseURL string) *App {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
              "small": {"provider": "mock", "model": "mock-model"}}
 }`, baseURL)
-	require.NoError(t, os.WriteFile(filepath.Join(workingDir, "evo.json"), []byte(crushJSON), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(workingDir, "evo.json"), []byte(evoJSON), 0o644))
 
 	store, err := config.Init(t.Context(), workingDir, dataDir, false)
 	require.NoError(t, err)

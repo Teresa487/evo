@@ -15,7 +15,7 @@ import (
 // background shell manager 是 process global.
 func TestTeardown_LeavesOtherWorkspacesShellsRunning(t *testing.T) {
 	xdgIsolated(t)
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 	b := New(context.Background(), nil, func() {})
 	b.SetIdleShutdownDelay(time.Hour)
 	t.Cleanup(func() { drainBackend(t, b) })

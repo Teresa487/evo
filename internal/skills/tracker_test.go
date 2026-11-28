@@ -62,18 +62,18 @@ func TestTracker_BuiltinSkillTracking(t *testing.T) {
 
 	// Simulate 活跃 skills including builtin skill (crush-配置).
 	activeSkills := []*Skill{
-		{Name: "crush-config", Description: "Crush config", Builtin: true},
+		{Name: "evo-config", Description: "Crush config", Builtin: true},
 		{Name: "go-doc", Description: "Go docs", Builtin: false},
 	}
 	tracker := NewTracker(activeSkills)
 
 	// Initially 不 loaded.
-	require.False(t, tracker.IsLoaded("crush-config"))
+	require.False(t, tracker.IsLoaded("evo-config"))
 	require.False(t, tracker.IsLoaded("go-doc"))
 
-	// 标记 builtin skill 作为 loaded (simulating 读取 via crush://...).
-	tracker.MarkLoaded("crush-config")
-	require.True(t, tracker.IsLoaded("crush-config"))
+	// 标记 builtin skill 作为 loaded (simulating 读取 via evo://...).
+	tracker.MarkLoaded("evo-config")
+	require.True(t, tracker.IsLoaded("evo-config"))
 
 	// 标记 用户 skill 作为 loaded.
 	tracker.MarkLoaded("go-doc")

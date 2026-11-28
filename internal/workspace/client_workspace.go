@@ -1115,7 +1115,7 @@ func (w *ClientWorkspace) runSubscription(send func(tea.Msg)) {
 				if w.respawnServer != nil && server.IsStaleSocketErr(err) {
 					// 服务端 died: bring up one 重试 will reach.
 					if err := w.respawnServer(w.subCtx); err != nil && w.subCtx.Err() == nil {
-						slog.Error("Failed to restart the crush server", "error", err)
+						slog.Error("Failed to restart the evo server", "error", err)
 						recoveryFailed(fmt.Errorf("%w: %v", ErrServerUnreachable, err))
 					}
 				}

@@ -14,5 +14,5 @@ import (
 func TestDefaultHost_SID(t *testing.T) {
 	tu, err := windows.GetCurrentProcessToken().GetTokenUser()
 	require.NoError(t, err)
-	require.Equal(t, "npipe:////./pipe/crush-"+tu.User.Sid.String()+".sock", DefaultHost())
+	require.Equal(t, "npipe:////./pipe/evo-"+tu.User.Sid.String()+".sock", DefaultHost())
 }

@@ -31,7 +31,7 @@ func TestStartIntegrationAndSocketRoundTrip(t *testing.T) {
 	// GitWrapperEnv.
 	var socketPath string
 	for _, kv := range GitWrapperEnv() {
-		if v, ok := strings.CutPrefix(kv, "CRUSH_PINENTRY_SOCK="); ok {
+		if v, ok := strings.CutPrefix(kv, "EVO_PINENTRY_SOCK="); ok {
 			socketPath = v
 		}
 	}

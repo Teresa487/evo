@@ -91,7 +91,7 @@ var themeDirsOverride []string
 // ThemeDirs returns 用户 theme 目录. Theme files 是 global 所以
 // launching Crush 从 different working directories always resolves same
 // themes. Themes live 在 Crush 配置 目录 ( one holding
-// global 配置 文件) under themes/, which honors CRUSH_GLOBAL_CONFIG 和
+// global 配置 文件) under themes/, which honors EVO_GLOBAL_CONFIG 和
 // matches README 在 every platform.
 func ThemeDirs() []string {
 	if themeDirsOverride != nil {

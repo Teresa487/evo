@@ -17,7 +17,7 @@ import (
 // 终态 closing after Ctrl+C) killing 服务端 mid-teardown. 它 runs
 // 在 child process, since fatal SIGHUP would kill 测试 二进制.
 func TestAwaitStopSIGHUPAfterStop(t *testing.T) {
-	const childEnv = "CRUSH_TEST_SIGHUP_AFTER_STOP"
+	const childEnv = "EVO_TEST_SIGHUP_AFTER_STOP"
 	if os.Getenv(childEnv) == "1" {
 		ctx, cancel := context.WithCancel(t.Context())
 		cancel()

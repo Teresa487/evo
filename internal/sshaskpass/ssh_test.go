@@ -212,7 +212,7 @@ func TestAskpassEnv(t *testing.T) {
 	env := AskpassEnv()
 	require.Contains(t, env, "SSH_ASKPASS=/tmp/x/ssh-askpass")
 	require.Contains(t, env, "SSH_ASKPASS_REQUIRE=force")
-	require.Contains(t, env, "CRUSH_SSH_SOCK=/tmp/x/ssh.sock")
+	require.Contains(t, env, "EVO_SSH_SOCK=/tmp/x/ssh.sock")
 
 	DisableIntegration()
 	require.Nil(t, AskpassEnv())
@@ -237,7 +237,7 @@ func TestStartIntegrationAndSocketRoundTrip(t *testing.T) {
 	// socket 路径 是 exported 到 spawned ssh processes.
 	var socketPath string
 	for _, kv := range AskpassEnv() {
-		if v, ok := strings.CutPrefix(kv, "CRUSH_SSH_SOCK="); ok {
+		if v, ok := strings.CutPrefix(kv, "EVO_SSH_SOCK="); ok {
 			socketPath = v
 		}
 	}

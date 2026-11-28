@@ -1,4 +1,4 @@
-// login.go —— `crush login`：交互式配置 provider 凭据（API key / OAuth）。
+// login.go —— `evo login`：交互式配置 provider 凭据（API key / OAuth）。
 
 package cmd
 
@@ -26,19 +26,19 @@ var loginCmd = &cobra.Command{
 	Available platforms are: hyper, copilot, openai (chatgpt), grok (xai).`,
 	Example: `
 	# Authenticate with Charm Hyper
-	crush login
+	evo login
 
 	# Authenticate with GitHub Copilot
-	crush login copilot
+	evo login copilot
 
 	# Authenticate with a ChatGPT (OpenAI) account
-	crush login openai
+	evo login openai
 
 	# Authenticate with a Grok (xAI) account
-	crush login grok
+	evo login grok
 
 	# Force re-authentication even if already logged in
-	crush login -f copilot
+	evo login -f copilot
 	`,
 	ValidArgs: []cobra.Completion{
 		"hyper",

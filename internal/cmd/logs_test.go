@@ -23,7 +23,7 @@ import (
 
 // childTestEnv marks 测试 二进制 re-运行 通过 runChildTest. Logging 是 set up
 // once per process, 所以 tests 那 set it up do 所以 在 child process.
-const childTestEnv = "CRUSH_TEST_CHILD"
+const childTestEnv = "EVO_TEST_CHILD"
 
 // runChildTest re-runs calling 测试 在 child process 用 env added,
 // 和 returns child's output. child sees childTestEnv set. Its
@@ -47,15 +47,15 @@ func runChildTest(t *testing.T, env ...string) string {
 // it knows 它的 工作区, 和 then 到 工作区's log.
 func TestConnectToServer_ClientStaysOutOfServerLog(t *testing.T) {
 	if os.Getenv(childTestEnv) == "1" {
-		connectAndLog(t, os.Getenv("CRUSH_TEST_DATA_DIR"))
+		connectAndLog(t, os.Getenv("EVO_TEST_DATA_DIR"))
 		return
 	}
 	t.Parallel()
 
 	runChildTest(t,
-		"CRUSH_CACHE_DIR="+t.TempDir(),
-		"CRUSH_TEST_DATA_DIR="+t.TempDir(),
-		"CRUSH_DISABLE_METRICS=1",
+		"EVO_CACHE_DIR="+t.TempDir(),
+		"EVO_TEST_DATA_DIR="+t.TempDir(),
+		"EVO_DISABLE_METRICS=1",
 	)
 }
 
@@ -117,13 +117,13 @@ func connectAndLog(t *testing.T, dataDir string) {
 	require.Contains(t, string(got), "Client record after connecting")
 }
 
-// TestLogs_ClientServerModeShowsServerLog covers `crush logs` 在
+// TestLogs_ClientServerModeShowsServerLog covers `evo logs` 在
 // 客户端/服务端 mode. agent runs 在 服务端, which logs 到 它的 own
 // 文件, 所以 showing 只 工作区's log finds nothing about it.
 func TestLogs_ClientServerModeShowsServerLog(t *testing.T) {
 	const host = "tcp://127.0.0.1:1"
 	if os.Getenv(childTestEnv) == "1" {
-		rootCmd.SetArgs([]string{"logs", "--cwd", os.Getenv("CRUSH_TEST_PROJECT"), "--host", host})
+		rootCmd.SetArgs([]string{"logs", "--cwd", os.Getenv("EVO_TEST_PROJECT"), "--host", host})
 		require.NoError(t, rootCmd.ExecuteContext(t.Context()))
 		return
 	}
@@ -148,12 +148,12 @@ func TestLogs_ClientServerModeShowsServerLog(t *testing.T) {
 	)
 
 	out := runChildTest(t,
-		"CRUSH_CLIENT_SERVER=1",
-		"CRUSH_CACHE_DIR="+cacheDir,
-		"CRUSH_GLOBAL_CONFIG="+t.TempDir(),
-		"CRUSH_GLOBAL_DATA="+t.TempDir(),
-		"CRUSH_DISABLE_PROVIDER_AUTO_UPDATE=1",
-		"CRUSH_TEST_PROJECT="+project,
+		"EVO_CLIENT_SERVER=1",
+		"EVO_CACHE_DIR="+cacheDir,
+		"EVO_GLOBAL_CONFIG="+t.TempDir(),
+		"EVO_GLOBAL_DATA="+t.TempDir(),
+		"EVO_DISABLE_PROVIDER_AUTO_UPDATE=1",
+		"EVO_TEST_PROJECT="+project,
 	)
 
 	var order []int
@@ -165,7 +165,7 @@ func TestLogs_ClientServerModeShowsServerLog(t *testing.T) {
 		"Client record last",
 	} {
 		i := strings.Index(out, msg)
-		require.NotEqual(t, -1, i, "crush logs must show %q:\n%s", msg, out)
+		require.NotEqual(t, -1, i, "evo logs must show %q:\n%s", msg, out)
 		order = append(order, i)
 	}
 	require.IsIncreasing(t, order, "records must be shown in the order they were logged:\n%s", out)

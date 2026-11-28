@@ -24,7 +24,7 @@ const (
 
 // coreutilsHandler builds Turtle coreutils middleware 为 mode, 或 nil
 // 当 mode 是 off. An empty 或 unknown mode means no 工作区 配置 是
-// available (crushrc execution, standalone helpers) 和 runs Turtle.
+// available (evorc execution, standalone helpers) 和 runs Turtle.
 func coreutilsHandler(mode CoreutilsMode) execMiddleware {
 	switch mode {
 	case CoreutilsOff:

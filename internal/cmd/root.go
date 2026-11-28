@@ -45,7 +45,7 @@ import (
 	"github.com/charmbracelet/crush/internal/db"
 	"github.com/charmbracelet/crush/internal/event"
 	"github.com/charmbracelet/crush/internal/lock"
-	crushlog "github.com/charmbracelet/crush/internal/log"
+	evolog "github.com/charmbracelet/crush/internal/log"
 	"github.com/charmbracelet/crush/internal/permission"
 	"github.com/charmbracelet/crush/internal/projects"
 	"github.com/charmbracelet/crush/internal/proto"
@@ -78,7 +78,7 @@ var resumeToken string
 // 客户端; 服务端 started explicitly 用 `evo server` has no such
 // marker 和 keeps running. variable 是 set 在 child environment 通过
 // [detachedServerCmd] 和 读取 通过 服务端 command.
-const spawnedServerEnv = "CRUSH_SPAWNED_SERVER"
+const spawnedServerEnv = "EVO_SPAWNED_SERVER"
 
 func init() {
 	rootCmd.PersistentFlags().StringP("cwd", "c", "", "Current working directory")
@@ -356,17 +356,17 @@ func supportsProgressBar() bool {
 }
 
 // useClientServer reports whether 到 use 客户端/服务端 architecture
-// without reading 配置: 当 CRUSH_CLIENT_SERVER environment
+// without reading 配置: 当 EVO_CLIENT_SERVER environment
 // variable enables it, 或 当 --host names 服务端 到 connect 到.
 func useClientServer(cmd *cobra.Command) bool {
 	return cmd.Flags().Changed("host") || clientServerEnabled(nil)
 }
 
 // clientServerEnabled reports whether 客户端/服务端 architecture 是
-// 在. CRUSH_CLIENT_SERVER environment variable decides 当 set;
+// 在. EVO_CLIENT_SERVER environment variable decides 当 set;
 // otherwise options.experimental.client_server does.
 func clientServerEnabled(opts *config.ExperimentalOptions) bool {
-	if v := os.Getenv("CRUSH_CLIENT_SERVER"); v != "" {
+	if v := os.Getenv("EVO_CLIENT_SERVER"); v != "" {
 		on, _ := strconv.ParseBool(v)
 		return on
 	}
@@ -382,7 +382,7 @@ func clientServerEnabled(opts *config.ExperimentalOptions) bool {
 // environment 或 --host chose mode, 是 配置 读取 second,
 // lighter way.
 func clientServerMode(cmd *cobra.Command) (bool, *config.ConfigStore, error) {
-	if cmd.Flags().Changed("host") || os.Getenv("CRUSH_CLIENT_SERVER") != "" {
+	if cmd.Flags().Changed("host") || os.Getenv("EVO_CLIENT_SERVER") != "" {
 		if !useClientServer(cmd) {
 			return false, nil, nil
 		}
@@ -510,7 +510,7 @@ func setupLocalWorkspace(cmd *cobra.Command, store *config.ConfigStore) (workspa
 	}
 
 	logFile := filepath.Join(cfg.Options.DataDirectory, "logs", "evo.log")
-	crushlog.Setup(logFile, debug)
+	evolog.Setup(logFile, debug)
 
 	// Discover skills once before app.New. Local mode hosts a single
 	// 工作区 per process, 所以 WithGlobalMirror keeps package
@@ -659,7 +659,7 @@ func connectToServer(cmd *cobra.Command) (*client.Client, *proto.Workspace, func
 
 	if ws.Config != nil {
 		logFile := filepath.Join(ws.Config.Options.DataDirectory, "logs", "evo.log")
-		if err := crushlog.SetFile(logFile); err != nil {
+		if err := evolog.SetFile(logFile); err != nil {
 			slog.Warn("Failed to close the client startup log", "error", err)
 		}
 	}
@@ -811,7 +811,7 @@ func ensureServer(cmd *cobra.Command, hostURL *url.URL) error {
 	// 服务端 may 写入 (see serverLogFile). connectToServer moves log
 	// 到 工作区 once it 是 known.
 	debug, _ := cmd.Flags().GetBool("debug")
-	crushlog.Setup(clientLogFile(hostURL), debug)
+	evolog.Setup(clientLogFile(hostURL), debug)
 
 	switch hostURL.Scheme {
 	case "unix", "npipe":
@@ -981,7 +981,7 @@ func safeHostName(hostURL *url.URL) string {
 }
 
 // serverReadyTimeout returns total budget 为 readiness probe.
-// Overridable via CRUSH_SERVER_READY_TIMEOUT (parsed 作为 Go duration).
+// Overridable via EVO_SERVER_READY_TIMEOUT (parsed 作为 Go duration).
 //
 // Without override, 服务端 这 客户端 has just spawned gets far
 // longer than one it found running: it binds 只 after loading 它的 配置,
@@ -992,7 +992,7 @@ func serverReadyTimeout(spawned bool) time.Duration {
 	if spawned {
 		def = 2 * time.Minute
 	}
-	v := os.Getenv("CRUSH_SERVER_READY_TIMEOUT")
+	v := os.Getenv("EVO_SERVER_READY_TIMEOUT")
 	if v == "" {
 		return def
 	}
@@ -1351,7 +1351,7 @@ var startDetachedServer = func(cmd *cobra.Command, hostURL *url.URL) (*spawnedSe
 
 	// Pass parsed host rather than flag 作为 typed, 所以 relative
 	// socket 路径 reaches 服务端 already resolved against 目录
-	// crush was started 在, 不 against --cwd.
+	// evo was started 在, 不 against --cwd.
 	cmdArgs := []string{"server"}
 	if clientHost != server.DefaultHost() {
 		cmdArgs = append(cmdArgs, "--host", hostURL.Scheme+"://"+hostURL.Host+hostURL.Path)
@@ -1417,7 +1417,7 @@ func detachedServerCmd(exe, dir string, args ...string) *exec.Cmd {
 }
 
 func shouldEnableMetrics(cfg *config.Config) bool {
-	if v, _ := strconv.ParseBool(os.Getenv("CRUSH_DISABLE_METRICS")); v {
+	if v, _ := strconv.ParseBool(os.Getenv("EVO_DISABLE_METRICS")); v {
 		return false
 	}
 	if v, _ := strconv.ParseBool(os.Getenv("DO_NOT_TRACK")); v {
@@ -1510,7 +1510,7 @@ func ResolveCwd(cmd *cobra.Command) (string, error) {
 }
 
 // resolveFlagPaths makes relative paths 在 --host 和 --提示词
-// absolute against 目录 crush was started 在, which 是 what they
+// absolute against 目录 evo was started 在, which 是 what they
 // mean 在 command line. 它 runs before anything changes into --cwd.
 func resolveFlagPaths(cmd *cobra.Command) error {
 	if strings.HasPrefix(clientHost, "unix://") {
@@ -1533,7 +1533,7 @@ func resolveFlagPaths(cmd *cobra.Command) error {
 	return nil
 }
 
-func createDotCrushDir(dir string) error {
+func createDotEvoDir(dir string) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return fmt.Errorf("failed to create data directory: %q %w", dir, err)
 	}

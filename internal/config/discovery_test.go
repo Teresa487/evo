@@ -145,8 +145,8 @@ func writeGlobalConfig(t *testing.T, globalDir, body string) {
 func TestDiscovery_StartupKeepsSelectionAndRefreshesInBackground(t *testing.T) {
 	globalDir := t.TempDir()
 	workDir := t.TempDir()
-	t.Setenv("CRUSH_GLOBAL_CONFIG", globalDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", globalDir)
+	t.Setenv("EVO_GLOBAL_CONFIG", globalDir)
+	t.Setenv("EVO_GLOBAL_DATA", globalDir)
 
 	server := newModelsServer(t, "a", "b")
 	writeGlobalConfig(t, globalDir, fmt.Sprintf(`{
@@ -186,8 +186,8 @@ func TestDiscovery_StartupKeepsSelectionAndRefreshesInBackground(t *testing.T) {
 func TestDiscovery_ReloadDiscoversNewProvider(t *testing.T) {
 	globalDir := t.TempDir()
 	workDir := t.TempDir()
-	t.Setenv("CRUSH_GLOBAL_CONFIG", globalDir)
-	t.Setenv("CRUSH_GLOBAL_DATA", globalDir)
+	t.Setenv("EVO_GLOBAL_CONFIG", globalDir)
+	t.Setenv("EVO_GLOBAL_DATA", globalDir)
 
 	known := newModelsServer(t, "a")
 	writeGlobalConfig(t, globalDir, fmt.Sprintf(`{

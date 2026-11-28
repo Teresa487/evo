@@ -58,7 +58,7 @@ func (r *runtimeServer) newClient(t *testing.T, path string) *client.Client {
 	// claim it holds 和 tears 工作区 down 在 once, closing
 	// pooled DB 连接. Without 这 测试 那 leaves clients
 	// attached ( SSE 缓存 tests never shut theirs down) keeps
-	// 工作区, 和 它的 open crush.db, alive past t.TempDir 清理,
+	// 工作区, 和 它的 open evo.db, alive past t.TempDir 清理,
 	// which Windows cannot remove while 文件 是 locked.
 	t.Cleanup(func() { _ = c.RetireClient(context.Background()) })
 	return c
@@ -221,7 +221,7 @@ func TestClientWorkspace_GlobalTogglesRefreshCaches(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			xdgIsolate(t)
-			t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+			t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 			// command does 不 exist, 所以 startup 只 records
 			// 错误 和 no MCP 服务端 ever runs.
 			globalCfg := filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "crush", "evo.json")

@@ -112,7 +112,7 @@ func DefaultHost() string {
 	if id == "" {
 		return ""
 	}
-	sock := fmt.Sprintf("crush-%s.sock", id)
+	sock := fmt.Sprintf("evo-%s.sock", id)
 	if runtime.GOOS == "windows" {
 		return fmt.Sprintf("npipe:////./pipe/%s", sock)
 	}

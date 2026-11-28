@@ -52,7 +52,7 @@ func TestOption_String(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	script := `option data-directory .crush
+	script := `option data-directory .evo
 option notifications osc`
 	path := filepath.Join(dir, "evorc")
 
@@ -63,7 +63,7 @@ option notifications osc`
 	require.NoError(t, json.Unmarshal(jsonBytes, &result))
 
 	opts := result["options"].(map[string]any)
-	require.Equal(t, ".crush", opts["data_directory"])
+	require.Equal(t, ".evo", opts["data_directory"])
 	require.Equal(t, "osc", opts["notifications"])
 }
 
@@ -72,7 +72,7 @@ func TestOption_List(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `option context-path .cursorrules
-option context-path CRUSH.md`
+option context-path EVO.md`
 	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
@@ -85,7 +85,7 @@ option context-path CRUSH.md`
 	paths := opts["context_paths"].([]any)
 	require.Len(t, paths, 2)
 	require.Equal(t, ".cursorrules", paths[0])
-	require.Equal(t, "CRUSH.md", paths[1])
+	require.Equal(t, "EVO.md", paths[1])
 }
 
 func TestOption_Reset(t *testing.T) {
@@ -324,8 +324,8 @@ func TestOption_Prompt(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	script := `option prompt coder /etc/crush/coder.md.tpl
-option prompt summary /etc/crush/summary.md`
+	script := `option prompt coder /etc/evo/coder.md.tpl
+option prompt summary /etc/evo/summary.md`
 	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
@@ -335,8 +335,8 @@ option prompt summary /etc/crush/summary.md`
 	require.NoError(t, json.Unmarshal(jsonBytes, &result))
 
 	prompts := result["options"].(map[string]any)["prompts"].(map[string]any)
-	require.Equal(t, "/etc/crush/coder.md.tpl", prompts["coder"])
-	require.Equal(t, "/etc/crush/summary.md", prompts["summary"])
+	require.Equal(t, "/etc/evo/coder.md.tpl", prompts["coder"])
+	require.Equal(t, "/etc/evo/summary.md", prompts["summary"])
 }
 
 // 配置 是 shell script, 所以 bash expands ~ before builtin runs.

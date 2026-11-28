@@ -250,10 +250,10 @@ func migrateCatwalkV2Model(model map[string]any) bool {
 // Load loads configuration 从 默认 paths 和 returns
 // ConfigStore 那 owns both pure-data 配置 和 all runtime state.
 func Load(ctx context.Context, workingDir, dataDir string, debug bool) (*ConfigStore, error) {
-	// CRUSH_DATA_DIR env var overrides per-project data 目录
+	// EVO_DATA_DIR env var overrides per-project data 目录
 	// 当 no --data-dir flag 是 given. Relative paths resolve against
 	// working 目录, like data_directory 配置 option.
-	dataDir = cmp.Or(dataDir, os.Getenv("CRUSH_DATA_DIR"))
+	dataDir = cmp.Or(dataDir, os.Getenv("EVO_DATA_DIR"))
 
 	// Migrate deprecated disable_notifications before loading 配置.
 	migrateDisableNotifications()
@@ -409,7 +409,7 @@ func Load(ctx context.Context, workingDir, dataDir string, debug bool) (*ConfigS
 
 	// Capture initial staleness snapshot. Track every discovered 配置 路径,
 	// 不 just ones 那 loaded, 所以 配置 文件 created after startup
-	// (e.g. crushrc added mid-会话) 是 detected 作为 change.
+	// (e.g. evorc added mid-会话) 是 detected 作为 change.
 	store.captureStalenessSnapshot(append(slices.Clone(configPaths), loadedPaths...))
 
 	return store, nil
@@ -425,15 +425,15 @@ func mustMarshalConfig(cfg *Config) []byte {
 	return data
 }
 
-func PushPopCrushEnv() func() {
+func PushPopEvoEnv() func() {
 	var found []string
 	for _, ev := range os.Environ() {
-		if strings.HasPrefix(ev, "CRUSH_") {
+		if strings.HasPrefix(ev, "EVO_") {
 			pair := strings.SplitN(ev, "=", 2)
 			if len(pair) != 2 {
 				continue
 			}
-			found = append(found, strings.TrimPrefix(pair[0], "CRUSH_"))
+			found = append(found, strings.TrimPrefix(pair[0], "EVO_"))
 		}
 	}
 	backups := make(map[string]string)
@@ -442,7 +442,7 @@ func PushPopCrushEnv() func() {
 	}
 
 	for _, ev := range found {
-		os.Setenv(ev, os.Getenv("CRUSH_"+ev))
+		os.Setenv(ev, os.Getenv("EVO_"+ev))
 	}
 
 	restore := func() {
@@ -455,7 +455,7 @@ func PushPopCrushEnv() func() {
 
 func (c *Config) configureProviders(ctx context.Context, store *ConfigStore, env env.Env, resolver VariableResolver, knownProviders []catwalk.Provider) error {
 	knownProviderNames := make(map[string]bool)
-	restore := PushPopCrushEnv()
+	restore := PushPopEvoEnv()
 	defer restore()
 
 	// 目录里只剩可登录的 provider：下面的已知 provider 合并循环会为它们补上
@@ -735,10 +735,10 @@ func (c *Config) NormalizeOptions() {
 func (c *Config) setDefaults(workingDir, dataDir string) {
 	c.NormalizeOptions()
 	if len(c.Options.GlobalContextPaths) == 0 {
-		crushConfigDir := filepath.Dir(GlobalConfig())
+		evoConfigDir := filepath.Dir(GlobalConfig())
 		c.Options.GlobalContextPaths = []string{
-			filepath.Join(crushConfigDir, "CRUSH.md"),
-			filepath.Join(filepath.Dir(crushConfigDir), "AGENTS.md"),
+			filepath.Join(evoConfigDir, "EVO.md"),
+			filepath.Join(filepath.Dir(evoConfigDir), "AGENTS.md"),
 		}
 	}
 	slices.Sort(c.Options.GlobalContextPaths)
@@ -1058,7 +1058,7 @@ func applySelection(cfg *Config, def, sel SelectedModel) (SelectedModel, bool) {
 // regardless 的 boundary.
 func lookupConfigs(cwd string) []string {
 	// Prepend global 用户 配置 和 machine-owned data JSON. Only 用户
-	// 配置 目录 contributes crushrc; data 目录 是 writable
+	// 配置 目录 contributes evorc; data 目录 是 writable
 	// machine state 和 must never 是 executed 作为 Bash. Missing files 是
 	// skipped 当 loaded.
 	configPaths := []string{
@@ -1070,8 +1070,8 @@ func lookupConfigs(cwd string) []string {
 
 	// Ordered high-到-low priority within 目录. LookupBounded returns
 	// matches 在 这 order, 和 later reverse + merge make earliest
-	// listed name win 在 conflict. So: .crushrc beats crushrc, both beat
-	// JSON configs, 和 .crush.json beats crush.json.
+	// listed name win 在 conflict. So: .evorc beats evorc, both beat
+	// JSON configs, 和 .evo.json beats crush.json.
 	configNames := []string{
 		"." + appName + "rc",
 		appName + "rc",
@@ -1095,7 +1095,7 @@ func loadFromConfigPaths(ctx context.Context, configPaths []string) (*Config, []
 	var configs [][]byte
 	var loaded []string
 
-	// Track directories 那 have both crush.json 和 crushrc 到 warn
+	// Track directories 那 have both crush.json 和 evorc 到 warn
 	// about potential confusion, along 用 top-level keys each
 	// defines 所以 we can 报告 conflicts.
 	jsonDirKeys := make(map[string]map[string]bool)
@@ -1143,7 +1143,7 @@ func loadFromConfigPaths(ctx context.Context, configPaths []string) (*Config, []
 		}
 	}
 
-	// Warn 如果 both JSON 配置 和 crushrc exist 在 same 目录
+	// Warn 如果 both JSON 配置 和 evorc exist 在 same 目录
 	// 和 define overlapping top-level keys. Disjoint coexistence 是
 	// intentional 和 不 worth warning about.
 	for dir, jKeys := range jsonDirKeys {
@@ -1159,7 +1159,7 @@ func loadFromConfigPaths(ctx context.Context, configPaths []string) (*Config, []
 		}
 		if len(conflicts) > 0 {
 			slices.Sort(conflicts)
-			slog.Warn("Found both a JSON config and a crushrc in the same directory; merging with crushrc taking precedence",
+			slog.Warn("Found both a JSON config and a evorc in the same directory; merging with evorc taking precedence",
 				"dir", dir, "conflicting_keys", strings.Join(conflicts, ", "))
 		}
 	}
@@ -1218,7 +1218,7 @@ func loadFromBytes(configs [][]byte) (*Config, error) {
 		return nil, err
 	}
 	// Safety net 为 sources 那 cannot 是 rewritten 在 disk (e.g.
-	// crushrc builtins producing JSON): migrate merged 结果 在
+	// evorc builtins producing JSON): migrate merged 结果 在
 	// memory 所以 decoding always sees v3 schema.
 	data, _ = migrateCatwalkV2(data)
 	var config Config
@@ -1353,21 +1353,21 @@ func migrateDisableNotifications() {
 
 // GlobalConfig returns global configuration 文件 路径 为 application.
 func GlobalConfig() string {
-	if crushGlobal := os.Getenv("CRUSH_GLOBAL_CONFIG"); crushGlobal != "" {
-		return filepath.Join(crushGlobal, fmt.Sprintf("%s.json", appName))
+	if evoGlobal := os.Getenv("EVO_GLOBAL_CONFIG"); evoGlobal != "" {
+		return filepath.Join(evoGlobal, fmt.Sprintf("%s.json", appName))
 	}
 	return filepath.Join(home.Config(), appName, fmt.Sprintf("%s.json", appName))
 }
 
-// shellConfigSibling returns crushrc 路径 那 sits alongside given
+// shellConfigSibling returns evorc 路径 那 sits alongside given
 // crush.json 路径 (same 目录). Used 所以 global 配置 locations pick up
 // shell 配置, 不 just JSON.
 func shellConfigSibling(jsonPath string) string {
 	return filepath.Join(filepath.Dir(jsonPath), appName+"rc")
 }
 
-// isShellConfig reports whether 配置 路径 是 shell 配置 (crushrc 或
-// hidden .crushrc), 作为 opposed 到 JSON 配置.
+// isShellConfig reports whether 配置 路径 是 shell 配置 (evorc 或
+// hidden .evorc), 作为 opposed 到 JSON 配置.
 func isShellConfig(path string) bool {
 	base := filepath.Base(path)
 	return base == appName+"rc" || base == "."+appName+"rc"
@@ -1376,8 +1376,8 @@ func isShellConfig(path string) bool {
 // GlobalCacheDir returns 路径 到 global 缓存 目录 为
 // application.
 func GlobalCacheDir() string {
-	if crushCache := os.Getenv("CRUSH_CACHE_DIR"); crushCache != "" {
-		return crushCache
+	if evoCache := os.Getenv("EVO_CACHE_DIR"); evoCache != "" {
+		return evoCache
 	}
 	if xdgCacheHome := os.Getenv("XDG_CACHE_HOME"); xdgCacheHome != "" {
 		return filepath.Join(xdgCacheHome, appName)
@@ -1400,8 +1400,8 @@ func ProjectConfigs(cwd string) []string {
 // GlobalConfigData returns 路径 到 main data 目录 为 application.
 // 这 配置 是 used 当 app overrides configurations instead 的 updating global 配置.
 func GlobalConfigData() string {
-	if crushData := os.Getenv("CRUSH_GLOBAL_DATA"); crushData != "" {
-		return filepath.Join(crushData, fmt.Sprintf("%s.json", appName))
+	if evoData := os.Getenv("EVO_GLOBAL_DATA"); evoData != "" {
+		return filepath.Join(evoData, fmt.Sprintf("%s.json", appName))
 	}
 	if xdgDataHome := os.Getenv("XDG_DATA_HOME"); xdgDataHome != "" {
 		return filepath.Join(xdgDataHome, appName, fmt.Sprintf("%s.json", appName))
@@ -1511,8 +1511,8 @@ func projectBoundary(dir string) string {
 // Skills 在 these directories 是 auto-discovered 和 their files can 是 读取
 // without 权限 prompts.
 func GlobalSkillsDirs() []string {
-	if crushSkills := os.Getenv("CRUSH_SKILLS_DIR"); crushSkills != "" {
-		return []string{crushSkills}
+	if evoSkills := os.Getenv("EVO_SKILLS_DIR"); evoSkills != "" {
+		return []string{evoSkills}
 	}
 
 	paths := []string{
@@ -1545,7 +1545,7 @@ func GlobalSkillsDirs() []string {
 // git-root lookups 到 prevent drift 当 new convention 是 added.
 var projectSkillSubdirs = []string{
 	".agents/skills",
-	".crush/skills",
+	".evo/skills",
 	".claude/skills",
 	".cursor/skills",
 }

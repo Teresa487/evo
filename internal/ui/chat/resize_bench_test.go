@@ -12,19 +12,19 @@ import (
 )
 
 // BenchmarkResizeSession reproduces resize re-render 路径 over real
-// 会话's messages. Point CRUSH_BENCH_SESSION 在 full 会话 id 和
-// CRUSH_BENCH_DATADIR 在 crush data dir (defaults 到 ./.crush).
+// 会话's messages. Point EVO_BENCH_SESSION 在 full 会话 id 和
+// EVO_BENCH_DATADIR 在 crush data dir (defaults 到 ./.evo).
 //
-// CRUSH_BENCH_SESSION=e6368d820207a406 go 测试 ./internal/ui/chat/ \
+// EVO_BENCH_SESSION=e6368d820207a406 go 测试 ./internal/ui/chat/ \
 // -运行 x -bench BenchmarkResizeSession -benchtime 20x -cpuprofile /tmp/cpu.out
 func BenchmarkResizeSession(b *testing.B) {
-	sessionID := os.Getenv("CRUSH_BENCH_SESSION")
+	sessionID := os.Getenv("EVO_BENCH_SESSION")
 	if sessionID == "" {
-		b.Skip("set CRUSH_BENCH_SESSION to a full session id")
+		b.Skip("set EVO_BENCH_SESSION to a full session id")
 	}
-	dataDir := os.Getenv("CRUSH_BENCH_DATADIR")
+	dataDir := os.Getenv("EVO_BENCH_DATADIR")
 	if dataDir == "" {
-		dataDir = ".crush"
+		dataDir = ".evo"
 	}
 
 	ctx := context.Background()

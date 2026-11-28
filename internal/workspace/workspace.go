@@ -46,7 +46,7 @@ var (
 	// ErrServerUnreachable means 客户端 could 不 reach 服务端
 	// 到 determine agent's status (服务端 down, 或 工作区 was
 	// torn down out 从 under 客户端).
-	ErrServerUnreachable = errors.New("lost connection to the crush server")
+	ErrServerUnreachable = errors.New("lost connection to the evo server")
 	// ErrWorkspaceGone means 服务端 是 reachable 但 no longer knows
 	// 这 客户端's 工作区: it was torn down, 或 服务端 was
 	// replaced underneath 客户端. subscription loop re-registers

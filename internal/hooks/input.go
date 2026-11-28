@@ -72,28 +72,28 @@ func BuildPayload(ev Event, cwd string) []byte {
 // BuildEnv constructs environment variable slice 为 钩子 command.
 // 它 includes all current process env vars plus 钩子-specific ones.
 // 工具 variables 是 只 set 为 events 那 carry 工具调用.
-// CLAUDE_PROJECT_DIR mirrors CRUSH_PROJECT_DIR 所以 钩子 scripts written
+// CLAUDE_PROJECT_DIR mirrors EVO_PROJECT_DIR 所以 钩子 scripts written
 // 为 Claude Code can locate themselves.
 func BuildEnv(ev Event, cwd, projectDir string) []string {
 	env := os.Environ()
-	env = append(env, shell.CrushEnvMarkers()...)
+	env = append(env, shell.EvoEnvMarkers()...)
 	env = append(
 		env,
-		fmt.Sprintf("CRUSH_EVENT=%s", ev.Name),
-		fmt.Sprintf("CRUSH_SESSION_ID=%s", ev.SessionID),
-		fmt.Sprintf("CRUSH_CWD=%s", cwd),
-		fmt.Sprintf("CRUSH_PROJECT_DIR=%s", projectDir),
+		fmt.Sprintf("EVO_EVENT=%s", ev.Name),
+		fmt.Sprintf("EVO_SESSION_ID=%s", ev.SessionID),
+		fmt.Sprintf("EVO_CWD=%s", cwd),
+		fmt.Sprintf("EVO_PROJECT_DIR=%s", projectDir),
 		fmt.Sprintf("CLAUDE_PROJECT_DIR=%s", projectDir),
 	)
 	if ev.Tool == nil {
 		return env
 	}
-	env = append(env, fmt.Sprintf("CRUSH_TOOL_NAME=%s", ev.Tool.Name))
+	env = append(env, fmt.Sprintf("EVO_TOOL_NAME=%s", ev.Tool.Name))
 	if cmd := gjson.Get(ev.Tool.Input, "command"); cmd.Exists() {
-		env = append(env, fmt.Sprintf("CRUSH_TOOL_INPUT_COMMAND=%s", cmd.String()))
+		env = append(env, fmt.Sprintf("EVO_TOOL_INPUT_COMMAND=%s", cmd.String()))
 	}
 	if fp := gjson.Get(ev.Tool.Input, "file_path"); fp.Exists() {
-		env = append(env, fmt.Sprintf("CRUSH_TOOL_INPUT_FILE_PATH=%s", fp.String()))
+		env = append(env, fmt.Sprintf("EVO_TOOL_INPUT_FILE_PATH=%s", fp.String()))
 	}
 	return env
 }

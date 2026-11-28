@@ -11,7 +11,7 @@ import (
 // specially, plus quotes it 必须 leave alone.
 const trickyValue = `p@$$w0rd $(echo nope) ` + "`id`" + ` ${HOME} "q" 'x' \n \`
 
-// TestTemplateFieldsSurviveExpansion checks 那 crushrc values reach
+// TestTemplateFieldsSurviveExpansion checks 那 evorc values reach
 // consumers verbatim even though the loader shell-expands these fields.
 func TestTemplateFieldsSurviveExpansion(t *testing.T) {
 	t.Setenv("V", trickyValue)

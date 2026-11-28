@@ -10,7 +10,7 @@ import (
 )
 
 func TestShellConfigProviderAddAndModel(t *testing.T) {
-	store := loadCrushSh(t, `provider add myllm \
+	store := loadEvoSh(t, `provider add myllm \
   --type openai-compat \
   --base-url "http://localhost:1234/v1" \
   --api-key "sk-test" \
@@ -72,7 +72,7 @@ model large myllm/foo-1 --provider-options '{"timeout":30}'`)
 func TestShellConfigProviderRemove(t *testing.T) {
 	// Both providers get 模型 所以 they survive 提供方 configuration
 	// (模型-less providers 是 dropped); 只 difference 是 remove.
-	store := loadCrushSh(t, `provider add keepme --type openai-compat --base-url "http://localhost:1/v1" --api-key k
+	store := loadEvoSh(t, `provider add keepme --type openai-compat --base-url "http://localhost:1/v1" --api-key k
 model add keepme/m1 --name M1
 provider add dropme --type openai-compat --base-url "http://localhost:2/v1" --api-key k
 model add dropme/m2 --name M2

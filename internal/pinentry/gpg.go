@@ -566,7 +566,7 @@ func hasCredentialOperation(args []string) bool {
 // 是 re-读取 across 重试 attempts. Returns 文件 (positioned 在 0)
 // 和 清理 function.
 func spoolStdin(r io.Reader) (*os.File, func(), error) {
-	f, err := os.CreateTemp("", "crush-gpg-stdin-*")
+	f, err := os.CreateTemp("", "evo-gpg-stdin-*")
 	if err != nil {
 		return nil, nil, err
 	}

@@ -75,9 +75,9 @@ func TestPromptTextUsesOverride(t *testing.T) {
 func TestPromptTextExpandsPath(t *testing.T) {
 	dir := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "summary.md"), []byte("sum it up"), 0o644))
-	t.Setenv("CRUSH_TEST_PROMPT_DIR", dir)
+	t.Setenv("EVO_TEST_PROMPT_DIR", dir)
 
-	store := promptStore(t, map[string]string{"summary": "$CRUSH_TEST_PROMPT_DIR/summary.md"})
+	store := promptStore(t, map[string]string{"summary": "$EVO_TEST_PROMPT_DIR/summary.md"})
 
 	text, err := promptText(store, "summary")
 	require.NoError(t, err)
@@ -130,8 +130,8 @@ func TestValidatePromptsRejectsUnknownName(t *testing.T) {
 func TestPromptTextResolvesRelativeToWorkspace(t *testing.T) {
 	t.Parallel()
 
-	store := promptStore(t, map[string]string{"coder": ".crush/coder.md.tpl"})
-	dir := filepath.Join(store.WorkingDir(), ".crush")
+	store := promptStore(t, map[string]string{"coder": ".evo/coder.md.tpl"})
+	dir := filepath.Join(store.WorkingDir(), ".evo")
 	require.NoError(t, os.MkdirAll(dir, 0o755))
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "coder.md.tpl"), []byte("workspace coder"), 0o644))
 

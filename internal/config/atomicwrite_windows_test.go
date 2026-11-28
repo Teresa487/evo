@@ -14,7 +14,7 @@ import (
 
 // Regression 测试 为 windows-latest CI flake where
 // TestConfigStore_SetConfigFields_concurrentInProcess failed 用
-// "rename ...crush.json.<rand>.tmp ...crush.json: Access 是 denied":
+// "rename ...evo.json.<rand>.tmp ...evo.json: Access 是 denied":
 // renaming over destination while another handle 是 open 在 it
 // without sharing must 是 retried until handle closes, 不
 // surfaced 作为 错误.

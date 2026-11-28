@@ -28,7 +28,7 @@ type channelSessionStore interface {
 // frontends do 不 inject (see 工作区.ClientWorkspace.RoutesChannelEvents),
 // 所以 push 是 processed once no matter how many clients 是 attached —
 // including zero, which keeps " pushed 事件 是 never dropped"
-// contract 为 headless `crush serve`.
+// contract 为 headless `evo serve`.
 //
 // Events 是 drained sequentially 从 subscription, 所以 pushes keep
 // their arrival order. Delivery 到 multiple workspaces within one 事件

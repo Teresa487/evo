@@ -12,7 +12,7 @@ type IntegrationConfig struct {
 	// AskpassPath 是 路径 到 SSH_ASKPASS wrapper script. Empty
 	// 在 platforms without POSIX shell (integration 是 disabled there).
 	AskpassPath string
-	// SocketPath 是 CRUSH_SSH_SOCK socket 路径 那 wrapper
+	// SocketPath 是 EVO_SSH_SOCK socket 路径 那 wrapper
 	// subprocess connects 到.
 	SocketPath string
 }
@@ -63,7 +63,7 @@ func AskpassEnv() []string {
 	return []string{
 		"SSH_ASKPASS=" + integrationCfg.AskpassPath,
 		"SSH_ASKPASS_REQUIRE=force",
-		"CRUSH_SSH_SOCK=" + integrationCfg.SocketPath,
+		"EVO_SSH_SOCK=" + integrationCfg.SocketPath,
 	}
 }
 

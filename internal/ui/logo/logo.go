@@ -26,7 +26,7 @@ type Opts struct {
 	CharmColor   color.Color // Charm™ text color
 	VersionColor color.Color // version text color
 	Width        int         // width of the rendered logo, used for truncation
-	Hyper        bool        // whether it is Crush or Hypercrush
+	Hyper        bool        // whether it is Evo or HyperEvo
 
 	// When true, stretch random letterform 在 each render. Has no effect 在
 	// compact mode. Mainly 为 testing. In production you will want 到 缓存
@@ -61,54 +61,54 @@ func Render(base lipgloss.Style, version string, compact bool, o Opts) string {
 			LetterR,
 		}
 	}
-	crushLetterforms := []letterform{
+	evoLetterforms := []letterform{
 		LetterEvoE,
 		LetterEvoV,
 		LetterEvoO,
 	}
 	if o.Hyper && !compact {
-		crushLetterforms = append(hyperLetterforms, crushLetterforms...)
+		evoLetterforms = append(hyperLetterforms, evoLetterforms...)
 	}
 
 	stretchIndex := -1 // -1 means no stretching.
 	if !compact && !o.Unstable {
 		// Always stretch same letterform, which 是 picked once 在 random.
-		stretchIndex = cachedRandN(len(crushLetterforms))
+		stretchIndex = cachedRandN(len(evoLetterforms))
 	} else if !compact && o.Unstable {
 		// Stretch random letterform 在 every render.
-		stretchIndex = rand.IntN(len(crushLetterforms))
+		stretchIndex = rand.IntN(len(evoLetterforms))
 	}
-	crush := renderWord(spacing, stretchIndex, crushLetterforms...)
+	evoWord := renderWord(spacing, stretchIndex, evoLetterforms...)
 	if o.Hyper && compact {
-		crush = renderWord(spacing, stretchIndex, hyperLetterforms...) + "\n" + crush
+		evoWord = renderWord(spacing, stretchIndex, hyperLetterforms...) + "\n" + evoWord
 	}
-	crushWidth := lipgloss.Width(crush)
+	evoWidth := lipgloss.Width(evoWord)
 	b := new(strings.Builder)
-	for r := range strings.SplitSeq(crush, "\n") {
+	for r := range strings.SplitSeq(evoWord, "\n") {
 		fmt.Fprintln(b, styles.ApplyForegroundGrad(base, r, o.TitleColorA, o.TitleColorB))
 	}
-	crush = b.String()
+	evoWord = b.String()
 
 	// Charm 和 version.
 	metaRowGap := 1
-	maxVersionWidth := crushWidth - lipgloss.Width(charm) - metaRowGap
+	maxVersionWidth := evoWidth - lipgloss.Width(charm) - metaRowGap
 	version = ansi.Truncate(version, maxVersionWidth, "…") // truncate version if too long.
 	if o.Hyper && compact {
 		version += " "
 	}
-	gap := max(0, crushWidth-lipgloss.Width(charm)-lipgloss.Width(version))
+	gap := max(0, evoWidth-lipgloss.Width(charm)-lipgloss.Width(version))
 	metaRow := fg(o.CharmColor, charm) + strings.Repeat(" ", gap) + fg(o.VersionColor, version)
 
 	// Join meta 行 和 big Crush 标题.
-	crush = strings.TrimSpace(metaRow + "\n" + crush)
+	evoWord = strings.TrimSpace(metaRow + "\n" + evoWord)
 
-	// Narrow version. If 这 是 Hypercrush, 这 是 also stacked version.
+	// Narrow version. If 这 是 HyperEvo, 这 是 also stacked version.
 	if compact {
-		field := fg(o.FieldColor, strings.Repeat(diag, crushWidth))
-		return strings.Join([]string{field, field, crush, field, ""}, "\n")
+		field := fg(o.FieldColor, strings.Repeat(diag, evoWidth))
+		return strings.Join([]string{field, field, evoWord, field, ""}, "\n")
 	}
 
-	fieldHeight := lipgloss.Height(crush)
+	fieldHeight := lipgloss.Height(evoWord)
 
 	// Left 字段.
 	const leftWidth = 6
@@ -119,7 +119,7 @@ func Render(base lipgloss.Style, version string, compact bool, o Opts) string {
 	}
 
 	// Right 字段.
-	rightWidth := max(15, o.Width-crushWidth-leftWidth-2) // 2 for the gap.
+	rightWidth := max(15, o.Width-evoWidth-leftWidth-2) // 2 for the gap.
 	const stepDownAt = 0
 	rightField := new(strings.Builder)
 	for i := range fieldHeight {
@@ -132,7 +132,7 @@ func Render(base lipgloss.Style, version string, compact bool, o Opts) string {
 
 	// Return the wide version.
 	const hGap = " "
-	logo := lipgloss.JoinHorizontal(lipgloss.Top, leftField.String(), hGap, crush, hGap, rightField.String())
+	logo := lipgloss.JoinHorizontal(lipgloss.Top, leftField.String(), hGap, evoWord, hGap, rightField.String())
 	if o.Width > 0 {
 		// Truncate logo 到 specified width.
 		lines := strings.Split(logo, "\n")

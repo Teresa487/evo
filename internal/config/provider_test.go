@@ -236,21 +236,21 @@ func TestCache_GetInvalidJSON(t *testing.T) {
 
 func TestCachePathFor(t *testing.T) {
 	tests := []struct {
-		name            string
-		crushGlobalData string
-		xdgDataHome     string
-		expected        string
+		name          string
+		evoGlobalData string
+		xdgDataHome   string
+		expected      string
 	}{
 		{
-			name:            "with CRUSH_GLOBAL_DATA",
-			crushGlobalData: "/scratch/data",
-			expected:        "/scratch/data/providers.json",
+			name:          "with EVO_GLOBAL_DATA",
+			evoGlobalData: "/scratch/data",
+			expected:      "/scratch/data/providers.json",
 		},
 		{
-			name:            "CRUSH_GLOBAL_DATA takes priority over XDG_DATA_HOME",
-			crushGlobalData: "/scratch/data",
-			xdgDataHome:     "/custom/data",
-			expected:        "/scratch/data/providers.json",
+			name:          "EVO_GLOBAL_DATA takes priority over XDG_DATA_HOME",
+			evoGlobalData: "/scratch/data",
+			xdgDataHome:   "/custom/data",
+			expected:      "/scratch/data/providers.json",
 		},
 		{
 			name:        "with XDG_DATA_HOME",
@@ -265,7 +265,7 @@ func TestCachePathFor(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("CRUSH_GLOBAL_DATA", tt.crushGlobalData)
+			t.Setenv("EVO_GLOBAL_DATA", tt.evoGlobalData)
 			t.Setenv("XDG_DATA_HOME", tt.xdgDataHome)
 
 			result := cachePathFor("providers")

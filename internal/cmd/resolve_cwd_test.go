@@ -33,26 +33,26 @@ func TestResolveCwdReturnsAbsolutePath(t *testing.T) {
 func TestClientServerModeEnvDecides(t *testing.T) {
 	dir := t.TempDir()
 	t.Chdir(dir)
-	t.Setenv("CRUSH_GLOBAL_CONFIG", t.TempDir())
-	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
-	t.Setenv("CRUSH_SERVER_IDLE_TIMEOUT", "")
+	t.Setenv("EVO_GLOBAL_CONFIG", t.TempDir())
+	t.Setenv("EVO_GLOBAL_DATA", t.TempDir())
+	t.Setenv("EVO_SERVER_IDLE_TIMEOUT", "")
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "evo.json"),
 		[]byte(`{"options":{"experimental":{"client_server":true,"server_idle_timeout":7}}}`), 0o644))
 
 	cmd := &cobra.Command{}
 	cmd.Flags().String("cwd", "", "")
 
-	t.Setenv("CRUSH_CLIENT_SERVER", "false")
+	t.Setenv("EVO_CLIENT_SERVER", "false")
 	on, store, err := clientServerMode(cmd)
 	require.NoError(t, err)
 	require.False(t, on, "the environment must win over the config")
 	require.Nil(t, store)
-	require.Empty(t, os.Getenv("CRUSH_SERVER_IDLE_TIMEOUT"))
+	require.Empty(t, os.Getenv("EVO_SERVER_IDLE_TIMEOUT"))
 
-	t.Setenv("CRUSH_CLIENT_SERVER", "true")
+	t.Setenv("EVO_CLIENT_SERVER", "true")
 	on, store, err = clientServerMode(cmd)
 	require.NoError(t, err)
 	require.True(t, on)
 	require.Nil(t, store)
-	require.Equal(t, "7", os.Getenv("CRUSH_SERVER_IDLE_TIMEOUT"))
+	require.Equal(t, "7", os.Getenv("EVO_SERVER_IDLE_TIMEOUT"))
 }

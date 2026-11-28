@@ -15,7 +15,7 @@ import (
 // serveLocal serves h 在 named pipe created 通过 current 用户.
 func serveLocal(t *testing.T, h http.Handler) (network, addr string) {
 	t.Helper()
-	addr = `\\.\pipe\crush-test-` + uuid.NewString()
+	addr = `\\.\pipe\evo-test-` + uuid.NewString()
 	ln, err := winio.ListenPipe(addr, nil)
 	require.NoError(t, err)
 	srv := &http.Server{Handler: h}

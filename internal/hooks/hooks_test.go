@@ -204,20 +204,20 @@ func TestBuildEnv(t *testing.T) {
 		}
 	}
 
-	require.Equal(t, EventPreToolUse, envMap["CRUSH_EVENT"])
-	require.Equal(t, "bash", envMap["CRUSH_TOOL_NAME"])
-	require.Equal(t, "sess-1", envMap["CRUSH_SESSION_ID"])
-	require.Equal(t, "/work", envMap["CRUSH_CWD"])
-	require.Equal(t, "/project", envMap["CRUSH_PROJECT_DIR"])
-	require.Equal(t, "ls", envMap["CRUSH_TOOL_INPUT_COMMAND"])
-	require.Equal(t, "/tmp/f.txt", envMap["CRUSH_TOOL_INPUT_FILE_PATH"])
+	require.Equal(t, EventPreToolUse, envMap["EVO_EVENT"])
+	require.Equal(t, "bash", envMap["EVO_TOOL_NAME"])
+	require.Equal(t, "sess-1", envMap["EVO_SESSION_ID"])
+	require.Equal(t, "/work", envMap["EVO_CWD"])
+	require.Equal(t, "/project", envMap["EVO_PROJECT_DIR"])
+	require.Equal(t, "ls", envMap["EVO_TOOL_INPUT_COMMAND"])
+	require.Equal(t, "/tmp/f.txt", envMap["EVO_TOOL_INPUT_FILE_PATH"])
 
 	// Shared Crush markers must 是 present 所以 钩子-authored scripts can
 	// detect they're running under Crush same way bash-工具-invoked
 	// scripts 可以.
-	require.Equal(t, "1", envMap["CRUSH"])
-	require.Equal(t, "crush", envMap["AGENT"])
-	require.Equal(t, "crush", envMap["AI_AGENT"])
+	require.Equal(t, "1", envMap["EVO"])
+	require.Equal(t, "evo", envMap["AGENT"])
+	require.Equal(t, "evo", envMap["AI_AGENT"])
 }
 
 func splitFirst(s, sep string) []string {
@@ -488,7 +488,7 @@ func TestRunnerParallelExecution(t *testing.T) {
 func TestRunnerEnvVarsPropagated(t *testing.T) {
 	t.Parallel()
 	hookCfg := HookConfig{
-		Command: `printf '{"decision":"allow","context":"%s"}' "$CRUSH_TOOL_NAME"`,
+		Command: `printf '{"decision":"allow","context":"%s"}' "$EVO_TOOL_NAME"`,
 	}
 	r := newTestRunner(t, []HookConfig{hookCfg})
 	result := r.Run(context.Background(), preToolEvent("bash", `{}`))
@@ -727,7 +727,7 @@ func TestParseStdoutClaudeCodeFormat(t *testing.T) {
 		require.Equal(t, DecisionNone, r.Decision)
 	})
 
-	t.Run("crush format still works", func(t *testing.T) {
+	t.Run("evo format still works", func(t *testing.T) {
 		t.Parallel()
 		r, _ := parseStdout(`{"decision":"allow","context":"hello"}`)
 		require.Equal(t, DecisionAllow, r.Decision)
@@ -793,7 +793,7 @@ func TestRunnerLifecycleEvent(t *testing.T) {
 	t.Parallel()
 	r := NewRunner(Static(map[string][]HookConfig{
 		EventTurnEnd: {
-			{Command: `test "$CRUSH_EVENT" = TurnEnd || exit 1; jq -r .last_assistant_message | grep -q hello || exit 1; test -z "$CRUSH_TOOL_NAME" || exit 1; echo '{"decision":"allow"}'`},
+			{Command: `test "$EVO_EVENT" = TurnEnd || exit 1; jq -r .last_assistant_message | grep -q hello || exit 1; test -z "$EVO_TOOL_NAME" || exit 1; echo '{"decision":"allow"}'`},
 		},
 	}), t.TempDir(), t.TempDir())
 	result := r.Run(context.Background(), Event{Name: EventTurnEnd, SessionID: "s", LastAssistantMessage: new("hello there")})

@@ -625,7 +625,7 @@ func TestPathDedupe_ParallelCreates(t *testing.T) {
 // second failing 在 data-目录 锁 first holds.
 func TestPathDedupe_CaseVariant(t *testing.T) {
 	xdgIsolated(t)
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 	root := t.TempDir()
 	require.NoError(t, os.Mkdir(filepath.Join(root, "Proj"), 0o755))
 	if _, err := os.Stat(filepath.Join(root, "proj")); err != nil {
@@ -1471,7 +1471,7 @@ func TestServer_CreateCancelsPendingIdleShutdown(t *testing.T) {
 	t.Setenv("XDG_CACHE_HOME", t.TempDir())
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("XDG_DATA_HOME", t.TempDir())
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 
 	b, shutdownCount := newTestBackend(t)
 	b.SetIdleShutdownDelay(10 * time.Second) // long enough not to fire mid-test

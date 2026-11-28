@@ -41,7 +41,7 @@ func projectsFilePath() string {
 }
 
 // lockProjects takes mu 和 cross-process 锁 那 guards
-// projects.json, 所以 那 crush processes cannot interleave their reads 和
+// projects.json, 所以 那 evo processes cannot interleave their reads 和
 // writes 的 文件. 它 returns 路径 的 projects.json 和 function
 // 那 releases both locks.
 func lockProjects() (string, func(), error) {

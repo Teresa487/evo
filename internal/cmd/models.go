@@ -1,4 +1,4 @@
-// models.go —— `crush models` 子命令：列出可用 provider 与模型。
+// models.go —— `evo models` 子命令：列出可用 provider 与模型。
 
 package cmd
 
@@ -20,10 +20,10 @@ var modelsCmd = &cobra.Command{
 	Short: "List all available models from known providers",
 	Long:  `List all available models from known providers. Shows provider name and model IDs. Unconfigured providers are marked with (not configured).`,
 	Example: `# List all available models
-crush models
+evo models
 
 # Search models
-crush models gpt5`,
+evo models gpt5`,
 	Args: cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cwd, err := ResolveCwd(cmd)

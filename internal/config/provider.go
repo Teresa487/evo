@@ -30,7 +30,7 @@ type syncer[T any] interface {
 var providerList []catwalk.Provider
 
 // 文件 到 缓存 提供方 data. 它 resolves through GlobalConfigData 所以
-// catalog follows CRUSH_GLOBAL_DATA like rest 的 data 目录.
+// catalog follows EVO_GLOBAL_DATA like rest 的 data 目录.
 func cachePathFor(name string) string {
 	return filepath.Join(filepath.Dir(GlobalConfigData()), name+".json")
 }

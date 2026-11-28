@@ -282,7 +282,7 @@ func (w *testWorkspace) Config() *config.Config {
 }
 
 func (w *testWorkspace) WorkingDir() string {
-	return "/tmp/crush-test"
+	return "/tmp/evo-test"
 }
 
 func (w *testWorkspace) AgentSetMain(agentID string) error {
@@ -447,7 +447,7 @@ func TestHandlePlanHandoff_MarkerOpensInline(t *testing.T) {
 	u, _ := newPlanUI(t, "sess-1")
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "Here is the plan.\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "Here is the plan.\n<!-- EVO_PLAN_READY -->",
 	})
 	require.True(t, isPlanHandoffInline(u))
 }
@@ -550,7 +550,7 @@ func TestHandlePlanHandoff_MarkerInProseNoInline(t *testing.T) {
 	// 只 counts 当 emitted 在 line 通过 itself.
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "I will end with <!-- CRUSH_PLAN_READY --> once the plan is done.",
+		Text:      "I will end with <!-- EVO_PLAN_READY --> once the plan is done.",
 	})
 	require.Nil(t, u.activeInline)
 }
@@ -561,7 +561,7 @@ func TestHandlePlanHandoff_MarkerOwnLineWithTrailingText(t *testing.T) {
 	// Marker 在 它的 own line still triggers even 用 trailing 备注.
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "Here is the plan.\n<!-- CRUSH_PLAN_READY -->\nLet me know if anything is off.",
+		Text:      "Here is the plan.\n<!-- EVO_PLAN_READY -->\nLet me know if anything is off.",
 	})
 	require.True(t, isPlanHandoffInline(u))
 }
@@ -571,7 +571,7 @@ func TestHandlePlanHandoff_ErrorRunNoInline(t *testing.T) {
 	u, _ := newPlanUI(t, "sess-1")
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "plan\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "plan\n<!-- EVO_PLAN_READY -->",
 		Error:     "something went wrong",
 	})
 	require.Nil(t, u.activeInline)
@@ -582,7 +582,7 @@ func TestHandlePlanHandoff_CancelledRunNoInline(t *testing.T) {
 	u, _ := newPlanUI(t, "sess-1")
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "plan\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "plan\n<!-- EVO_PLAN_READY -->",
 		Cancelled: true,
 	})
 	require.Nil(t, u.activeInline)
@@ -593,7 +593,7 @@ func TestHandlePlanHandoff_SessionMismatchNoInline(t *testing.T) {
 	u, _ := newPlanUI(t, "sess-1")
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-OTHER",
-		Text:      "plan\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "plan\n<!-- EVO_PLAN_READY -->",
 	})
 	require.Nil(t, u.activeInline)
 }
@@ -604,7 +604,7 @@ func TestHandlePlanHandoff_CodeModeNoInline(t *testing.T) {
 	u.mode = uiInputModeCode
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "plan\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "plan\n<!-- EVO_PLAN_READY -->",
 	})
 	require.Nil(t, u.activeInline)
 }
@@ -614,7 +614,7 @@ func TestHandlePlanHandoff_DuplicateGuard(t *testing.T) {
 	u, _ := newPlanUI(t, "sess-1")
 	rc := notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "plan\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "plan\n<!-- EVO_PLAN_READY -->",
 	}
 	u.handlePlanHandoff(rc)
 	require.True(t, isPlanHandoffInline(u))
@@ -629,7 +629,7 @@ func TestHandlePlanHandoff_RequestChangesSendsFeedbackInPlanMode(t *testing.T) {
 	ws.agentReady = true
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "Here is the plan.\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "Here is the plan.\n<!-- EVO_PLAN_READY -->",
 	})
 
 	inline, ok := u.activeInline.(*dialog.PlanHandoffInline)
@@ -660,7 +660,7 @@ func TestPlanHandoffBlurPreservesAndRestoresInline(t *testing.T) {
 	u.state = uiChat
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "Here is the plan.\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "Here is the plan.\n<!-- EVO_PLAN_READY -->",
 	})
 	inline := u.activeInline
 
@@ -690,7 +690,7 @@ func TestPlanHandoffCollapsedClickRestoresFocus(t *testing.T) {
 	u.state = uiChat
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "Here is the plan.\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "Here is the plan.\n<!-- EVO_PLAN_READY -->",
 	})
 	u.focusActiveInline(uiFocusMain)
 	u.layout.editor = image.Rect(0, 5, 80, 7)
@@ -827,7 +827,7 @@ func TestHandlePlanHandoff_SetsPendingPlan(t *testing.T) {
 	u, _ := newPlanUI(t, "sess-1")
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "plan\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "plan\n<!-- EVO_PLAN_READY -->",
 	})
 	require.Equal(t, "sess-1", u.planReadySessionID)
 }
@@ -837,7 +837,7 @@ func TestHandlePlanHandoff_DismissKeepsPendingAndReopens(t *testing.T) {
 	u, _ := newPlanUI(t, "sess-1")
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "plan\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "plan\n<!-- EVO_PLAN_READY -->",
 	})
 	require.True(t, isPlanHandoffInline(u))
 
@@ -856,7 +856,7 @@ func TestPlanHandoffConfirm_ClearsPendingAndSwitchesMode(t *testing.T) {
 	ws.agentReady = true
 	u.handlePlanHandoff(notify.RunComplete{
 		SessionID: "sess-1",
-		Text:      "plan\n<!-- CRUSH_PLAN_READY -->",
+		Text:      "plan\n<!-- EVO_PLAN_READY -->",
 	})
 	inline, ok := u.activeInline.(*dialog.PlanHandoffInline)
 	require.True(t, ok)

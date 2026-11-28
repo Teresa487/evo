@@ -40,7 +40,7 @@ func init() {
 // answer such 作为 "yes") 在 stdout.
 func runSSHAskpass(ctx context.Context, args []string) error {
 	prompt := strings.Join(args, " ")
-	secret, err := sshaskpass.Answer(ctx, prompt, os.Getenv("CRUSH_SSH_SOCK"))
+	secret, err := sshaskpass.Answer(ctx, prompt, os.Getenv("EVO_SSH_SOCK"))
 	if err != nil {
 		// OpenSSH aborts authentication attempt 当 askpass exits
 		// non-zero, which 是 correct outcome 为 cancelled 或

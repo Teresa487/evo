@@ -275,7 +275,7 @@ func TestShouldInterceptAndWrapperEnv(t *testing.T) {
 	require.Contains(t, env, "GIT_CONFIG_COUNT=1")
 	require.Contains(t, env, "GIT_CONFIG_KEY_0=gpg.program")
 	require.Contains(t, env, "GIT_CONFIG_VALUE_0=/tmp/x/gpg-wrapper")
-	require.Contains(t, env, "CRUSH_PINENTRY_SOCK=/tmp/x/pinentry.sock")
+	require.Contains(t, env, "EVO_PINENTRY_SOCK=/tmp/x/pinentry.sock")
 
 	DisableIntegration()
 	require.False(t, IntegrationEnabled())

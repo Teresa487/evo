@@ -37,13 +37,13 @@ func (r *recordingNotifier) Send(n notification.Notification) tea.Cmd {
 }
 
 // newQuestionUI builds UI 那 runs question events through 更新 用
-// CRUSH_QUESTIONS_PIPED set 到 piped, 所以 值 inherited 从
+// EVO_QUESTIONS_PIPED set 到 piped, 所以 值 inherited 从
 // environment cannot leak 在. chat starts scrolled 到 top 和
 // 窗口 unfocused, 所以 scroll 和 通知 question triggers
 // can 是 observed.
 func newQuestionUI(t *testing.T, piped string) (*UI, *questionWorkspace, *recordingNotifier) {
 	t.Helper()
-	t.Setenv("CRUSH_QUESTIONS_PIPED", piped)
+	t.Setenv("EVO_QUESTIONS_PIPED", piped)
 
 	u := newProgramStatusUI(t)
 	ws := &questionWorkspace{countingWorkspace: u.com.Workspace.(*countingWorkspace)}

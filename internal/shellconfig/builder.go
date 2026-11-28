@@ -7,7 +7,7 @@ import (
 )
 
 // ConfigBuilder accumulates 配置 state 作为 配置 builtins execute during
-// crushrc load. Builtins mutate nested map directly, 在 execution order,
+// evorc load. Builtins mutate nested map directly, 在 execution order,
 // 所以 imperative operations (append, set, remove, reset) resolve exactly 作为
 // script intends. builder 是 存储 在 shell 上下文 所以 builtins can
 // reach it; it 是 absent during normal bash 工具 execution, which makes

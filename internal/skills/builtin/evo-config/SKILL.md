@@ -1,5 +1,5 @@
 ---
-name: crush-config
+name: evo-config
 description: Use when the user needs help configuring Crush — writing evorc (the Bash config format) or evo.json, setting up providers, models, LSPs, MCP servers, hooks, skills, permissions, or changing Crush behavior.
 ---
 
@@ -53,11 +53,11 @@ permissions allow view ls grep edit
 Values are ordinary Bash — quote and expand normally (`"$VAR"`, `$(cmd)`,
 `${VAR:?required}`). A failing `$(command)` aborts the load.
 
-`CRUSH_VERSION` is exported into the script so you can feature-detect the
+`EVO_VERSION` is exported into the script so you can feature-detect the
 running Crush (it is the literal `devel` for local builds):
 
 ```bash
-[[ "$CRUSH_VERSION" != devel ]] && lsp add gopls --command gopls
+[[ "$EVO_VERSION" != devel ]] && lsp add gopls --command gopls
 ```
 
 ## Commands
@@ -211,9 +211,9 @@ option reset <list-key>    # clear a list option back to empty
   `option experimental client-server BOOL` runs the agent in a background
   server the TUI attaches to; `option experimental server-ready-timeout N`,
   `server-idle-timeout N` (default 60), and `server-detach-grace N` (default
-  10) are in seconds. The env vars `CRUSH_CLIENT_SERVER`,
-  `CRUSH_SERVER_READY_TIMEOUT`, `CRUSH_SERVER_IDLE_TIMEOUT`, and
-  `CRUSH_SERVER_DETACH_GRACE` take priority when set.
+  10) are in seconds. The env vars `EVO_CLIENT_SERVER`,
+  `EVO_SERVER_READY_TIMEOUT`, `EVO_SERVER_IDLE_TIMEOUT`, and
+  `EVO_SERVER_DETACH_GRACE` take priority when set.
 - **List keys** (singular, one value per call, repeatable): `context-path`,
   `global-context-path`, `skill-path`, `disable-skill`. Use `option reset <key>`
   to wipe inherited values (e.g. after `source`).
@@ -221,7 +221,7 @@ option reset <list-key>    # clear a list option back to empty
 ```bash
 option progress false
 option skill-path ./skills
-option disable-skill crush-config
+option disable-skill evo-config
 option attribution-trailer-style assisted-by
 option attribution-generated-with true
 option ui compact true
@@ -277,14 +277,14 @@ StopFailure), `last_assistant_message` (TurnEnd), `decision`
 
 | Variable                     | Description                                       |
 | ---------------------------- | ------------------------------------------------- |
-| `CRUSH_EVENT`                | Event name (e.g. `PreToolUse`)                    |
-| `CRUSH_TOOL_NAME`            | Name of the tool being called                     |
-| `CRUSH_SESSION_ID`           | Current session ID                                |
-| `CRUSH_CWD`                  | Current working directory                         |
-| `CRUSH_PROJECT_DIR`          | Project root directory                            |
+| `EVO_EVENT`                | Event name (e.g. `PreToolUse`)                    |
+| `EVO_TOOL_NAME`            | Name of the tool being called                     |
+| `EVO_SESSION_ID`           | Current session ID                                |
+| `EVO_CWD`                  | Current working directory                         |
+| `EVO_PROJECT_DIR`          | Project root directory                            |
 | `CLAUDE_PROJECT_DIR`         | Same value, for scripts written for Claude Code   |
-| `CRUSH_TOOL_INPUT_COMMAND`   | Value of `command` from tool input (if present)   |
-| `CRUSH_TOOL_INPUT_FILE_PATH` | Value of `file_path` from tool input (if present) |
+| `EVO_TOOL_INPUT_COMMAND`   | Value of `command` from tool input (if present)   |
+| `EVO_TOOL_INPUT_FILE_PATH` | Value of `file_path` from tool input (if present) |
 
 ### Hook output
 
@@ -353,11 +353,11 @@ user-invocable: true
 
 ## Environment variables
 
-- `CRUSH_VERSION` — exported into `evorc` at load; the running version (or
+- `EVO_VERSION` — exported into `evorc` at load; the running version (or
   `devel` for local builds).
-- `CRUSH_GLOBAL_CONFIG` — override global config location.
-- `CRUSH_GLOBAL_DATA` — override data directory location.
-- `CRUSH_SKILLS_DIR` — override default skills directory.
+- `EVO_GLOBAL_CONFIG` — override global config location.
+- `EVO_GLOBAL_DATA` — override data directory location.
+- `EVO_SKILLS_DIR` — override default skills directory.
 
 ## Legacy JSON format
 

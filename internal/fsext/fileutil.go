@@ -30,7 +30,7 @@ func SkipHidden(path string) bool {
 	}
 
 	commonIgnoredDirs := map[string]bool{
-		".crush":           true,
+		".evo":             true,
 		"node_modules":     true,
 		"vendor":           true,
 		"dist":             true,
@@ -60,7 +60,7 @@ func SkipHidden(path string) bool {
 }
 
 // FastGlobWalker provides gitignore-aware 文件 walking 用 fastwalk
-// 它 uses hierarchical ignore checking like git does, checking .gitignore/.crushignore
+// 它 uses hierarchical ignore checking like git does, checking .gitignore/.evoignore
 // files 在 each 目录 从 root 到 target 路径.
 type FastGlobWalker struct {
 	directoryLister *directoryLister
@@ -73,13 +73,13 @@ func NewFastGlobWalker(searchPath string) *FastGlobWalker {
 }
 
 // ShouldSkip checks 如果 文件 路径 should 是 skipped based 在 hierarchical gitignore,
-// crushignore, 和 hidden 文件 rules.
+// evoignore, 和 hidden 文件 rules.
 func (w *FastGlobWalker) ShouldSkip(path string) bool {
 	return w.directoryLister.shouldIgnore(path, nil, false)
 }
 
 // ShouldSkipDir checks 如果 目录 路径 should 是 skipped based 在 hierarchical
-// gitignore, crushignore, 和 hidden 文件 rules.
+// gitignore, evoignore, 和 hidden 文件 rules.
 func (w *FastGlobWalker) ShouldSkipDir(path string) bool {
 	return w.directoryLister.shouldIgnore(path, nil, true)
 }

@@ -1,4 +1,4 @@
-// projects.go —— `crush projects` 子命令：项目级配置与初始化。
+// projects.go —— `evo projects` 子命令：项目级配置与初始化。
 
 package cmd
 
@@ -19,10 +19,10 @@ var projectsCmd = &cobra.Command{
 	Long:  "List directories where Crush project data is known to exist",
 	Example: `
 # List all projects in a table
-crush projects
+evo projects
 
 # Output projects data as JSON
-crush projects --json
+evo projects --json
   `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		jsonOutput, _ := cmd.Flags().GetBool("json")

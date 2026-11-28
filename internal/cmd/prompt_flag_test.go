@@ -24,7 +24,7 @@ func TestPromptFlagAvailableOnRunCmd(t *testing.T) {
 	t.Parallel()
 
 	flag := runCmd.Flags().Lookup("prompt")
-	require.NotNil(t, flag, "--prompt must be available on `crush run`")
+	require.NotNil(t, flag, "--prompt must be available on `evo run`")
 	require.Equal(t, "stringArray", flag.Value.Type())
 }
 
@@ -79,21 +79,21 @@ func TestPromptOverridesRejectsBadInput(t *testing.T) {
 
 // TestResolveFlagPaths_BeforeCwd covers relative unix --host 和
 // --提示词 being resolved against --cwd, which command changes into,
-// instead 的 against 目录 crush was started 在.
+// instead 的 against 目录 evo was started 在.
 func TestResolveFlagPaths_BeforeCwd(t *testing.T) {
 	// Not parallel: it changes 目录 和 swaps package var.
 	start, err := filepath.EvalSymlinks(t.TempDir())
 	require.NoError(t, err)
 	t.Chdir(start)
 	origHost := clientHost
-	clientHost = "unix://crush.sock"
+	clientHost = "unix://evo.sock"
 	t.Cleanup(func() { clientHost = origHost })
 
 	cmd := promptTestCmd(t, "--prompt", "coder=./coder.md.tpl")
 	require.NoError(t, resolveFlagPaths(cmd))
 	t.Chdir(t.TempDir())
 
-	require.Equal(t, "unix://"+filepath.Join(start, "crush.sock"), clientHost)
+	require.Equal(t, "unix://"+filepath.Join(start, "evo.sock"), clientHost)
 	prompts, err := promptOverrides(cmd)
 	require.NoError(t, err)
 	require.Equal(t, config.PromptPaths{"coder": filepath.Join(start, "coder.md.tpl")}, prompts)

@@ -14,10 +14,10 @@ import (
 // recording projects it opens 在 projects.json, 作为 local mode does.
 func TestCreateWorkspace_RegistersProject(t *testing.T) {
 	xdgIsolated(t)
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
-	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_GLOBAL_DATA", t.TempDir())
 	cwd := t.TempDir()
-	dataDir := filepath.Join(cwd, ".crush")
+	dataDir := filepath.Join(cwd, ".evo")
 
 	b := New(context.Background(), nil, func() {})
 	b.SetCreateGrace(2 * time.Second)

@@ -35,8 +35,8 @@ func TestSpawnAndWaitReady_LockWait(t *testing.T) {
 		{name: "stuck lock holder", wantSpawns: 1},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			t.Setenv("CRUSH_CACHE_DIR", t.TempDir())
-			t.Setenv("CRUSH_SERVER_READY_TIMEOUT", "500ms")
+			t.Setenv("EVO_CACHE_DIR", t.TempDir())
+			t.Setenv("EVO_SERVER_READY_TIMEOUT", "500ms")
 			srv := httptest.NewUnstartedServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
 			t.Cleanup(srv.Close)
 			hostURL := &url.URL{Scheme: "tcp", Host: srv.Listener.Addr().String()}

@@ -15,8 +15,8 @@ func BenchmarkUpdatePreferredModel(b *testing.B) {
 	dir := b.TempDir()
 	configPath := filepath.Join(dir, "evo.json")
 
-	b.Setenv("CRUSH_GLOBAL_CONFIG", dir)
-	b.Setenv("CRUSH_GLOBAL_DATA", dir)
+	b.Setenv("EVO_GLOBAL_CONFIG", dir)
+	b.Setenv("EVO_GLOBAL_DATA", dir)
 	resetProviderState()
 	b.Cleanup(resetProviderState)
 
@@ -79,8 +79,8 @@ func BenchmarkReloadFromDisk(b *testing.B) {
 	dir := b.TempDir()
 	configPath := filepath.Join(dir, "evo.json")
 
-	b.Setenv("CRUSH_GLOBAL_CONFIG", dir)
-	b.Setenv("CRUSH_GLOBAL_DATA", dir)
+	b.Setenv("EVO_GLOBAL_CONFIG", dir)
+	b.Setenv("EVO_GLOBAL_DATA", dir)
 	resetProviderState()
 	b.Cleanup(resetProviderState)
 

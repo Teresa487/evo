@@ -46,7 +46,7 @@ func TestMCPSession_CancelOnClose(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	client := mcp.NewClient(&mcp.Implementation{Name: "crush-test"}, nil)
+	client := mcp.NewClient(&mcp.Implementation{Name: "evo-test"}, nil)
 	clientSession, err := client.Connect(ctx, clientTransport, nil)
 	require.NoError(t, err)
 
@@ -327,7 +327,7 @@ func TestCreateTransport_StdioStartsInWorkingDir(t *testing.T) {
 	t.Setenv("HOME", isolated)
 	t.Setenv("XDG_CONFIG_HOME", filepath.Join(isolated, ".config"))
 	t.Setenv("XDG_DATA_HOME", filepath.Join(isolated, ".local", "share"))
-	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
+	t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 
 	workingDir := t.TempDir()
 	cfg, err := config.Init(t.Context(), workingDir, t.TempDir(), false)
@@ -432,7 +432,7 @@ func TestCreateTransport_HeadersResolution(t *testing.T) {
 // TestCreateSession_ResolutionFailureUpdatesState pins 用户-visible
 // half 的 regression fix: 当 any 的 command/args/env/headers/url
 // fails 到 resolve, createSession must 发布 StateError 到 state
-// map 所以 crush_info 和 TUI's MCP status card can render real
+// map 所以 evo_info 和 TUI's MCP status card can render real
 // 错误 instead 的 MCP silently sitting 在 "starting" 或 being
 // spawned 用 empty credential.
 //
@@ -983,7 +983,7 @@ func TestClose_LastReferenceClosesSessions(t *testing.T) {
 
 // stdioServerEnv makes 测试 二进制 serve MCP over stdio instead 的
 // running tests, 所以 tests can start real stdio 服务端 child.
-const stdioServerEnv = "CRUSH_TEST_MCP_STDIO_SERVER"
+const stdioServerEnv = "EVO_TEST_MCP_STDIO_SERVER"
 
 func TestMain(m *testing.M) {
 	if os.Getenv(stdioServerEnv) == "1" {
