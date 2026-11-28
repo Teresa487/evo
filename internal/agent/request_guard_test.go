@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"testing/synctest"
@@ -85,6 +86,68 @@ func TestNewRequestGuardModel_FirstPartBudget(t *testing.T) {
 	// 一个 budget larger than floor 是 used 作为 configured.
 	long := newRequestGuardModel(&fakeLanguageModel{}, 10*time.Minute).(requestGuardModel)
 	require.Equal(t, 10*time.Minute, long.firstPart)
+}
+
+// 大 上下文 prefill 会 取 分钟，基础 budget 会把健康的请求当成卡死。
+func TestScaleRequestTimeout(t *testing.T) {
+	t.Parallel()
+
+	const perTokenBytes = 4 // approxTokenCount 的换算比例
+	// estimateMessageTokens 把角色名也算进去（"user" 约 1 个 token）。
+	const roleTokens = 1
+	// prompt 造一个总估算恰为 tokens 的提示词。
+	prompt := func(tokens int) fantasy.Prompt {
+		return fantasy.Prompt{fantasy.NewUserMessage(strings.Repeat("x", (tokens-roleTokens)*perTokenBytes))}
+	}
+
+	base := time.Minute
+	require.Equal(t, base, scaleRequestTimeout(base, prompt(1_000)))
+	require.Equal(t, base, scaleRequestTimeout(base, prompt(largeContextPromptTokens)))
+	require.Equal(t, largeContextTimeout, scaleRequestTimeout(base, prompt(largeContextPromptTokens+1)))
+	require.Equal(t, largeContextTimeout, scaleRequestTimeout(base, prompt(hugeContextPromptTokens)))
+	require.Equal(t, hugeContextTimeout, scaleRequestTimeout(base, prompt(hugeContextPromptTokens+1)))
+
+	// 关闭超时，或显式配置了更大的值，都不该被这里缩小。
+	require.Zero(t, scaleRequestTimeout(0, prompt(hugeContextPromptTokens+1)))
+	bigger := 15 * time.Minute
+	require.Equal(t, bigger, scaleRequestTimeout(bigger, prompt(hugeContextPromptTokens+1)))
+}
+
+// 放大后的 budget 也要传给首次片段的等待窗口。
+func TestRequestGuardModel_BudgetsScaleWithPrompt(t *testing.T) {
+	t.Parallel()
+
+	m := newRequestGuardModel(&fakeLanguageModel{}, time.Minute).(requestGuardModel)
+	large := fantasy.Prompt{fantasy.NewUserMessage(strings.Repeat("x", hugeContextPromptTokens*4))}
+
+	timeout, firstPart := m.budgets(large)
+	require.Equal(t, hugeContextTimeout, timeout)
+	require.Equal(t, hugeContextTimeout, firstPart)
+
+	timeout, firstPart = m.budgets(fantasy.Prompt{fantasy.NewUserMessage("hi")})
+	require.Equal(t, time.Minute, timeout)
+	require.Equal(t, defaultFirstPartTimeout, firstPart)
+}
+
+// 超时要能被 fantasy 的重试逻辑识别，同时保留自己的类型给 UI 用。
+func TestAsRetryableKeepsTimeoutType(t *testing.T) {
+	t.Parallel()
+
+	timeoutErr := &requestTimeoutError{timeout: time.Second, kind: timeoutIdle}
+	wrapped := asRetryable(timeoutErr)
+	require.NotSame(t, timeoutErr, wrapped)
+
+	var got *requestTimeoutError
+	require.ErrorAs(t, wrapped, &got)
+	require.Equal(t, timeoutErr.timeout, got.timeout)
+
+	var retryable fantasy.RetryableError
+	require.ErrorAs(t, wrapped, &retryable)
+	require.True(t, retryable.IsRetryable())
+
+	// 非超时错误原样返回。
+	other := errors.New("boom")
+	require.Same(t, other, asRetryable(other))
 }
 
 func TestRequestGuardModel_GenerateDeadline(t *testing.T) {
@@ -332,7 +395,7 @@ func testRequestTimeoutRunFinishMessage(t *testing.T) {
 	require.Equal(t, "Request timed out", finish.Message)
 	require.Contains(t, finish.Details, "stopped sending data for 1s")
 	require.Contains(t, finish.Details, "request-timeout")
-	require.EqualValues(t, fantasy.DefaultRetryOptions().MaxRetries+1, model.attempts.Load(), "a timeout must be retried")
+	require.EqualValues(t, mainConversationRetries+1, model.attempts.Load(), "a timeout must be retried, up to the conversation budget")
 }
 
 func TestRequestGuardModel_FirstPartWindowOutlivesIdle(t *testing.T) {

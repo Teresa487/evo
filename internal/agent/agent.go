@@ -340,6 +340,15 @@ func NewSessionAgent(
 	}
 }
 
+// retryBudget 返回本 agent 每次模型调用允许的重试次数（不含首次尝试）。
+// 子 agent 跑的是后台工作，和标题、摘要一样使用较小的预算。
+func (a *sessionAgent) retryBudget() int {
+	if a.isSubAgent {
+		return backgroundRetries
+	}
+	return mainConversationRetries
+}
+
 // AcceptedRun owns exactly one 受理 占位 taken by
 // BeginAccepted. 它 是 只 carrier 的 受理-state across the
 // backend.runAgent / Coordinator.运行 / sessionAgent.运行 layers: a
@@ -989,6 +998,7 @@ func (a *sessionAgent) Run(ctx context.Context, call SessionAgentCall) (result *
 		PresencePenalty:  call.PresencePenalty,
 		TopK:             call.TopK,
 		FrequencyPenalty: call.FrequencyPenalty,
+		MaxRetries:       retries(a.retryBudget()),
 		PrepareStep: func(callContext context.Context, options fantasy.PrepareStepFunctionOptions) (_ context.Context, prepared fantasy.PrepareStepResult, err error) {
 			// Use latest tools (updated 通过 SetTools 当 MCP tools
 			// change), filtered f或 会话's 渠道 和 minus MCP
@@ -1549,6 +1559,7 @@ func (a *sessionAgent) summarize(ctx context.Context, largeModel Model, sessionI
 		Messages:        aiMsgs,
 		Headers:         sessionHeaders(sessionID),
 		ProviderOptions: opts,
+		MaxRetries:      retries(backgroundRetries),
 		OnAuthRefresh:   onAuthRefresh,
 		ModelProvider: func() fantasy.LanguageModel {
 			return a.currentBuildOf(largeModel)
@@ -1953,8 +1964,9 @@ func (a *sessionAgent) generateTitle(ctx context.Context, sessionID string, user
 	}
 
 	streamCall := fantasy.AgentStreamCall{
-		Prompt:  fmt.Sprintf("Generate a concise title for the following content:\n\n%s\n <think>\n\n</think>", userPrompt),
-		Headers: sessionHeaders(sessionID),
+		Prompt:     fmt.Sprintf("Generate a concise title for the following content:\n\n%s\n <think>\n\n</think>", userPrompt),
+		Headers:    sessionHeaders(sessionID),
+		MaxRetries: retries(backgroundRetries),
 		PrepareStep: func(callCtx context.Context, opts fantasy.PrepareStepFunctionOptions) (_ context.Context, prepared fantasy.PrepareStepResult, err error) {
 			prepared.Messages = opts.Messages
 			if systemPromptPrefix != "" {

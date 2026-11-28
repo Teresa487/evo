@@ -1277,9 +1277,9 @@ func (c *coordinator) buildModelFromSelection(ctx context.Context, modelCfg conf
 		return Model{}, err
 	}
 
-	// End each 请求 当 它的 turn 是 cancelled, 和 bound it 用
-	// configured 超时 所以 unreachable 或 hung providers fail instead 的
-	// blocking 会话 forever. Retries get fresh budget each attempt.
+	// 在轮次取消时结束每个请求，并用配置的超时兜底，这样不可达或挂起的
+	// provider 会失败而不是永远卡住会话。额度会按提示词规模放大，
+	// 且每次重试都重新计时。
 	languageModel = newRequestGuardModel(languageModel, c.cfg.Config().Options.GetRequestTimeout())
 	languageModel = newRefusalRetryModel(languageModel)
 

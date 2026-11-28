@@ -690,7 +690,7 @@
         },
         "request_timeout": {
           "type": "integer",
-          "description": "Timeout in seconds for each LLM API request. Streaming responses are aborted only after this much inactivity between tokens, so slow but active streams are never killed; the wait for the first token gets at least five minutes for prompt prefill. 0 disables it, negative values are invalid.",
+          "description": "Timeout in seconds for each LLM API request. Streaming responses are aborted only after this much inactivity between tokens, so slow but active streams are never killed; the wait for the first token gets at least five minutes for prompt prefill. The budget grows with the estimated prompt size (240s above 50k tokens, 300s above 100k), and a timed-out request is retried: 10 times for the main conversation, 3 times for background work. 0 disables it, negative values are invalid.",
           "default": 60,
           "examples": [
             120,

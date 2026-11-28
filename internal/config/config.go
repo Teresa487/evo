@@ -482,7 +482,7 @@ type Options struct {
 	Progress          *bool        `json:"progress,omitempty" jsonschema:"description=Show indeterminate progress updates during long operations,default=true"`
 	Notifications     string       `json:"notifications,omitempty" jsonschema:"description=Notification style to use. Options: auto (default)\\, native\\, osc\\, bell\\, disabled. Auto selects based on environment: native for local sessions\\, osc for SSH (with automatic OSC 99/777 detection).,enum=auto,enum=native,enum=osc,enum=bell,enum=disabled,default=auto"`
 	DisabledSkills    []string     `json:"disabled_skills,omitempty" jsonschema:"description=List of skill names to disable and hide from the agent,example=crush-config"`
-	RequestTimeout    *int         `json:"request_timeout,omitempty" jsonschema:"description=Timeout in seconds for each LLM API request. Streaming responses are aborted only after this much inactivity between tokens\\, so slow but active streams are never killed; the wait for the first token gets at least five minutes for prompt prefill. 0 disables it\\, negative values are invalid.,default=60,example=120,example=300,example=0"`
+	RequestTimeout    *int         `json:"request_timeout,omitempty" jsonschema:"description=Timeout in seconds for each LLM API request. Streaming responses are aborted only after this much inactivity between tokens\\, so slow but active streams are never killed; the wait for the first token gets at least five minutes for prompt prefill. The budget grows with the estimated prompt size (240s above 50k tokens\\, 300s above 100k)\\, and a timed-out request is retried: 10 times for the main conversation\\, 3 times for background work. 0 disables it\\, negative values are invalid.,default=60,example=120,example=300,example=0"`
 	MaxBackgroundJobs *int         `json:"max_background_jobs,omitempty" jsonschema:"description=How many background shell jobs may run at once. Jobs that have finished never count against it. 0 or negative restores the default.,default=50,example=10,example=200"`
 	// PinentryIntegrated renders GPG passphrase/PIN prompts 作为 native
 	// Crush dialog (loopback pinentry) instead 的 handing 终态
@@ -548,18 +548,19 @@ type PromptPaths map[string]string
 // agent package owns templates themselves 和 asserts it covers 这 list.
 var PromptNames = []string{"coder", "task", "plan", "summary", "title", "initialize"}
 
-// DefaultRequestTimeout bounds each LLM API 请求 当 用户 has 不
-// configured 超时. Slow 或 unreachable providers fail after it instead
-// 的 blocking 会话 forever; streamed responses 是 只 aborted after
-// 这 much inactivity between tokens, 和 users running slow local models
-// can raise 或 disable it via options.request_timeout.
-const DefaultRequestTimeout = 2 * time.Minute
+// DefaultRequestTimeout 是用户没配置超时时的每次 LLM 请求额度。
+// 有了它，慢或不可达的 provider 会失败而不是永远阻塞会话；流式响应只在
+// token 之间沉默这么久之后才中断，用慢速本地模型的用户可以上调或关闭它。
+//
+// 这只是基础额度：requestGuardModel 会按估算的提示词规模放大它（见
+// scaleRequestTimeout），因为大上下文 prefill 和推理模型在首个 token 之前
+// 就可能花上数分钟。显式配置的 request_timeout 是使用者的决定，不会被放大。
+const DefaultRequestTimeout = time.Minute
 
-// GetRequestTimeout returns per-请求 超时 为 LLM API calls (
-// hard 期限 为 non-streaming requests 和 空闲 超时 为
-// streams, 用 more generous budget 为 first streamed token), 或
-// zero 当 disabled. nil receiver 和 unset 字段 both mean
-// DefaultRequestTimeout, 所以 callers can ask without unwrapping either.
+// GetRequestTimeout 返回每次 LLM 调用的超时额度（非流式请求是硬期限，
+// 流式是空闲窗口，首个流式片段另有更宽裕的预算），返回 0 表示已禁用。
+// nil receiver 和未设置字段都表示使用 DefaultRequestTimeout，调用方无需
+// 分别处理这两种情况。
 func (o *Options) GetRequestTimeout() time.Duration {
 	if o == nil || o.RequestTimeout == nil {
 		return DefaultRequestTimeout
