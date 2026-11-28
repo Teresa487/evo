@@ -22,14 +22,17 @@ const maxStallNudges = 2
 // 明确要求继续执行而不是继续描述。
 const stallNudge = "[系统：继续执行。现在完成所需的工具调用，只有在任务真正完成后才给出最终答复。]"
 
-// stallPhrases 是收尾询问/宣告的判定片段，全部小写，匹配前会把文本归一化。
-var stallPhrases = []string{
-	// 中文：明确的继续询问
+// stallTailPhrases 是收尾询问，必须落在最后一句的末尾才算，否则正文里顺带
+// 提到「要不要我继续」这类字眼也会被误判。
+var stallTailPhrases = []string{
 	"要我继续吗", "需要我继续吗", "是否继续", "要我接着", "需要我接着",
-	"要不要我继续", "是否需要我继续", "继续吗？", "继续吗?",
-	// 中文：宣告下一步却没动手
+	"要不要我继续", "是否需要我继续", "继续吗",
+}
+
+// stallHeadPhrases 是宣告下一步或英文疑问句，它们出现在最后一句开头才算。
+// 英文靠句首是因为宾语跟在后面，比如 "Shall I proceed with the migration?"。
+var stallHeadPhrases = []string{
 	"下一步我将", "接下来我将", "接下来我会", "下一步我会", "下面我将",
-	// 英文
 	"want me to continue", "shall i continue", "should i continue",
 	"want me to proceed", "shall i proceed", "should i proceed",
 	"let me know if you want me to", "let me know if you'd like me to",
@@ -37,41 +40,47 @@ var stallPhrases = []string{
 }
 
 // looksLikeStall 判断一段没有任何工具调用的文本，是不是模型在任务没做完时
-// 收尾。判定基于文本结尾：收尾询问总是落在最后一句里，只看尾巴可以避免
-// 命中正文中间的引用或列表。
+// 收尾。只看最后一句：中文收尾询问在句尾，宣告和英文问句在句首，正文中间
+// 的引用和列表因此不会被误判。
 func looksLikeStall(text string) bool {
 	tail := stallTail(text)
 	if tail == "" {
 		return false
 	}
-	for _, phrase := range stallPhrases {
-		if strings.Contains(tail, phrase) {
+	for _, phrase := range stallTailPhrases {
+		if strings.HasSuffix(tail, phrase) {
+			return true
+		}
+	}
+	for _, phrase := range stallHeadPhrases {
+		if strings.HasPrefix(tail, phrase) {
 			return true
 		}
 	}
 	return false
 }
 
-// stallTail 取文本最后两句，归一化为小写并压掉多余空白。
+// stallTail 取文本最后一句，归一化为小写、压掉多余空白，并去掉首尾标点，
+// 方便做前缀/后缀比较。
 func stallTail(text string) string {
 	trimmed := strings.TrimSpace(text)
 	if trimmed == "" {
 		return ""
 	}
 
-	// 从尾部往前数句子边界（。！？.!? 与换行），保留最后两句。
-	const wantSentences = 2
-	seen := 0
+	// 先去掉句末标点，再找最后一个句子边界，否则结尾的「？」会把尾巴切空。
+	const cutset = "。！？.!?；;，, \t\n"
+	trimmed = strings.TrimRight(trimmed, cutset)
+
 	cut := 0
 	runes := []rune(trimmed)
 	for i := len(runes) - 1; i >= 0; i-- {
-		r := runes[i]
-		if r == '\n' || r == '。' || r == '！' || r == '？' || r == '.' || r == '!' || r == '?' {
-			seen++
-			if seen >= wantSentences {
-				cut = i + 1
-				break
-			}
+		switch runes[i] {
+		case '\n', '。', '！', '？', '.', '!', '?':
+			cut = i + 1
+		}
+		if cut > 0 {
+			break
 		}
 	}
 
