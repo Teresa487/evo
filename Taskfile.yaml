@@ -87,6 +87,8 @@ tasks:
   test:record:
     desc: Run tests and record all VCR cassettes again
     aliases: [record]
+    env:
+      EVO_TEST_VCR: "1"
     cmds:
       - rm -rf internal/agent/testdata
       - go test -v -count=1 -timeout=1h ./internal/agent

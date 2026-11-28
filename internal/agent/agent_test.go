@@ -54,6 +54,9 @@ func setupAgent(t *testing.T, pair modelPair) (SessionAgent, fakeEnv) {
 }
 
 func TestCoderAgent(t *testing.T) {
+	if os.Getenv("EVO_TEST_VCR") == "" {
+		t.Skip("set EVO_TEST_VCR=1 to run model/VCR tests")
+	}
 	if runtime.GOOS == "windows" {
 		t.Skip("skipping on windows for now")
 	}

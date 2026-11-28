@@ -132,6 +132,10 @@ func testSessionAgent(env fakeEnv, large, small fantasy.LanguageModel, systemPro
 }
 
 func coderAgent(r *vcr.Recorder, env fakeEnv, large, small fantasy.LanguageModel) (SessionAgent, error) {
+	client := http.DefaultClient
+	if r != nil {
+		client = r.GetDefaultClient()
+	}
 	fixedTime := func() time.Time {
 		t, _ := time.Parse("1/2/2006", "1/1/2025")
 		return t
@@ -179,14 +183,14 @@ func coderAgent(r *vcr.Recorder, env fakeEnv, large, small fantasy.LanguageModel
 
 	allTools := []fantasy.AgentTool{
 		tools.NewBashTool(env.permissions, env.workingDir, cfg.Config().Options.DataDirectory, cfg.Config().Options.Attribution, modelName, cfg.Config().Options.GetMaxBackgroundJobs(), cfg.Config().Options.GetCoreutils(), cfg.Config().Permissions, nil, nil),
-		tools.NewDownloadTool(env.permissions, env.workingDir, r.GetDefaultClient()),
+		tools.NewDownloadTool(env.permissions, env.workingDir, client),
 		tools.NewEditTool(nil, env.permissions, env.history, *env.filetracker, env.workingDir),
 		tools.NewMultiEditTool(nil, env.permissions, env.history, *env.filetracker, env.workingDir),
-		tools.NewFetchTool(env.permissions, env.workingDir, r.GetDefaultClient()),
+		tools.NewFetchTool(env.permissions, env.workingDir, client),
 		tools.NewGlobTool(env.workingDir, cfg.Config().Tools.Glob),
 		tools.NewGrepTool(env.workingDir, cfg.Config().Tools.Grep),
 		tools.NewLsTool(env.permissions, env.workingDir, cfg.Config().Tools.Ls),
-		tools.NewSourcegraphTool(r.GetDefaultClient()),
+		tools.NewSourcegraphTool(client),
 		tools.NewViewTool(nil, env.permissions, *env.filetracker, nil, env.workingDir),
 		tools.NewWriteTool(nil, env.permissions, env.history, *env.filetracker, env.workingDir),
 	}
