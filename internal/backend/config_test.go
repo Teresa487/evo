@@ -44,6 +44,12 @@ func awaitConfigChanged(t *testing.T, evc <-chan pubsub.Event[tea.Msg], workspac
 // newPublishingWorkspace creates real 工作区 through backend
 // 所以 它的 embedded *app.App 是 wired up 和 SendEvent works. 它 returns
 // backend, 工作区, 和 fresh 事件 subscription.
+//
+// CreateWorkspace 只给 客户端 一个限时 creation hold; 如果 no SSE
+// 流 attaches 在 grace 窗口 内, backend tears 工作区 down 和 closes
+// its 事件 broker. 测试 doesn't run SSE, 所以 attach 这里 到 pin
+// 工作区 open 为 duration 的 测试. drainBackend 在 cleanup releases
+// 这 claim.
 func newPublishingWorkspace(t *testing.T) (*Backend, *Workspace, <-chan pubsub.Event[tea.Msg]) {
 	t.Helper()
 	xdgIsolated(t)
@@ -58,6 +64,7 @@ func newPublishingWorkspace(t *testing.T) (*Backend, *Workspace, <-chan pubsub.E
 	cid := uuid.New().String()
 	ws, _, err := b.CreateWorkspace(protoWS(cwd, dataDir, cid))
 	require.NoError(t, err)
+	require.NoError(t, b.AttachClient(ws.ID, cid)) // pin 工作区 open; no SSE in test
 
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
