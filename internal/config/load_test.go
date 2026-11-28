@@ -199,7 +199,7 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 		require.NotEmpty(t, got)
 		// system-wide 配置 must 是 first 所以 it has lowest
 		// priority 当 configs 是 merged.
-		require.Equal(t, "/etc/evo/crush.json", got[0])
+		require.Equal(t, systemConfigPath, got[0])
 	})
 }
 
