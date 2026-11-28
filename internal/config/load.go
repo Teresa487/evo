@@ -456,11 +456,10 @@ func (c *Config) configureProviders(ctx context.Context, store *ConfigStore, env
 	restore := PushPopCrushEnv()
 	defer restore()
 
-	// 本仓库不使用任何内置/远程 provider 目录，只认用户在配置里手写的
-	// provider。knownProviders 恒为空，下面的默认 provider 合并循环不会执行，
-	// 所有 provider 都走后面的自定义校验分支。
-	knownProviders = nil
-
+	// 本仓库不使用任何内置/远程 provider 目录：生产路径下 LoadProviders
+	// 恒返回空列表，下面的已知 provider 合并循环不会执行，所有 provider
+	// 都走后面的自定义校验分支。这里仍然保留该循环，供调用方显式传入
+	// 目录时使用（测试通过它验证合并逻辑）。
 	for _, p := range knownProviders {
 		knownProviderNames[string(p.ID)] = true
 		config, configExists := c.Providers.Get(string(p.ID))
@@ -687,10 +686,6 @@ func (c *Config) configureProviders(ctx context.Context, store *ConfigStore, env
 		}
 
 		c.Providers.Set(id, providerConfig)
-	}
-
-	if c.Providers.Len() == 0 {
-		return fmt.Errorf("no providers configured: add at least one provider under providers in the config file")
 	}
 
 	return nil

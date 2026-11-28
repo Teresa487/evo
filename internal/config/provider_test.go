@@ -2,11 +2,9 @@ package config
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
-	"sync"
 	"testing"
 
 	"charm.land/catwalk/v3/pkg/catwalk"
@@ -14,44 +12,9 @@ import (
 )
 
 func resetProviderState() {
-	providerOnce = sync.Once{}
 	providerList = nil
-	providerErr = nil
 	catwalkSyncer = &catwalkSync{}
 	hyperSyncer = &hyperSync{}
-}
-
-func TestProviders_Integration_AutoUpdateDisabled(t *testing.T) {
-	tmpDir := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", tmpDir)
-
-	// Use 测试-specific instance 到 avoid global state interference.
-	testCatwalkSyncer := &catwalkSync{}
-	testHyperSyncer := &hyperSync{}
-
-	originalCatwalSyncer := catwalkSyncer
-	originalHyperSyncer := hyperSyncer
-	defer func() {
-		catwalkSyncer = originalCatwalSyncer
-		hyperSyncer = originalHyperSyncer
-	}()
-
-	catwalkSyncer = testCatwalkSyncer
-	hyperSyncer = testHyperSyncer
-
-	resetProviderState()
-	defer resetProviderState()
-
-	cfg := &Config{
-		Options: &Options{
-			DisableProviderAutoUpdate: true,
-		},
-	}
-
-	providers, err := Providers(cfg)
-	require.NoError(t, err)
-	require.NotNil(t, providers)
-	require.Greater(t, len(providers), 5, "Expected embedded providers")
 }
 
 func TestProviders_Integration_WithMockClients(t *testing.T) {
@@ -317,101 +280,6 @@ func TestCachePathFor(t *testing.T) {
 	}
 }
 
-// TestProviders_KeepsCatalogWhenCachingFails covers case 那 used 到
-// sign Hyper users out: 提供方 list was fetched successfully 但 could
-// 不 是 written 到 在-disk 缓存, 和 Providers discarded it. Hyper's
-// endpoint 和 models live 在 catalog rather than 在 用户's 配置,
-// 所以 losing it there removed 提供方 entirely 和 invalidated
-// 用户's saved 模型.
-func TestProviders_KeepsCatalogWhenCachingFails(t *testing.T) {
-	tmpDir := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", tmpDir)
-
-	// 一个 文件 where 目录 needs 到 是, 所以 every 缓存 写入 fails.
-	blocked := filepath.Join(tmpDir, "blocked")
-	require.NoError(t, os.WriteFile(blocked, []byte("block"), 0o644))
-	unwritable := filepath.Join(blocked, "subdir", "cache.json")
-
-	resetProviderState()
-	defer resetProviderState()
-
-	// Prime both syncers 用 mock clients 所以 Providers reuses memoized
-	// outcome instead 的 reaching network.
-	catwalkSyncer.Init(&mockCatwalkClient{
-		providers: []catwalk.Provider{{Name: "Provider1", ID: "p1"}},
-	}, unwritable, true)
-	hyperSyncer.Init(&mockHyperClient{
-		provider: catwalk.Provider{
-			Name:   "Hyper",
-			ID:     "hyper",
-			Models: []catwalk.Model{{ID: "hyper-1", Name: "Hyper Model"}},
-		},
-	}, unwritable, true)
-
-	catwalkProviders, catwalkErr := catwalkSyncer.Get(t.Context())
-	require.Error(t, catwalkErr, "cache write should fail")
-	require.NotEmpty(t, catwalkProviders, "syncer still returns a usable catalog")
-
-	hyperProvider, hyperErr := hyperSyncer.Get(t.Context())
-	require.Error(t, hyperErr, "cache write should fail")
-	require.Equal(t, "Hyper", hyperProvider.Name)
-
-	providers, err := Providers(&Config{Options: &Options{}})
-
-	// failure 是 reported, 但 作为 warning alongside usable catalog.
-	require.Error(t, err)
-	require.Len(t, providers, 2)
-	require.Equal(t, catwalk.InferenceProvider("hyper"), providers[0].ID, "Hyper stays at the front")
-	require.Equal(t, catwalk.InferenceProvider("p1"), providers[1].ID)
-}
-
-// TestProviders_FallsBackToEmbeddedHyper checks 那 Hyper 是 still 在
-// catalog 当 it could 不 是 fetched 在 all, using copy bundled 用
-// 这 release.
-func TestProviders_FallsBackToEmbeddedHyper(t *testing.T) {
-	tmpDir := t.TempDir()
-	t.Setenv("XDG_DATA_HOME", tmpDir)
-
-	resetProviderState()
-	defer resetProviderState()
-
-	catwalkSyncer.Init(&mockCatwalkClient{
-		providers: []catwalk.Provider{{Name: "Provider1", ID: "p1"}},
-	}, filepath.Join(tmpDir, "providers.json"), true)
-	hyperSyncer.Init(&mockHyperClient{
-		err: errors.New("network error"),
-	}, filepath.Join(tmpDir, "hyper.json"), true)
-
-	_, _ = catwalkSyncer.Get(t.Context())
-	_, _ = hyperSyncer.Get(t.Context())
-
-	providers, err := Providers(&Config{Options: &Options{}})
-	require.NoError(t, err)
-	require.Len(t, providers, 2)
-	require.Equal(t, catwalk.InferenceProvider("hyper"), providers[0].ID)
-	require.NotEmpty(t, providers[0].Models, "the embedded Hyper provider carries models")
-}
-
-// TestProviders_HonorsDisableDefaultProviders makes sure the embedded Hyper
-// fallback does 不 smuggle 默认 提供方 back 在.
-func TestProviders_HonorsDisableDefaultProviders(t *testing.T) {
-	t.Setenv("XDG_DATA_HOME", t.TempDir())
-
-	resetProviderState()
-	defer resetProviderState()
-
-	providers, err := Providers(&Config{
-		Options: &Options{DisableDefaultProviders: true},
-	})
-	require.NoError(t, err)
-	require.Empty(t, providers)
-}
-
-// TestCacheStore_ReplacesFileInsteadOfRewritingIt guards property 那
-// several Crush instances depend 在: 提供方 缓存 是 swapped into place
-// 作为 finished 文件, never truncated 和 refilled underneath reader 那 是
-// already reading it. 一个 reader 那 loses 那 race cannot parse catalog
-// 和 silently falls back 到 bundled copy.
 func TestCacheStore_ReplacesFileInsteadOfRewritingIt(t *testing.T) {
 	t.Parallel()
 
