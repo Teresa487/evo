@@ -24,7 +24,7 @@ func TestInitAgent_JoiningClientsShareCoordinator(t *testing.T) {
 			cfg := `{"providers": {"mock": {"type": "openai-compat",
   "base_url": "http://127.0.0.1:1", "api_key": "k", "models": [{"id": "m"}]}},
   "models": {"large": {"provider": "mock", "model": "m"}, "small": {"provider": "mock", "model": "m"}}}`
-			require.NoError(t, os.WriteFile(filepath.Join(cwd, "crush.json"), []byte(cfg), 0o644))
+			require.NoError(t, os.WriteFile(filepath.Join(cwd, "evo.json"), []byte(cfg), 0o644))
 			b := New(t.Context(), nil, func() {})
 			t.Cleanup(func() { drainBackend(t, b) })
 			ws, _, err := b.CreateWorkspace(protoWS(cwd, filepath.Join(cwd, ".crush"), uuid.NewString()))

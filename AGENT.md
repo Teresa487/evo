@@ -1,14 +1,17 @@
 # evo 目录结构
 
-基于 Crush 的本地副本。注释已翻成中文，无 `.git`。
+evo 是基于 Crush 的二次开发：保留上游的 agent 编排、会话与工具框架，去掉不适合
+本仓库的部分（内置/远程 provider 目录、上游 CI），并优化原版用起来不顺手的地方
+（超时过短、失败不重试、配置只认内置目录等）。仓库注释统一为中文，本地不做编译，
+构建交给 GitHub Actions 的 `evo-build` 工作流。
 
 ## 顶层
 
 - `main.go` — 程序入口
 - `AGENT.md` — 本文件
-- `crush.json` — 项目配置（LSP 等）
+- `evo.json` — 项目配置（LSP 等）
 - `go.mod` / `go.sum` — Go 模块依赖
-- `schema.json` — 配置 schema
+- `schema.json` — 配置 schema（由 `evo schema` 生成，改配置结构后需同步）
 - `Taskfile.yaml` — 构建/开发任务
 - `flake.nix` / `flake.lock` — Nix 环境
 - `scripts/` — 辅助脚本
@@ -22,8 +25,11 @@
 - `host_context.go` — 宿主应用上下文（当前文件、光标）注入
 - `turn_hooks.go` — TurnStart / TurnEnd / StopFailure / Interrupt 钩子
 - `hooked_tool.go` — 工具调用的 PreToolUse / PostToolUse 钩子包装
-- `loop_detection.go` — 重复工具调用检测
+- `loop_detection.go` — 本轮工具调用上限（50 次）与重复调用检测
 - `refusal_retry.go` — provider 安全拒绝后的重试
+- `request_guard.go` — 请求超时保护：额度按提示词规模放大，超时包装成可重试错误
+- `retry_budget.go` — 重试次数上限（主对话 10 次，后台任务 3 次）
+- `stall.go` — 识别模型「偷懒收尾」并把它推回继续（最多 2 次，复用自动摘要的续跑通路）
 - `context_replay_test.go` — 上下文重放的语义测试
 - `prompts.go` / `templates/` — 内置 prompt 与模板（coder、summary、title、task、plan）
 - `tools/` — 工具实现与工具描述 `.md`（go:embed）
@@ -82,6 +88,8 @@
 ## internal/config — 配置
 
 - 配置结构、加载、校验、默认值、重载钩子
+- `provider.go` — provider 目录入口；本仓库只认用户手写的 provider，`LoadProviders` 恒返回空列表
+- `timeouts` 相关默认值在 `config.go`（`DefaultRequestTimeout` 为基础额度，实际按上下文放大）
 
 ## internal/hooks — Hook 系统
 

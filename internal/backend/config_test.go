@@ -216,7 +216,7 @@ func TestGlobalToggles_KeepRepositoryMCPOverrides(t *testing.T) {
 	// command does 不 exist, 所以 start 只 records 错误.
 	cwd := t.TempDir()
 	cfg := fmt.Sprintf(`{"mcp": {%q: {"type": "stdio", "command": "crush-override-probe-missing"}}}`, name)
-	require.NoError(t, os.WriteFile(filepath.Join(cwd, "crush.json"), []byte(cfg), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(cwd, "evo.json"), []byte(cfg), 0o644))
 	b := New(t.Context(), nil, func() {})
 	t.Cleanup(func() { drainBackend(t, b) })
 	ws, _, err := b.CreateWorkspace(protoWS(cwd, t.TempDir(), newClientID(t)))

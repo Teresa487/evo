@@ -36,7 +36,7 @@ func twoProviderConfig(provider, model string) string {
 // 为 example) reloads 文件 we both 写入 到.
 func TestModelSelectionSurvivesPeerWrite(t *testing.T) {
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	t.Setenv("CRUSH_GLOBAL_CONFIG", dir)
 	t.Setenv("CRUSH_GLOBAL_DATA", dir)
@@ -73,7 +73,7 @@ func TestModelSelectionSurvivesPeerWrite(t *testing.T) {
 // 文件, 所以 external edits 和 `crush login` defaults keep working.
 func TestModelSelectionYieldsToDiskWhenUnchosen(t *testing.T) {
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	t.Setenv("CRUSH_GLOBAL_CONFIG", dir)
 	t.Setenv("CRUSH_GLOBAL_DATA", dir)

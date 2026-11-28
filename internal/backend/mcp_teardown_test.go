@@ -35,7 +35,7 @@ func TestTeardown_KeepsOtherWorkspacesMCP(t *testing.T) {
 	// Only 工作区 一个 uses MCP 服务端.
 	dirA, dataA := t.TempDir(), t.TempDir()
 	cfg := fmt.Sprintf(`{"mcp": {%q: {"type": "http", "url": %q}}}`, name, httpSrv.URL)
-	require.NoError(t, os.WriteFile(filepath.Join(dirA, "crush.json"), []byte(cfg), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dirA, "evo.json"), []byte(cfg), 0o644))
 	connected := func(prev *mcptools.ClientSession) (got *mcptools.ClientSession) {
 		t.Helper()
 		require.Eventually(t, func() bool {

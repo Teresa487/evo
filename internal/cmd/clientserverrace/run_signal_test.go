@@ -113,5 +113,5 @@ func writeMockConfig(t *testing.T, sb *sandbox, url string) {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
     "small": {"provider": "mock", "model": "mock-model"}}
 }`, url)
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "crush.json"), []byte(cfg), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "evo.json"), []byte(cfg), 0o600))
 }

@@ -81,7 +81,7 @@ func newRefreshTestStore(t *testing.T, configPath string, exchange func(ctx cont
 func TestRefreshOAuthToken_InProcessSingleFlight(t *testing.T) {
 	isolateHyperCredentials(t)
 
-	configPath := filepath.Join(t.TempDir(), "crush.json")
+	configPath := filepath.Join(t.TempDir(), "evo.json")
 
 	var exchanges atomic.Int64
 	store := newRefreshTestStore(t, configPath, func(ctx context.Context, providerID, refreshToken string) (*oauth.Token, error) {
@@ -129,7 +129,7 @@ func TestRefreshOAuthToken_InProcessSingleFlight(t *testing.T) {
 func TestRefreshOAuthToken_CrossProcessAdopt(t *testing.T) {
 	isolateHyperCredentials(t)
 
-	configPath := filepath.Join(t.TempDir(), "crush.json")
+	configPath := filepath.Join(t.TempDir(), "evo.json")
 
 	var (
 		mu          sync.Mutex
@@ -230,7 +230,7 @@ func rotatingExchange(live string, next int) (exchange func(ctx context.Context,
 func TestRefreshOAuthToken_StalePeerBorrowsRotatedRefreshToken(t *testing.T) {
 	isolateHyperCredentials(t)
 
-	configPath := filepath.Join(t.TempDir(), "crush.json")
+	configPath := filepath.Join(t.TempDir(), "evo.json")
 	exchange, exchanges, reuse := rotatingExchange("rt3", 4)
 	store := newRefreshTestStore(t, configPath, exchange)
 
@@ -260,7 +260,7 @@ func TestRefreshOAuthToken_StalePeerBorrowsRotatedRefreshToken(t *testing.T) {
 func TestRefreshOAuthToken_AdoptsFresherDiskToken(t *testing.T) {
 	isolateHyperCredentials(t)
 
-	configPath := filepath.Join(t.TempDir(), "crush.json")
+	configPath := filepath.Join(t.TempDir(), "evo.json")
 	exchange, exchanges, _ := rotatingExchange("rt9", 10)
 	store := newRefreshTestStore(t, configPath, exchange)
 
@@ -286,7 +286,7 @@ func TestRefreshOAuthToken_AdoptsFresherDiskToken(t *testing.T) {
 func TestRefreshOAuthToken_IgnoresOlderDiskToken(t *testing.T) {
 	isolateHyperCredentials(t)
 
-	configPath := filepath.Join(t.TempDir(), "crush.json")
+	configPath := filepath.Join(t.TempDir(), "evo.json")
 	exchange, exchanges, reuse := rotatingExchange("rt0", 1)
 	store := newRefreshTestStore(t, configPath, exchange)
 

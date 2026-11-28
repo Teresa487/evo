@@ -219,7 +219,7 @@ func insertChannelWorkspaceCfg(t *testing.T, b *Backend, srvName string, enabled
 		"mcp": map[string]any{srvName: mcpEntry},
 	})
 	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(filepath.Join(wd, "crush.json"), cfgJSON, 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(wd, "evo.json"), cfgJSON, 0o644))
 
 	cfg, err := config.Init(t.Context(), wd, "", false)
 	require.NoError(t, err)

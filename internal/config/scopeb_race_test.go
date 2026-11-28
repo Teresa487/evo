@@ -18,7 +18,7 @@ import (
 // 指针, 所以 reader always sees immutable snapshot. 运行 用 -race.
 func TestScopeB_InPlaceMutationRace(t *testing.T) {
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	t.Setenv("CRUSH_GLOBAL_CONFIG", dir)
 	t.Setenv("CRUSH_GLOBAL_DATA", dir)

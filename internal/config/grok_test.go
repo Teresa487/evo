@@ -39,7 +39,7 @@ func TestSetProviderAPIKeyXAIIsEitherOr(t *testing.T) {
 	newStore := func(t *testing.T, initialConfig string) *ConfigStore {
 		t.Helper()
 		dir := t.TempDir()
-		configPath := filepath.Join(dir, "crush.json")
+		configPath := filepath.Join(dir, "evo.json")
 		require.NoError(t, os.WriteFile(configPath, []byte(initialConfig), 0o600))
 
 		// 在-memory 配置 mirrors what real load would produce.
@@ -127,7 +127,7 @@ func TestSetProviderAPIKeyXAIIsEitherOr(t *testing.T) {
 func TestRefetchGrokModelsRefreshesExpiredToken(t *testing.T) {
 	// Not parallel: swaps the fetchGrokModels package variable.
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	expired := &oauth.Token{
 		AccessToken:  "expired-at",
@@ -237,7 +237,7 @@ func TestLoadRefreshesGrokModelsWhenCatwalkUpdates(t *testing.T) {
 	t.Cleanup(resetProviderState)
 
 	require.NoError(t, os.WriteFile(
-		filepath.Join(workDir, "crush.json"),
+		filepath.Join(workDir, "evo.json"),
 		[]byte(grokLoginConfig(chatGPTLoginToken())),
 		0o600,
 	))
@@ -271,7 +271,7 @@ func TestLoadKeepsGrokModelsWhenCatwalkNotModified(t *testing.T) {
 	t.Cleanup(resetProviderState)
 
 	require.NoError(t, os.WriteFile(
-		filepath.Join(workDir, "crush.json"),
+		filepath.Join(workDir, "evo.json"),
 		[]byte(grokLoginConfig(chatGPTLoginToken())),
 		0o600,
 	))

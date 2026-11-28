@@ -1,6 +1,8 @@
-// loop_detection.go —— 检测重复工具调用，防止 agent 卡在循环里。
+// loop_detection.go —— 限制本轮的工具调用规模，并检测重复调用，防止 agent 卡住。
 //
-// 对最近若干步的「工具名+输入+输出」做哈希，重复超阈值就提前停止本轮。
+// 两条独立的停止条件：
+//   - 本轮累计工具调用数达到上限就停，避免停不下来时无止境地跑；
+//   - 对最近若干步的「工具名+输入+输出」做哈希，重复超阈值也提前停止。
 
 package agent
 
@@ -17,9 +19,25 @@ const (
 	loopDetectionMaxRepeats = 5
 )
 
-// hasRepeatedToolCalls checks whether agent 是 stuck 在 loop 通过 looking
-// 在 recent steps. 它 examines last windowSize steps 和 returns true 如果
-// any 工具-调用 signature appears more than maxRepeats times.
+// maxToolCallsPerTurn 是一轮对话允许发起的工具调用数量上限。
+// 正常的长任务远用不到，它只在模型停不下来时收尾。
+const maxToolCallsPerTurn = 50
+
+// toolCallsReachedLimit 报告本轮累计发起的工具调用是否已达到上限。
+// steps 中每一步对应一次模型响应，一步可能包含多个并行调用。
+func toolCallsReachedLimit(steps []fantasy.StepResult, limit int) bool {
+	calls := 0
+	for _, step := range steps {
+		calls += len(step.Content.ToolCalls())
+		if calls >= limit {
+			return true
+		}
+	}
+	return false
+}
+
+// hasRepeatedToolCalls 判断 agent 是否卡在循环里：检查最近 windowSize 步，
+// 只要有任一「工具调用签名」出现次数超过 maxRepeats 就返回 true。
 func hasRepeatedToolCalls(steps []fantasy.StepResult, windowSize, maxRepeats int) bool {
 	if len(steps) < windowSize {
 		return false
@@ -42,17 +60,16 @@ func hasRepeatedToolCalls(steps []fantasy.StepResult, windowSize, maxRepeats int
 	return false
 }
 
-// getToolInteractionSignature computes hash signature 为 工具
-// interactions 在 single step's content. 它 pairs 工具 calls 用 their
-// results (matched 通过 ToolCallID) 和 returns hex-encoded SHA-256 hash.
-// If step contains no 工具 calls, it returns "".
+// getToolInteractionSignature 为单步内容里的工具交互计算哈希签名：
+// 把工具调用与它的结果（按 ToolCallID 配对）一起哈希，返回十六进制 SHA-256。
+// 该步没有工具调用时返回空字符串。
 func getToolInteractionSignature(content fantasy.ResponseContent) string {
 	toolCalls := content.ToolCalls()
 	if len(toolCalls) == 0 {
 		return ""
 	}
 
-	// Index 工具 results 通过 their ToolCallID 为 fast lookup.
+	// 按 ToolCallID 建立结果索引，便于快速配对。
 	resultsByID := make(map[string]fantasy.ToolResultContent)
 	for _, tr := range content.ToolResults() {
 		resultsByID[tr.ToolCallID] = tr
@@ -74,8 +91,7 @@ func getToolInteractionSignature(content fantasy.ResponseContent) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
-// toolResultOutputString converts ToolResultOutputContent 到 stable string
-// representation 为 signature comparison.
+// toolResultOutputString 把工具结果转换成稳定字符串，用于比较签名。
 func toolResultOutputString(result fantasy.ToolResultOutputContent) string {
 	if result == nil {
 		return ""

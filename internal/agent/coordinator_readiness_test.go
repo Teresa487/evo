@@ -48,7 +48,7 @@ func TestBuildAgentReadinessSurvivesCallerCancellation(t *testing.T) {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
              "small": {"provider": "mock", "model": "mock-model"}}
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "crush.json"), []byte(crushJSON), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(crushJSON), 0o644))
 
 	cfg, err := config.Init(t.Context(), env.workingDir, "", false)
 	require.NoError(t, err)
@@ -116,7 +116,7 @@ func TestTaskAgentsDoNotJoinCoordinatorReadiness(t *testing.T) {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
              "small": {"provider": "mock", "model": "mock-model"}}
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "crush.json"), []byte(crushJSON), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(crushJSON), 0o644))
 
 	cfg, err := config.Init(t.Context(), env.workingDir, "", false)
 	require.NoError(t, err)

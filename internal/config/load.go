@@ -376,6 +376,11 @@ func Load(ctx context.Context, workingDir, dataDir string, debug bool) (*ConfigS
 		return nil, err
 	}
 
+	// 即使一个 provider 都没有，agent 定义也要就位：它们只描述角色与可用工具，
+	// 与 provider 是否存在无关。少了它们，上层会读到空的 Agents 表并报
+	// 「coder agent configuration is missing」。
+	store.SetupAgents()
+
 	if !cfg.IsConfigured() {
 		slog.Warn("No providers configured")
 		return store, nil
@@ -403,7 +408,6 @@ func Load(ctx context.Context, workingDir, dataDir string, debug bool) (*ConfigS
 			return nil, fmt.Errorf("failed to update preferred small model: %w", err)
 		}
 	}
-	store.SetupAgents()
 
 	// Capture initial staleness snapshot. Track every discovered 配置 路径,
 	// 不 just ones 那 loaded, 所以 配置 文件 created after startup

@@ -17,7 +17,7 @@ import (
 // must keep failing 作为 revoked without another round trip.
 func TestRefreshOAuthToken_RefusedRefreshTokenIsNotRetried(t *testing.T) {
 	isolateHyperCredentials(t)
-	configPath := filepath.Join(t.TempDir(), "crush.json")
+	configPath := filepath.Join(t.TempDir(), "evo.json")
 
 	var exchanges atomic.Int64
 	store := newRefreshTestStore(t, configPath, func(context.Context, string, string) (*oauth.Token, error) {
@@ -38,7 +38,7 @@ func TestRefreshOAuthToken_RefusedRefreshTokenIsNotRetried(t *testing.T) {
 // credential, 所以 next refresh must try again.
 func TestRefreshOAuthToken_TransientFailureIsRetried(t *testing.T) {
 	isolateHyperCredentials(t)
-	configPath := filepath.Join(t.TempDir(), "crush.json")
+	configPath := filepath.Join(t.TempDir(), "evo.json")
 
 	var exchanges atomic.Int64
 	store := newRefreshTestStore(t, configPath, func(context.Context, string, string) (*oauth.Token, error) {
@@ -56,7 +56,7 @@ func TestRefreshOAuthToken_TransientFailureIsRetried(t *testing.T) {
 // minutes before token 是 offered again.
 func TestRefreshOAuthToken_RefusalExpires(t *testing.T) {
 	isolateHyperCredentials(t)
-	configPath := filepath.Join(t.TempDir(), "crush.json")
+	configPath := filepath.Join(t.TempDir(), "evo.json")
 
 	var exchanges atomic.Int64
 	store := newRefreshTestStore(t, configPath, func(context.Context, string, string) (*oauth.Token, error) {

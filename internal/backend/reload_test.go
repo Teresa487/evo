@@ -49,5 +49,5 @@ func insertReloadWorkspace(t *testing.T, b *Backend) *Workspace {
 
 func writeCrushrc(t *testing.T, ws *Workspace, body string) {
 	t.Helper()
-	require.NoError(t, os.WriteFile(filepath.Join(ws.Path, "crushrc"), []byte(body), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(ws.Path, "evorc"), []byte(body), 0o644))
 }

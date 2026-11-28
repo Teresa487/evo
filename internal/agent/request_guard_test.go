@@ -67,9 +67,8 @@ func TestNewRequestGuardModel_Disabled(t *testing.T) {
 	}
 }
 
-// newTestRequestGuardModel builds 模型 whose first-片段 budget equals
-// 空闲 窗口, 所以 期限 tests fire 在 milliseconds instead 的
-// waiting out [defaultFirstPartTimeout].
+// newTestRequestGuardModel 构造一个首片段额度等于空闲窗口的模型，
+// 让期限相关的测试在毫秒级触发，而不必等满 [defaultFirstPartTimeout]。
 func newTestRequestGuardModel(m fantasy.LanguageModel, timeout time.Duration) requestGuardModel {
 	return requestGuardModel{LanguageModel: m, timeout: timeout, firstPart: timeout}
 }
@@ -215,8 +214,8 @@ func TestRequestGuardModel_ActiveStreamSurvives(t *testing.T) {
 	t.Parallel()
 
 	inner := &fakeLanguageModel{}
-	// 一个 流 那 keeps sending data: total runtime exceeds 超时,
-	// 但 every gap 是 shorter than 空闲 窗口, 所以 it must finish.
+	// 一个持续发送数据的流：总时长超过超时额度，但每段间隔都短于空闲窗口，
+	// 所以它必须正常跑完。
 	inner.stream = func(yield func(fantasy.StreamPart) bool) {
 		for range 6 {
 			time.Sleep(40 * time.Millisecond)
@@ -353,8 +352,8 @@ func (m *timeoutOnlyModel) Stream(context.Context, fantasy.Call) (fantasy.Stream
 	}, nil
 }
 
-// 一个 超时 ends 运行 用 "请求 timed out" once 它的 retries 运行 out;
-// the bubble fakes the backoff clock.
+// 重试次数耗尽后，一次超时会让本轮以「请求超时」结束；
+// 这里的 bubble 会把退避时钟快进掉。
 func TestRequestTimeoutRunFinishMessage(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("skipping on windows for now")
@@ -492,9 +491,8 @@ func TestRequestGuardModel_SlowConsumerDoesNotAbort(t *testing.T) {
 	}
 }
 
-// slowTool blocks 为 它的 delay, mirroring 工具 那 waits 在
-// long-running job, 和 records whether 上下文 it was handed carries
-// 期限.
+// slowTool 会阻塞自身的 delay，模拟等待长任务的工具调用，
+// 并记录拿到的上下文是否带期限。
 type slowTool struct {
 	delay       time.Duration
 	ran         bool
@@ -581,9 +579,8 @@ func TestRequestGuardModel_DoesNotBoundToolCalls(t *testing.T) {
 	require.False(t, slow.hadDeadline, "a tool call must not inherit the request timeout deadline")
 }
 
-// An 空闲 超时 usually means 连接 died rather than 模型
-// thinking, since 提供方 keepalives reset budget, 所以 it 是 worth
-// another attempt whatever failure it wraps.
+// 空闲超时通常意味着连接断了，而不是模型还在思考（provider 的 keepalive
+// 会重置空闲计时），所以无论它包裹的是什么错误都值得再试一次。
 func TestRequestTimeoutIsRetryable(t *testing.T) {
 	t.Parallel()
 
@@ -797,8 +794,7 @@ func TestCancelledTurnRecordsToolAsInterrupted(t *testing.T) {
 	require.Len(t, results, 1)
 	require.True(t, results[0].IsError)
 	require.Equal(t, interruptedToolCallResult, results[0].Content)
-	// 存储 调用 和 reply bracket 运行, 所以 reloaded 会话
-	// shows the same duration the live one did.
+	// 调用记录和回复夹住整轮运行，所以重新加载的会话能看到与实时一致的时长。
 	require.Len(t, calls, 1)
 	require.Positive(t, calls[0].StartedAtMs, "the call must record when it started")
 	require.GreaterOrEqual(t, results[0].FinishedAtMs, calls[0].StartedAtMs)

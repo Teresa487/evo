@@ -12,7 +12,7 @@ import (
 func TestSetSkillDisabledConfigOnlyTouchesScopeFile(t *testing.T) {
 	t.Parallel()
 
-	globalPath := filepath.Join(t.TempDir(), "crush.json")
+	globalPath := filepath.Join(t.TempDir(), "evo.json")
 	require.NoError(t, os.WriteFile(globalPath, []byte(`{"options":{"disabled_skills":["global-one","pair"]}}`), 0o600))
 
 	// merged 配置 also carries project-只 条目, which must 不

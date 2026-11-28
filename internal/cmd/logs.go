@@ -59,7 +59,7 @@ var logsCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to load configuration: %v", err)
 		}
-		logsFiles := []string{filepath.Join(cfg.Config().Options.DataDirectory, "logs", "crush.log")}
+		logsFiles := []string{filepath.Join(cfg.Config().Options.DataDirectory, "logs", "evo.log")}
 		if cmd.Flags().Changed("host") || clientServerEnabled(cfg.Config().Options.Experimental) {
 			// agent runs 在 服务端, which keeps 它的 own log, 和
 			// clients log their startup next 到 it.

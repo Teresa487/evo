@@ -27,7 +27,7 @@ func TestSessionSetupFromSubdirectoryUsesProjectDataDir(t *testing.T) {
 	gitInit := exec.CommandContext(t.Context(), "git", "init", "-q")
 	gitInit.Dir = root
 	require.NoError(t, gitInit.Run())
-	require.NoError(t, os.Mkdir(filepath.Join(root, ".crush"), 0o700))
+	require.NoError(t, os.Mkdir(filepath.Join(root, ".evo"), 0o700))
 	sub := filepath.Join(root, "sub")
 	require.NoError(t, os.Mkdir(sub, 0o755))
 	t.Chdir(sub)
@@ -37,8 +37,8 @@ func TestSessionSetupFromSubdirectoryUsesProjectDataDir(t *testing.T) {
 	require.NoError(t, err)
 	defer cleanup()
 
-	require.Equal(t, filepath.Join(root, ".crush"), svc.Config().Options.DataDirectory)
-	require.NoDirExists(t, filepath.Join(sub, ".crush"))
+	require.Equal(t, filepath.Join(root, ".evo"), svc.Config().Options.DataDirectory)
+	require.NoDirExists(t, filepath.Join(sub, ".evo"))
 }
 
 // TestUseClientServer_HostFlag covers --主机 being ignored unless
@@ -93,7 +93,7 @@ func TestSessionList_ClientServerModeAsksServer(t *testing.T) {
 func TestSessionList_ConfigOptionAsksServer(t *testing.T) {
 	if os.Getenv(childTestEnv) == "1" {
 		project := os.Getenv("CRUSH_TEST_PROJECT")
-		require.NoError(t, os.WriteFile(filepath.Join(project, "crush.json"),
+		require.NoError(t, os.WriteFile(filepath.Join(project, "evo.json"),
 			[]byte(`{"options": {"experimental": {"client_server": true}}}`), 0o644))
 		listSessionsOnServer(t, project, os.Getenv("CRUSH_TEST_DATA_DIR"))
 		return

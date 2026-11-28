@@ -14,7 +14,7 @@ func TestOption_Bool(t *testing.T) {
 	dir := t.TempDir()
 	script := `option debug true
 option progress false`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -34,7 +34,7 @@ func TestOption_BoolCaseInsensitive(t *testing.T) {
 	script := `option debug TRUE
 option progress False
 option metrics YES`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -54,7 +54,7 @@ func TestOption_String(t *testing.T) {
 	dir := t.TempDir()
 	script := `option data-directory .crush
 option notifications osc`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -73,7 +73,7 @@ func TestOption_List(t *testing.T) {
 	dir := t.TempDir()
 	script := `option context-path .cursorrules
 option context-path CRUSH.md`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -95,7 +95,7 @@ func TestOption_Reset(t *testing.T) {
 	script := `option skill-path ./a
 option skill-path ./b
 option reset skill-path`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -115,7 +115,7 @@ func TestOption_ResetThenReadd(t *testing.T) {
 option skill-path ./inherited-b
 option reset skill-path
 option skill-path ./mine`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -134,7 +134,7 @@ func TestOption_ResetUnknownKey(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `option reset bogus-key`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	_, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.Error(t, err)
@@ -146,7 +146,7 @@ func TestOption_ResetNonListKey(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `option reset debug`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	_, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.Error(t, err)
@@ -156,7 +156,7 @@ func TestOption_ResetNonListKey(t *testing.T) {
 func TestOption_UIUnknownKey(t *testing.T) {
 	t.Parallel()
 
-	path := filepath.Join(t.TempDir(), "crushrc")
+	path := filepath.Join(t.TempDir(), "evorc")
 	_, err := LoadShellConfig(t.Context(), path, []byte(`option ui bogus true`))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "unknown key")
@@ -165,7 +165,7 @@ func TestOption_UIUnknownKey(t *testing.T) {
 func TestOption_UIExitBanner(t *testing.T) {
 	t.Parallel()
 
-	path := filepath.Join(t.TempDir(), "crushrc")
+	path := filepath.Join(t.TempDir(), "evorc")
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(`option ui exit-banner compact`))
 	require.NoError(t, err)
 
@@ -183,7 +183,7 @@ func TestOption_UIExitBanner(t *testing.T) {
 func TestOption_UINerdFonts(t *testing.T) {
 	t.Parallel()
 
-	path := filepath.Join(t.TempDir(), "crushrc")
+	path := filepath.Join(t.TempDir(), "evorc")
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(`option ui nerd-fonts true`))
 	require.NoError(t, err)
 
@@ -201,7 +201,7 @@ func TestOption_UINerdFonts(t *testing.T) {
 func TestOption_Experimental(t *testing.T) {
 	t.Parallel()
 
-	path := filepath.Join(t.TempDir(), "crushrc")
+	path := filepath.Join(t.TempDir(), "evorc")
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(`
 option experimental client-server true
 option experimental server-ready-timeout 30
@@ -231,7 +231,7 @@ func TestOption_BoolShorthand(t *testing.T) {
 	dir := t.TempDir()
 	script := `option debug
 option metrics`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -249,7 +249,7 @@ func TestOption_InvertedBool(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `option metrics false`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -266,7 +266,7 @@ func TestOption_UnknownKey(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `option bogus-key value`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	_, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.Error(t, err)
@@ -279,7 +279,7 @@ func TestOption_RequestTimeout(t *testing.T) {
 	dir := t.TempDir()
 	script := `option request-timeout 300
 option request-timeout 0`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -296,7 +296,7 @@ func TestOption_MaxBackgroundJobs(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `option max-background-jobs 200`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -313,7 +313,7 @@ func TestOption_RequestTimeoutInvalid(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `option request-timeout soon`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	_, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.Error(t, err)
@@ -326,7 +326,7 @@ func TestOption_Prompt(t *testing.T) {
 	dir := t.TempDir()
 	script := `option prompt coder /etc/crush/coder.md.tpl
 option prompt summary /etc/crush/summary.md`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -346,7 +346,7 @@ func TestOption_PromptExpandsTilde(t *testing.T) {
 	dir := t.TempDir()
 	script := `HOME=/home/someone
 option prompt coder ~/coder.md.tpl`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -363,7 +363,7 @@ func TestOption_PromptMissingPath(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `option prompt coder`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	_, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.Error(t, err)

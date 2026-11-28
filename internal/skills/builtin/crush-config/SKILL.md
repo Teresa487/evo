@@ -1,36 +1,36 @@
 ---
 name: crush-config
-description: Use when the user needs help configuring Crush — writing crushrc (the Bash config format) or crush.json, setting up providers, models, LSPs, MCP servers, hooks, skills, permissions, or changing Crush behavior.
+description: Use when the user needs help configuring Crush — writing evorc (the Bash config format) or evo.json, setting up providers, models, LSPs, MCP servers, hooks, skills, permissions, or changing Crush behavior.
 ---
 
 # Crush Configuration
 
 Crush supports two config formats:
 
-- **`crushrc`** — a Bash script that builds config by calling Crush builtins.
+- **`evorc`** — a Bash script that builds config by calling Crush builtins.
   **Preferred.** Because it is real Bash you get includes, secrets,
   conditionals, and variables for free.
-- **`crush.json`** — static JSON. Fully supported; see
+- **`evo.json`** — static JSON. Fully supported; see
   [Legacy JSON format](#legacy-json-format).
 
 Both are discovered together and deep-merged. Priority (highest to lowest):
 
-1. `.crushrc` / `crushrc` / `.crush.json` / `crush.json` (project-local,
-   closer-to-cwd wins; Windows uses `.\.crushrc` / `.\crushrc`)
-2. `$XDG_CONFIG_HOME/crush/crushrc` or `~/.config/crush/crushrc`
-   (`%XDG_CONFIG_HOME%\crush\crushrc` or
-   `%USERPROFILE%\.config\crush\crushrc` on Windows)
+1. `.evorc` / `evorc` / `.evo.json` / `evo.json` (project-local,
+   closer-to-cwd wins; Windows uses `.\.evorc` / `.\evorc`)
+2. `$XDG_CONFIG_HOME/crush/evorc` or `~/.config/crush/evorc`
+   (`%XDG_CONFIG_HOME%\crush\evorc` or
+   `%USERPROFILE%\.config\crush\evorc` on Windows)
 
 Data directories (`~/.local/share/crush` and `%LOCALAPPDATA%\crush`) contain
-machine-owned JSON state only; Crush does not discover or execute a `crushrc`
+machine-owned JSON state only; Crush does not discover or execute a `evorc`
 from those locations.
 
-If a directory has both `crushrc` and `crush.json`, they merge (`crushrc` wins
+If a directory has both `evorc` and `evo.json`, they merge (`evorc` wins
 on conflicts) and Crush logs a warning.
 
-## crushrc at a glance
+## evorc at a glance
 
-A `crushrc` is a plain Bash script executed at load time with the same embedded
+A `evorc` is a plain Bash script executed at load time with the same embedded
 shell the `bash` tool uses. It builds config by calling builtins (`provider`,
 `model`, `mcp`, `lsp`, `hook`, `permissions`, `option`). Statements run top to
 bottom; later statements win, and `remove`/`reset` operate on anything defined
@@ -196,7 +196,7 @@ option reset <list-key>    # clear a list option back to empty
   scrolling), `option ui scrollbar default|always|never`,
   `option ui exit-banner default|compact|none`,
   `option ui completions-max-depth N`, `option ui completions-max-items N`.
-- **Environment**: `export FOO=bar` in a `crushrc` sets `FOO` in Crush's
+- **Environment**: `export FOO=bar` in a `evorc` sets `FOO` in Crush's
   environment on startup (the top-level `env` object in JSON). Only vars
   the script exports or changes count.
 - **Prompt overrides**: `option prompt <name> <path>` replaces a built-in
@@ -353,7 +353,7 @@ user-invocable: true
 
 ## Environment variables
 
-- `CRUSH_VERSION` — exported into `crushrc` at load; the running version (or
+- `CRUSH_VERSION` — exported into `evorc` at load; the running version (or
   `devel` for local builds).
 - `CRUSH_GLOBAL_CONFIG` — override global config location.
 - `CRUSH_GLOBAL_DATA` — override data directory location.
@@ -361,12 +361,12 @@ user-invocable: true
 
 ## Legacy JSON format
 
-`crush.json` is the original static format. It still works and merges with
-`crushrc`. Basic structure:
+`evo.json` is the original static format. It still works and merges with
+`evorc`. Basic structure:
 
 ```json
 {
-  "$schema": "https://charm.land/crush.json",
+  "$schema": "https://charm.land/evo.json",
   "models": {},
   "providers": {},
   "mcp": {},
@@ -379,9 +379,9 @@ user-invocable: true
 
 The `$schema` property enables IDE autocomplete but is optional.
 
-### crushrc ↔ crush.json mapping
+### evorc ↔ evo.json mapping
 
-| crushrc                             | crush.json                                             |
+| evorc                             | evo.json                                             |
 | ------------------------------------ | ------------------------------------------------------ |
 | `provider add openai --api-key "$K"` | `providers.openai = {"api_key": "$K"}`                 |
 | `model add openai/gpt-x --name X`    | append to `providers.openai.models[]`                  |
@@ -400,10 +400,10 @@ The `$schema` property enables IDE autocomplete but is optional.
 | `option attribution-trailer-style none` | `options.attribution.trailer_style = "none"`        |
 | `option attribution-generated-with false` | `options.attribution.generated_with = false`       |
 
-### Shell expansion in crush.json
+### Shell expansion in evo.json
 
 In JSON, only selected string fields are run through the embedded shell at load
-time (in `crushrc`, everything is native Bash so this table does not apply):
+time (in `evorc`, everything is native Bash so this table does not apply):
 
 | Surface                                                         | Expansion                          |
 | --------------------------------------------------------------- | ---------------------------------- |
@@ -420,7 +420,7 @@ the request.
 
 ### Security note
 
-Both formats are trusted code. `crushrc` runs entirely, and any `$(...)` in
-`crush.json` runs at load time, with the invoking user's shell privileges,
+Both formats are trusted code. `evorc` runs entirely, and any `$(...)` in
+`evo.json` runs at load time, with the invoking user's shell privileges,
 before the UI appears. Don't launch Crush in a directory whose config you
 haven't reviewed.

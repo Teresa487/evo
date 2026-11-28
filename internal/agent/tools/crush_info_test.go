@@ -364,7 +364,7 @@ func TestCrushInfo_ConfigStaleness_Clean(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 	require.NoError(t, os.WriteFile(configPath, []byte(`{}`), 0o600))
 
 	store := config.NewTestStore(&config.Config{
@@ -385,7 +385,7 @@ func TestCrushInfo_ConfigStaleness_Dirty(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 	require.NoError(t, os.WriteFile(configPath, []byte(`{"debug": false}`), 0o600))
 
 	store := config.NewTestStore(&config.Config{
@@ -410,7 +410,7 @@ func TestCrushInfo_ConfigStaleness_MissingPath(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 	require.NoError(t, os.WriteFile(configPath, []byte(`{}`), 0o600))
 
 	store := config.NewTestStore(&config.Config{

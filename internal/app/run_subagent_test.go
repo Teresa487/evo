@@ -111,7 +111,7 @@ func newRunTestApp(t *testing.T, baseURL string) *App {
   "models": {"large": {"provider": "mock", "model": "mock-model"},
              "small": {"provider": "mock", "model": "mock-model"}}
 }`, baseURL)
-	require.NoError(t, os.WriteFile(filepath.Join(workingDir, "crush.json"), []byte(crushJSON), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(workingDir, "evo.json"), []byte(crushJSON), 0o644))
 
 	store, err := config.Init(t.Context(), workingDir, dataDir, false)
 	require.NoError(t, err)

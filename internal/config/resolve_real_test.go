@@ -528,7 +528,7 @@ func TestLoad_CommandSubstitutionRunsInWorkingDir(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(elsewhere, "key.txt"), []byte("process-cwd-key\n"), 0o600))
 	t.Chdir(elsewhere)
 
-	require.NoError(t, os.WriteFile(filepath.Join(workDir, "crush.json"), []byte(`{
+	require.NoError(t, os.WriteFile(filepath.Join(workDir, "evo.json"), []byte(`{
 		"options": {"disable_default_providers": true},
 		"providers": {
 			"local": {

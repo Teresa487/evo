@@ -18,7 +18,7 @@ import (
 func TestLoadShellConfig_Provider(t *testing.T) {
 	dir := t.TempDir()
 	script := `provider add openai --api-key "$OPENAI_API_KEY" --base-url "https://api.openai.com/v1"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	t.Setenv("OPENAI_API_KEY", "test-key-123")
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
@@ -43,7 +43,7 @@ func TestLoadShellConfig_FlagBoolCaseInsensitive(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `provider add openai --api-key key --disable TRUE`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -63,7 +63,7 @@ func TestLoadShellConfig_MultipleProviders(t *testing.T) {
 	dir := t.TempDir()
 	script := `provider add openai --api-key "key1"
 provider add anthropic --api-key "key2"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -84,7 +84,7 @@ func TestLoadShellConfig_Model(t *testing.T) {
 	dir := t.TempDir()
 	script := `model large openai/gpt-4o --think
 model small anthropic/claude-3-5-haiku`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -110,7 +110,7 @@ func TestLoadShellConfig_MCP(t *testing.T) {
 	dir := t.TempDir()
 	script := `mcp add github --type stdio --command npx --args "-y" --args "@modelcontextprotocol/server-github" --env GITHUB_TOKEN "ghp_xxx"
 mcp add local-server --type http --url "http://localhost:3000/mcp" --header "Authorization" "Bearer token"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -143,7 +143,7 @@ func TestLoadShellConfig_LSP(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `lsp add gopls --command gopls --filetypes go --filetypes mod --root-markers go.mod --timeout 60`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -170,7 +170,7 @@ func TestLoadShellConfig_Permissions(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `permissions allow bash view`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -195,7 +195,7 @@ func TestLoadShellConfig_PermissionsDeny(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `permissions deny bash sourcegraph`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -216,7 +216,7 @@ func TestLoadShellConfig_Hook(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `hook add PreToolUse --command "echo running" --matcher "bash" --timeout 10 --name "my-hook"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -242,7 +242,7 @@ func TestLoadShellConfig_Option(t *testing.T) {
 	script := `option data-directory .crush
 option metrics false
 option debug`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -251,7 +251,7 @@ option debug`
 	require.NoError(t, json.Unmarshal(jsonBytes, &result))
 
 	opts := result["options"].(map[string]any)
-	require.Equal(t, ".crush", opts["data_directory"])
+	require.Equal(t, ".evo", opts["data_directory"])
 	require.Equal(t, true, opts["disable_metrics"])
 	require.Equal(t, true, opts["debug"])
 }
@@ -272,7 +272,7 @@ func TestLoadShellConfig_SourceInclude(t *testing.T) {
 	// where backslashes would 是 treated 作为 escape characters.
 	script := `source ` + filepath.ToSlash(includePath) + `
 provider add anthropic --api-key "main-key"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -294,7 +294,7 @@ func TestLoadShellConfig_Conditionals(t *testing.T) {
 else
   provider add openai --api-key "oai-key"
 fi`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	t.Setenv("USE_ANTHROPIC", "1")
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
@@ -313,7 +313,7 @@ fi`
 func TestLoadShellConfig_CrushVersionEnv(t *testing.T) {
 	dir := t.TempDir()
 	script := `provider add openai --api-key "$CRUSH_VERSION"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -332,7 +332,7 @@ func TestLoadShellConfig_CommandSubstitution(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `provider add openai --api-key "$(echo dynamic-key)"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -349,7 +349,7 @@ func TestLoadShellConfig_CommandSubstitution(t *testing.T) {
 func TestLoadShellConfig_EnvVarExpansion(t *testing.T) {
 	dir := t.TempDir()
 	script := `provider add openai --api-key "$MY_API_KEY"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	t.Setenv("MY_API_KEY", "env-key-456")
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
@@ -369,7 +369,7 @@ func TestLoadShellConfig_UnknownFlag(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `provider add openai --bogus-flag "value"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	_, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.Error(t, err)
@@ -381,7 +381,7 @@ func TestLoadShellConfig_MissingRequiredArgs(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `provider`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	_, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.Error(t, err)
@@ -394,7 +394,7 @@ func TestLoadShellConfig_NoBuiltins(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `echo "just a normal script"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -404,7 +404,7 @@ func TestLoadShellConfig_NoBuiltins(t *testing.T) {
 func TestLoadShellConfig_ProviderJSONFlagsRequireObjects(t *testing.T) {
 	t.Parallel()
 
-	path := filepath.Join(t.TempDir(), "crushrc")
+	path := filepath.Join(t.TempDir(), "evorc")
 	_, err := LoadShellConfig(t.Context(), path, []byte(`provider add custom --extra-body '[]'`))
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "expects a JSON object")
@@ -416,7 +416,7 @@ func TestLoadShellConfig_ExtraHeader(t *testing.T) {
 
 	dir := t.TempDir()
 	script := `provider add custom --api-key "key" --extra-header "X-Custom" "value123"`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -462,7 +462,7 @@ hook add PreToolUse --command "echo running" --matcher "bash" --timeout 10
 # Options
 option data-directory .crush
 option metrics false`
-	path := filepath.Join(dir, "crushrc")
+	path := filepath.Join(dir, "evorc")
 
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
@@ -506,7 +506,7 @@ option metrics false`
 
 	// Verify options
 	opts := result["options"].(map[string]any)
-	require.Equal(t, ".crush", opts["data_directory"])
+	require.Equal(t, ".evo", opts["data_directory"])
 	require.Equal(t, true, opts["disable_metrics"])
 }
 
@@ -536,7 +536,7 @@ func TestConfigBuilder_NoBuilderInContext(t *testing.T) {
 func TestLoadShellConfig_RespectsContextCancellation(t *testing.T) {
 	t.Parallel()
 
-	path := filepath.Join(t.TempDir(), "crushrc")
+	path := filepath.Join(t.TempDir(), "evorc")
 	script := `while true; do :; done`
 
 	ctx, cancel := context.WithTimeout(t.Context(), 300*time.Millisecond)

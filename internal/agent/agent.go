@@ -96,6 +96,9 @@ type SessionAgentCall struct {
 	RunID             string
 	Channel           string
 	HiddenUserMessage bool
+	// stallNudges 记录本轮因为模型偷懒收尾而被推回去的次数。它随本轮一起
+	// 排队并递归，计数因此能跨续跑保留，避免无限推回。
+	stallNudges int
 	// QueueOnly 表示只把调用投递给一个正在进行的轮次；如果 session 空闲，
 	// Run 会返回 ErrSessionIdle，而不会新起一轮。
 	QueueOnly bool
@@ -1253,7 +1256,8 @@ func (a *sessionAgent) Run(ctx context.Context, call SessionAgentCall) (result *
 				return false
 			},
 			func(steps []fantasy.StepResult) bool {
-				return hasRepeatedToolCalls(steps, loopDetectionWindowSize, loopDetectionMaxRepeats)
+				return toolCallsReachedLimit(steps, maxToolCallsPerTurn) ||
+					hasRepeatedToolCalls(steps, loopDetectionWindowSize, loopDetectionMaxRepeats)
 			},
 		},
 	})
@@ -1370,6 +1374,22 @@ func (a *sessionAgent) Run(ctx context.Context, call SessionAgentCall) (result *
 			a.messageQueue.Set(call.SessionID, append(existing, call))
 			continued = true
 		}
+	}
+	// 模型在任务没做完时输出一句收尾询问就停住，这一轮本该继续。这里和自动
+	// 摘要共用同一条续跑通路：把本轮重新排队并递归 Run，于是历史会被重新读取，
+	// 而 nudge 作为隐藏的 user 消息只进模型历史，不显示在界面上。
+	if !continued && err == nil && call.stallNudges < maxStallNudges &&
+		len(currentAssistant.ToolCalls()) == 0 &&
+		looksLikeStall(currentAssistant.Content().String()) {
+		call.stallNudges++
+		call.Prompt = stallNudge
+		call.Report = nil
+		call.HiddenUserMessage = true
+		existing, _ := a.messageQueue.Get(call.SessionID)
+		a.messageQueue.Set(call.SessionID, append(existing, call))
+		continued = true
+		slog.Info("Pushing stalled turn back to work",
+			"session_id", call.SessionID, "nudge", call.stallNudges)
 	}
 	finished := currentAssistant != nil && !continued
 

@@ -109,7 +109,7 @@ func BenchmarkLoadFromConfigPaths_Empty(b *testing.B) {
 // regression 在 shell 配置 loading 从 going unnoticed.
 func BenchmarkLoadFromConfigPaths_ShellConfig(b *testing.B) {
 	tmpDir := b.TempDir()
-	rcPath := filepath.Join(tmpDir, "crushrc")
+	rcPath := filepath.Join(tmpDir, "evorc")
 
 	rcContent := []byte(`provider add openai --api-key "$OPENAI_API_KEY" --base-url "https://api.openai.com/v1"
 provider add anthropic --api-key "$ANTHROPIC_API_KEY"

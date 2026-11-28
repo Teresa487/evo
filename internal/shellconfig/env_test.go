@@ -11,7 +11,7 @@ import (
 
 func loadEnv(t *testing.T, script string) map[string]any {
 	t.Helper()
-	path := filepath.Join(t.TempDir(), "crushrc")
+	path := filepath.Join(t.TempDir(), "evorc")
 	jsonBytes, err := LoadShellConfig(t.Context(), path, []byte(script))
 	require.NoError(t, err)
 	var result map[string]any

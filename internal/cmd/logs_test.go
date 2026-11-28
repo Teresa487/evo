@@ -79,7 +79,7 @@ func connectAndLog(t *testing.T, dataDir string) {
 	// 服务端 has already started 它的 log.
 	perHostDir, err := perHostServerDir(hostURL)
 	require.NoError(t, err)
-	serverLog := filepath.Join(perHostDir, "crush.log")
+	serverLog := filepath.Join(perHostDir, "evo.log")
 	require.NoError(t, os.WriteFile(serverLog, []byte(`{"msg":"Server started"}`+"\n"), 0o600))
 
 	cmd := &cobra.Command{}
@@ -112,7 +112,7 @@ func connectAndLog(t *testing.T, dataDir string) {
 	require.NoError(t, os.Rename(clientLog, clientLog+".1"),
 		"the client must release its startup log once it knows its workspace")
 
-	got, err = os.ReadFile(filepath.Join(dataDir, "logs", "crush.log"))
+	got, err = os.ReadFile(filepath.Join(dataDir, "logs", "evo.log"))
 	require.NoError(t, err, "the client must log to its workspace once it knows it")
 	require.Contains(t, string(got), "Client record after connecting")
 }
@@ -136,13 +136,13 @@ func TestLogs_ClientServerModeShowsServerLog(t *testing.T) {
 	writeLogLines(t, filepath.Join(cacheDir, "server-"+safeHostName(hostURL), "client.log"),
 		`{"time":"2026-01-02T03:04:04Z","level":"WARN","msg":"Client startup record"}`,
 	)
-	writeLogLines(t, filepath.Join(project, ".crush", "logs", "crush.log"),
+	writeLogLines(t, filepath.Join(project, ".evo", "logs", "evo.log"),
 		`{"time":"2026-01-02T03:04:05Z","level":"INFO","msg":"Client record first"}`,
 		`{"time":"2026-01-02T03:04:07Z","level":"INFO","msg":"Client record last"}`,
 	)
 	// offset changes 用 daylight saving time, 所以 records 是 ordered
 	// 通过 instant they were logged, 不 通过 their 文本.
-	writeLogLines(t, filepath.Join(cacheDir, "server-"+safeHostName(hostURL), "crush.log"),
+	writeLogLines(t, filepath.Join(cacheDir, "server-"+safeHostName(hostURL), "evo.log"),
 		`{"time":"2026-01-02T03:04:06Z","level":"INFO","msg":"Server record in UTC"}`,
 		`{"time":"2026-01-02T04:04:06.5+01:00","level":"INFO","msg":"Server record with offset"}`,
 	)

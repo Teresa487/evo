@@ -49,7 +49,7 @@ const overrideTestConfig = `{
 func newOverrideTestCoordinator(t *testing.T) (*coordinator, fakeEnv) {
 	t.Helper()
 	env := testEnv(t)
-	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "crush.json"), []byte(overrideTestConfig), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(env.workingDir, "evo.json"), []byte(overrideTestConfig), 0o644))
 
 	cfg, err := config.Init(t.Context(), env.workingDir, "", false)
 	require.NoError(t, err)

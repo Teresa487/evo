@@ -36,7 +36,7 @@ func TestClientServerModeEnvDecides(t *testing.T) {
 	t.Setenv("CRUSH_GLOBAL_CONFIG", t.TempDir())
 	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
 	t.Setenv("CRUSH_SERVER_IDLE_TIMEOUT", "")
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "crush.json"),
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "evo.json"),
 		[]byte(`{"options":{"experimental":{"client_server":true,"server_idle_timeout":7}}}`), 0o644))
 
 	cmd := &cobra.Command{}

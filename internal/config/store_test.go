@@ -71,7 +71,7 @@ func TestConfigStore_SetConfigField_GlobalScopeAlwaysWorks(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	globalPath := filepath.Join(dir, "crush.json")
+	globalPath := filepath.Join(dir, "evo.json")
 	store := &ConfigStore{
 		config:         &Config{},
 		globalDataPath: globalPath,
@@ -162,7 +162,7 @@ func TestConfigStaleness_CleanImmediatelyAfterSnapshot(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 配置 文件
 	content := []byte(`{"options": {"debug": true}}`)
@@ -184,7 +184,7 @@ func TestConfigStaleness_DetectsFileContentChange(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 initial 配置 文件
 	require.NoError(t, os.WriteFile(configPath, []byte(`{"debug": false}`), 0o600))
@@ -209,7 +209,7 @@ func TestConfigStaleness_DetectsFileDeletion(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 initial 配置 文件
 	require.NoError(t, os.WriteFile(configPath, []byte(`{"debug": true}`), 0o600))
@@ -233,7 +233,7 @@ func TestConfigStaleness_DetectsNewFile(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// Don't 创建 文件 initially
 	store := &ConfigStore{
@@ -288,7 +288,7 @@ func TestConfigStaleness_RefreshClearsDirtyState(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 initial 配置 文件
 	require.NoError(t, os.WriteFile(configPath, []byte(`{"debug": false}`), 0o600))
@@ -322,7 +322,7 @@ func TestConfigStaleness_RefreshClearsDirtyState(t *testing.T) {
 // 所以 new 配置 values 是 used rather than stale pre-reload values.
 func TestReloadFromDisk_UsesNewConfigValues(t *testing.T) {
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// Isolate 从 host's global 配置 所以 只 测试-provided
 	// providers 是 visible.
@@ -392,7 +392,7 @@ func TestSetConfigField_AutoReloads(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 initial 配置 文件 用 debug = false
 	initialConfig := `{"options": {"debug": false}}`
@@ -427,7 +427,7 @@ func TestRemoveConfigField_AutoReloads(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 initial 配置 文件 用 custom option
 	initialConfig := `{"options": {"debug": true, "custom_field": "value"}}`
@@ -459,7 +459,7 @@ func TestSetConfigField_AutoReloadSkipsWhenNoWorkingDir(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 存储 without working 目录 (like some 测试 setups)
 	store := &ConfigStore{
@@ -486,7 +486,7 @@ func TestAutoReloadDisabledDuringReload(t *testing.T) {
 	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 initial 配置 用 提供方 那 will trigger 配置 modification during reload
 	// (simulating anthropic OAuth 令牌 removal case)
@@ -524,7 +524,7 @@ func TestSetConfigFields_AutoReloadsAtomically(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 initial 配置 文件.
 	initialConfig := `{"options": {"debug": false}}`
@@ -553,7 +553,7 @@ func TestLoadTokenFromDisk_ReturnsNewerToken(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 配置 文件 用 newer token 在 disk
 	configContent := `{
@@ -588,7 +588,7 @@ func TestLoadTokenFromDisk_ReturnsNilWhenSameToken(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 配置 文件 用 same token
 	configContent := `{
@@ -636,7 +636,7 @@ func TestLoadTokenFromDisk_ReturnsNilWhenProviderMissing(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 配置 文件 without hyper 提供方
 	configContent := `{"providers": {"openai": {"api_key": "test-key"}}}`
@@ -656,7 +656,7 @@ func TestLoadTokenFromDisk_ReturnsNilWhenOAuthMissing(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 配置 文件 用 提供方 但 no OAuth token
 	configContent := `{"providers": {"hyper": {"api_key": "test-key"}}}`
@@ -676,7 +676,7 @@ func TestRefreshOAuthToken_UsesDiskTokenWhenDifferent(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 
 	// 创建 配置 文件 用 newer token 在 disk
 	configContent := `{
@@ -737,7 +737,7 @@ func TestConfigStore_SetConfigFields_concurrentInProcess(t *testing.T) {
 	t.Parallel()
 
 	dir := t.TempDir()
-	configPath := filepath.Join(dir, "crush.json")
+	configPath := filepath.Join(dir, "evo.json")
 	require.NoError(t, os.MkdirAll(filepath.Dir(configPath), 0o755))
 	require.NoError(t, os.WriteFile(configPath, []byte("{}"), 0o600))
 

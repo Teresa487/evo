@@ -30,7 +30,7 @@ func isolateReloadEnv(t *testing.T) (workDir, dataDir string) {
 // already behaves.
 func TestReloadFromDisk_PicksUpEditedCrushrc(t *testing.T) {
 	workDir, dataDir := isolateReloadEnv(t)
-	rcPath := filepath.Join(workDir, "crushrc")
+	rcPath := filepath.Join(workDir, "evorc")
 	require.NoError(t, os.WriteFile(rcPath, []byte("option notifications bell\n"), 0o644))
 
 	store, err := config.Load(t.Context(), workDir, dataDir, false)
@@ -49,7 +49,7 @@ func TestReloadFromDisk_PicksUpEditedCrushrc(t *testing.T) {
 // intact ( swap happens 只 after successful parse).
 func TestReloadFromDisk_FailingCrushrcKeepsOldConfig(t *testing.T) {
 	workDir, dataDir := isolateReloadEnv(t)
-	rcPath := filepath.Join(workDir, "crushrc")
+	rcPath := filepath.Join(workDir, "evorc")
 	require.NoError(t, os.WriteFile(rcPath, []byte("option notifications bell\n"), 0o644))
 
 	store, err := config.Load(t.Context(), workDir, dataDir, false)
@@ -73,7 +73,7 @@ func TestReloadFromDisk_FailingCrushrcKeepsOldConfig(t *testing.T) {
 // 在 place. 测试 bounds 它的 own wait 所以 regression can't hang CI.
 func TestReloadFromDisk_HangingCrushrcIsInterruptible(t *testing.T) {
 	workDir, dataDir := isolateReloadEnv(t)
-	rcPath := filepath.Join(workDir, "crushrc")
+	rcPath := filepath.Join(workDir, "evorc")
 	require.NoError(t, os.WriteFile(rcPath, []byte("option notifications bell\n"), 0o644))
 
 	store, err := config.Load(t.Context(), workDir, dataDir, false)
@@ -113,13 +113,13 @@ func TestReloadFromDisk_HangingCrushrcIsInterruptible(t *testing.T) {
 // next reload; global 路径 是 common case 这 covers.
 func TestLoad_TracksNotYetCreatedGlobalCrushrc(t *testing.T) {
 	workDir, dataDir := isolateReloadEnv(t)
-	globalRC := filepath.Join(t.TempDir(), "crushrc")
+	globalRC := filepath.Join(t.TempDir(), "evorc")
 	t.Setenv("CRUSH_GLOBAL_CONFIG", filepath.Dir(globalRC))
 
 	// 一个 提供方 must 是 configured 所以 Load runs past 它的 early
 	// "不 configured" return 和 reaches staleness snapshot capture.
 	require.NoError(t, os.WriteFile(
-		filepath.Join(workDir, "crushrc"),
+		filepath.Join(workDir, "evorc"),
 		[]byte("provider add openai --api-key k\n"), 0o644,
 	))
 

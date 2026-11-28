@@ -20,11 +20,11 @@ func TestShellConfigDotCrushrcTakesPrecedence(t *testing.T) {
 	workDir := t.TempDir()
 	dataDir := t.TempDir()
 	require.NoError(t, os.WriteFile(
-		filepath.Join(workDir, "crushrc"),
+		filepath.Join(workDir, "evorc"),
 		[]byte("option notifications bell\n"), 0o644,
 	))
 	require.NoError(t, os.WriteFile(
-		filepath.Join(workDir, ".crushrc"),
+		filepath.Join(workDir, ".evorc"),
 		[]byte("option notifications osc\n"), 0o644,
 	))
 

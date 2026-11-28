@@ -92,7 +92,7 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 
 		// crush.json above project must 不 是 adopted.
 		require.NoError(t, os.WriteFile(
-			filepath.Join(parent, "crush.json"),
+			filepath.Join(parent, "evo.json"),
 			[]byte(`{}`),
 			0o644,
 		))
@@ -102,7 +102,7 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 
 		got := lookupConfigs(project)
 		for _, p := range got {
-			require.NotEqual(t, filepath.Join(parent, "crush.json"), p)
+			require.NotEqual(t, filepath.Join(parent, "evo.json"), p)
 		}
 	})
 
@@ -114,7 +114,7 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 		parent := t.TempDir()
 
 		require.NoError(t, os.WriteFile(
-			filepath.Join(parent, "crush.json"),
+			filepath.Join(parent, "evo.json"),
 			[]byte(`{}`),
 			0o644,
 		))
@@ -126,7 +126,7 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 		require.NoError(t, gitInit.Run())
 
 		got := lookupConfigs(worktree)
-		strayEval, err := filepath.EvalSymlinks(filepath.Join(parent, "crush.json"))
+		strayEval, err := filepath.EvalSymlinks(filepath.Join(parent, "evo.json"))
 		require.NoError(t, err)
 		for _, p := range got {
 			pEval, err := filepath.EvalSymlinks(p)
@@ -139,7 +139,7 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 
 	t.Run("picks up crush.json inside the project", func(t *testing.T) {
 		project := t.TempDir()
-		local := filepath.Join(project, "crush.json")
+		local := filepath.Join(project, "evo.json")
 		require.NoError(t, os.WriteFile(local, []byte(`{}`), 0o644))
 
 		got := lookupConfigs(project)
@@ -182,12 +182,12 @@ func TestLookupConfigs_BoundedByProject(t *testing.T) {
 
 	t.Run("project crushrc and .crushrc are discovered", func(t *testing.T) {
 		project := t.TempDir()
-		require.NoError(t, os.WriteFile(filepath.Join(project, "crushrc"), []byte(""), 0o644))
-		require.NoError(t, os.WriteFile(filepath.Join(project, ".crushrc"), []byte(""), 0o644))
+		require.NoError(t, os.WriteFile(filepath.Join(project, "evorc"), []byte(""), 0o644))
+		require.NoError(t, os.WriteFile(filepath.Join(project, ".evorc"), []byte(""), 0o644))
 
 		got := lookupConfigs(project)
-		require.Contains(t, got, filepath.Join(project, "crushrc"))
-		require.Contains(t, got, filepath.Join(project, ".crushrc"))
+		require.Contains(t, got, filepath.Join(project, "evorc"))
+		require.Contains(t, got, filepath.Join(project, ".evorc"))
 	})
 
 	t.Run("system config is loaded first", func(t *testing.T) {
@@ -252,8 +252,8 @@ func TestLoadFromConfigPaths_ConflictWarningNamesKeys(t *testing.T) {
 	t.Run("names overlapping keys", func(t *testing.T) {
 		buf := capture(t)
 		tmpDir := t.TempDir()
-		jsonPath := filepath.Join(tmpDir, "crush.json")
-		rcPath := filepath.Join(tmpDir, "crushrc")
+		jsonPath := filepath.Join(tmpDir, "evo.json")
+		rcPath := filepath.Join(tmpDir, "evorc")
 		require.NoError(t, os.WriteFile(jsonPath, []byte(`{"options":{"debug":true},"providers":{}}`), 0o644))
 		require.NoError(t, os.WriteFile(rcPath, []byte("option debug true\n"), 0o644))
 
@@ -266,8 +266,8 @@ func TestLoadFromConfigPaths_ConflictWarningNamesKeys(t *testing.T) {
 	t.Run("no warning when nothing overlaps", func(t *testing.T) {
 		buf := capture(t)
 		tmpDir := t.TempDir()
-		jsonPath := filepath.Join(tmpDir, "crush.json")
-		rcPath := filepath.Join(tmpDir, "crushrc")
+		jsonPath := filepath.Join(tmpDir, "evo.json")
+		rcPath := filepath.Join(tmpDir, "evorc")
 		require.NoError(t, os.WriteFile(jsonPath, []byte(`{"providers":{}}`), 0o644))
 		require.NoError(t, os.WriteFile(rcPath, []byte("option debug true\n"), 0o644))
 
@@ -297,7 +297,7 @@ func TestConfig_setDefaults(t *testing.T) {
 		require.NotNil(t, cfg.Models)
 		require.NotNil(t, cfg.LSP)
 		require.NotNil(t, cfg.MCP)
-		require.Equal(t, filepath.Join(workingDir, ".crush"), cfg.Options.DataDirectory)
+		require.Equal(t, filepath.Join(workingDir, ".evo"), cfg.Options.DataDirectory)
 		require.Equal(t, "AGENTS.md", cfg.Options.InitializeAs)
 		// DiffMode 是 deliberately left empty: permissions dialog treats
 		// zero 值 作为 "pick split 或 unified based 在 终态 width".
@@ -1746,7 +1746,7 @@ func TestConfig_defaultModelSelection(t *testing.T) {
 func TestConfig_configureSelectedModels(t *testing.T) {
 	t.Run("reload mode should not persist fallback defaults", func(t *testing.T) {
 		dir := t.TempDir()
-		globalPath := filepath.Join(dir, "crush.json")
+		globalPath := filepath.Join(dir, "evo.json")
 		require.NoError(t, os.WriteFile(globalPath, []byte(`{"models":{"large":{"provider":"ghost","model":"missing"}}}`), 0o600))
 
 		knownProviders := []catwalk.Provider{
@@ -2006,7 +2006,7 @@ func TestConfig_configureSelectedModels(t *testing.T) {
 	})
 	t.Run("resolve and persist fallback under writeMu does not deadlock", func(t *testing.T) {
 		dir := t.TempDir()
-		globalPath := filepath.Join(dir, "crush.json")
+		globalPath := filepath.Join(dir, "evo.json")
 		require.NoError(t, os.WriteFile(globalPath, []byte(`{}`), 0o600))
 
 		knownProviders := []catwalk.Provider{
@@ -2554,7 +2554,7 @@ func TestLoadFromConfigPaths_PersistsCatwalkV2Migration(t *testing.T) {
 	t.Run("rewrites v2 config files on disk", func(t *testing.T) {
 		t.Parallel()
 		tmpDir := t.TempDir()
-		path := filepath.Join(tmpDir, "crush.json")
+		path := filepath.Join(tmpDir, "evo.json")
 		require.NoError(t, os.WriteFile(path, []byte(`{
 			"providers": {
 				"openrouter": {
@@ -2604,7 +2604,7 @@ func TestLoadFromConfigPaths_PersistsCatwalkV2Migration(t *testing.T) {
 	t.Run("leaves v3 config files untouched", func(t *testing.T) {
 		t.Parallel()
 		tmpDir := t.TempDir()
-		path := filepath.Join(tmpDir, "crush.json")
+		path := filepath.Join(tmpDir, "evo.json")
 		original := []byte(`{
 			"providers": {
 				"custom": {
@@ -2655,7 +2655,7 @@ func TestConfig_PromptOverrides(t *testing.T) {
 	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 
 	dir := t.TempDir()
-	cfgPath := filepath.Join(dir, "crushrc")
+	cfgPath := filepath.Join(dir, "evorc")
 	require.NoError(t, os.WriteFile(cfgPath, []byte("option prompt coder /etc/crush/coder.md.tpl\n"), 0o644))
 
 	cfg, err := Init(t.Context(), dir, "", false)
@@ -2669,7 +2669,7 @@ func TestConfig_PromptOverrideUnknownNameFails(t *testing.T) {
 	t.Setenv("CRUSH_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 
 	dir := t.TempDir()
-	cfgPath := filepath.Join(dir, "crushrc")
+	cfgPath := filepath.Join(dir, "evorc")
 	require.NoError(t, os.WriteFile(cfgPath, []byte("option prompt codr /etc/crush/coder.md.tpl\n"), 0o644))
 
 	_, err := Init(t.Context(), dir, "", false)
@@ -2684,11 +2684,11 @@ func TestConfig_PromptPathsAnchorToTheirConfigFile(t *testing.T) {
 	t.Setenv("CRUSH_GLOBAL_CONFIG", globalDir)
 	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
 
-	require.NoError(t, os.WriteFile(filepath.Join(globalDir, "crushrc"), []byte(
+	require.NoError(t, os.WriteFile(filepath.Join(globalDir, "evorc"), []byte(
 		"option prompt summary prompts/summary.md\noption prompt title prompts/title.md\n"), 0o644))
 
 	project := t.TempDir()
-	require.NoError(t, os.WriteFile(filepath.Join(project, "crush.json"), []byte(
+	require.NoError(t, os.WriteFile(filepath.Join(project, "evo.json"), []byte(
 		`{"options":{"prompts":{"coder":".crush/coder.md.tpl","title":"~/title.md","task":"$TASK_PROMPT"}}}`), 0o644))
 
 	cfg, err := Init(t.Context(), project, "", false)

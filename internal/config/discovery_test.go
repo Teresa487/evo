@@ -132,14 +132,14 @@ func loadIsolated(t *testing.T, workDir string) *ConfigStore {
 	t.Helper()
 	resetProviderState()
 	t.Cleanup(resetProviderState)
-	store, err := Load(t.Context(), workDir, filepath.Join(workDir, ".crush"), false)
+	store, err := Load(t.Context(), workDir, filepath.Join(workDir, ".evo"), false)
 	require.NoError(t, err)
 	return store
 }
 
 func writeGlobalConfig(t *testing.T, globalDir, body string) {
 	t.Helper()
-	require.NoError(t, os.WriteFile(filepath.Join(globalDir, "crush.json"), []byte(body), 0o600))
+	require.NoError(t, os.WriteFile(filepath.Join(globalDir, "evo.json"), []byte(body), 0o600))
 }
 
 func TestDiscovery_StartupKeepsSelectionAndRefreshesInBackground(t *testing.T) {

@@ -31,7 +31,7 @@ func TestLoadExperimental(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("CRUSH_GLOBAL_CONFIG", t.TempDir())
 	t.Setenv("CRUSH_GLOBAL_DATA", t.TempDir())
-	require.NoError(t, os.WriteFile(filepath.Join(dir, "crush.json"),
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "evo.json"),
 		[]byte(`{"options":{"experimental":{"client_server":true,"server_detach_grace":5}}}`), 0o644))
 
 	exp, err := LoadExperimental(t.Context(), dir)
