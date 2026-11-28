@@ -44,33 +44,35 @@ func TestRender(t *testing.T) {
 			banner: config.ExitBannerCompact,
 			sess:   testSession(),
 			want:   []string{"Session", "Fix the flaky test", "Continue", "evo -s "},
-			// No logo, 和 no padding around two lines.
+			// 没有 logo，两行周围也没有内边距。
 			notWant: []string{"Thanks for using Crush!"},
 		},
 		{
 			name:   "default with a session prints the logo and the resume lines",
 			banner: config.ExitBannerDefault,
 			sess:   testSession(),
-			want:   []string{"Thanks for using Crush!", "Session", "Fix the flaky test", "Continue"},
+			want:   []string{"Session", "Fix the flaky test", "Continue"},
+			notWant: []string{"Thanks for using Crush!", "Who wants some spaghetti?"},
 		},
 		{
 			name:   "default without a session still prints the logo",
 			banner: config.ExitBannerDefault,
-			want:   []string{"Thanks for using Crush!"},
-			// separator between logo 和 resume lines must 不 是 left
-			// dangling 当 there 是 no 会话.
-			notWant: []string{"Continue"},
+			want:   []string{"Evo"},
+			// 没有会话时不能留下分隔线与继续会话提示。
+			notWant: []string{"Session", "Continue", "Thanks for using Crush!"},
 		},
 		{
 			name:   "unrecognized values fall back to the full banner",
 			banner: config.ExitBanner("wat"),
 			sess:   testSession(),
-			want:   []string{"Thanks for using Crush!", "Continue"},
+			want:   []string{"Continue"},
+			notWant: []string{"Thanks for using Crush!"},
 		},
 		{
-			name: "zero value falls back to the full banner",
-			sess: testSession(),
-			want: []string{"Thanks for using Crush!", "Continue"},
+			name:   "zero value falls back to the full banner",
+			sess:   testSession(),
+			want:   []string{"Continue"},
+			notWant: []string{"Thanks for using Crush!"},
 		},
 	}
 
@@ -167,7 +169,7 @@ func TestRenderUsesActiveTheme(t *testing.T) {
 			require.Contains(t, got, "\x1b[1mContinue \x1b[mevo -s 3d4a966")
 			if banner == config.ExitBannerDefault {
 				require.Contains(t, got, "38;2;86;205;120m")
-				require.Contains(t, got, "\n   Thanks for using Crush!")
+				require.NotContains(t, got, "Thanks for using Crush!")
 			}
 		})
 	}

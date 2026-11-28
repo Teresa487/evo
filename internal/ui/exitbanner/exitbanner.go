@@ -1,8 +1,7 @@
-// Package exitbanner 渲染 what Crush prints after TUI exits.
+// Package exitbanner 渲染应用退出后的 banner。
 package exitbanner
 
 import (
-	"math/rand/v2"
 	"strings"
 
 	"charm.land/lipgloss/v2"
@@ -14,13 +13,13 @@ import (
 	"github.com/charmbracelet/x/ansi"
 )
 
-// FallbackWidth 是 used 当 stdout 是 不 终态, 所以 banner still
-// wraps 到 something sane 当 output 是 piped 或 captured.
+// FallbackWidth 是 stdout 不是终端时使用的宽度，
+// 保证输出被管道或捕获时 banner 仍能合理换行。
 const FallbackWidth = 80
 
-// Render returns exit banner using 活跃 theme, 或 empty string 当
-// there 是 nothing 到 print. 一个 nil 或 untitled 会话 means resume hint 是
-// omitted, which 为 compact banner leaves nothing 在 all.
+// Render 使用当前主题渲染退出 banner；没有内容可打印时返回空字符串。
+// 会话为 nil 或没有标题时会省略继续会话提示；compact 模式下若没有会话，
+// 就没有剩余内容可打印。
 func Render(t *styles.Styles, banner config.ExitBanner, sess *session.Session, width int) string {
 	if width <= 0 {
 		width = FallbackWidth
@@ -38,7 +37,7 @@ func Render(t *styles.Styles, banner config.ExitBanner, sess *session.Session, w
 		return sessionResumeLines(t, sess, width)
 
 	default:
-		// Unrecognized values render the full banner rather than nothing.
+		// 无法识别的值按完整 banner 渲染，而不是什么都不显示。
 		style := lipgloss.NewStyle().Padding(1, 3)
 		contentWidth := width - style.GetHorizontalFrameSize()
 
@@ -50,9 +49,9 @@ func Render(t *styles.Styles, banner config.ExitBanner, sess *session.Session, w
 	}
 }
 
-// logoSection returns ASCII art logo followed 通过 parting 消息.
+// logoSection 返回 ASCII logo。
 func logoSection(t *styles.Styles, contentWidth int) string {
-	evoLogo := logo.Render(t.Logo.GradCanvas, version.Version, true, logo.Opts{
+	return logo.Render(t.Logo.GradCanvas, version.Version, true, logo.Opts{
 		FieldColor:   t.Logo.FieldColor,
 		TitleColorA:  t.Logo.TitleColorA,
 		TitleColorB:  t.Logo.TitleColorB,
@@ -60,14 +59,10 @@ func logoSection(t *styles.Styles, contentWidth int) string {
 		VersionColor: t.Logo.VersionColor,
 		Hyper:        false,
 	})
-	// Wrap greeting 和 消息 together: wrapping 只 消息
-	// leaves greeting's own width unaccounted 为 和 overflows frame.
-	return evoLogo + "\n" +
-		t.ExitBanner.Text.Width(contentWidth).Render("Thanks for using Crush! "+randomExitMessage())
 }
 
-// sessionResumeLines returns "Session <标题>\nContinue evo -s <hash>"
-// pair used 通过 exit banner.
+// sessionResumeLines 返回退出 banner 中使用的
+// "Session <标题>\nContinue evo -s <hash>" 两行。
 func sessionResumeLines(t *styles.Styles, sess *session.Session, contentWidth int) string {
 	title := strings.ReplaceAll(sess.Title, "\n", " ")
 
@@ -81,32 +76,4 @@ func sessionResumeLines(t *styles.Styles, sess *session.Session, contentWidth in
 	sessionLine := t.ExitBanner.Label.Render("Session  ") + t.ExitBanner.Text.Render(title)
 	continueLine := t.ExitBanner.Label.Render("Continue ") + t.ExitBanner.Text.Render("evo -s "+hash)
 	return sessionLine + "\n" + continueLine
-}
-
-// randomExitMessage returns random exit 消息.
-func randomExitMessage() string {
-	messages := []string{
-		"",
-		"See ya later.",
-		"You look great.",
-		"Have a gorgeous time.",
-		"Get some rest.",
-		"Come back soon.",
-		"You worked handsomely.",
-		"Time for a snack.",
-		"Who’s hungry?",
-		"That was fun.",
-		"See you at breakfast?",
-		"Time for a nap.",
-		"Who wants some spaghetti?",
-		"Take care of yourself.",
-		"Remember to hydrate.",
-		"Time for a swim?",
-		"You’re quite glamorous, you know.",
-		"Nice work.",
-		"You’re a sensation.",
-		"Where’s my eyeliner?",
-		"It’s tea time.",
-	}
-	return messages[rand.IntN(len(messages))]
 }

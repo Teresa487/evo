@@ -1,13 +1,13 @@
 ---
 name: evo-config
-description: Use when the user needs help configuring Crush — writing evorc (the Bash config format) or evo.json, setting up providers, models, LSPs, MCP servers, hooks, skills, permissions, or changing Crush behavior.
+description: Use when the user needs help configuring Evo — writing evorc (the Bash config format) or evo.json, setting up providers, models, LSPs, MCP servers, hooks, skills, permissions, or changing Evo behavior.
 ---
 
-# Crush Configuration
+# Evo Configuration
 
-Crush supports two config formats:
+Evo supports two config formats:
 
-- **`evorc`** — a Bash script that builds config by calling Crush builtins.
+- **`evorc`** — a Bash script that builds config by calling Evo builtins.
   **Preferred.** Because it is real Bash you get includes, secrets,
   conditionals, and variables for free.
 - **`evo.json`** — static JSON. Fully supported; see
@@ -17,16 +17,16 @@ Both are discovered together and deep-merged. Priority (highest to lowest):
 
 1. `.evorc` / `evorc` / `.evo.json` / `evo.json` (project-local,
    closer-to-cwd wins; Windows uses `.\.evorc` / `.\evorc`)
-2. `$XDG_CONFIG_HOME/crush/evorc` or `~/.config/crush/evorc`
-   (`%XDG_CONFIG_HOME%\crush\evorc` or
-   `%USERPROFILE%\.config\crush\evorc` on Windows)
+2. `$XDG_CONFIG_HOME/evo/evorc` or `~/.config/evo/evorc`
+   (`%XDG_CONFIG_HOME%\evo\evorc` or
+   `%USERPROFILE%\.config\evo\evorc` on Windows)
 
-Data directories (`~/.local/share/crush` and `%LOCALAPPDATA%\crush`) contain
-machine-owned JSON state only; Crush does not discover or execute a `evorc`
+Data directories (`~/.local/share/evo` and `%LOCALAPPDATA%\evo`) contain
+machine-owned JSON state only; Evo does not discover or execute a `evorc`
 from those locations.
 
 If a directory has both `evorc` and `evo.json`, they merge (`evorc` wins
-on conflicts) and Crush logs a warning.
+on conflicts) and Evo logs a warning.
 
 ## evorc at a glance
 
@@ -39,7 +39,7 @@ earlier or pulled in via `source`.
 ```bash
 #!/usr/bin/env bash
 # Includes and secrets are just Bash.
-source ~/.config/crush/shared.sh
+source ~/.config/evo/shared.sh
 
 provider add anthropic --api-key "$ANTHROPIC_API_KEY"
 
@@ -54,7 +54,7 @@ Values are ordinary Bash — quote and expand normally (`"$VAR"`, `$(cmd)`,
 `${VAR:?required}`). A failing `$(command)` aborts the load.
 
 `EVO_VERSION` is exported into the script so you can feature-detect the
-running Crush (it is the literal `devel` for local builds):
+running Evo (it is the literal `devel` for local builds):
 
 ```bash
 [[ "$EVO_VERSION" != devel ]] && lsp add gopls --command gopls
@@ -96,13 +96,18 @@ model large [<provider>/<id>] [flags]  # set the large slot; no arg prints it
 model small [<provider>/<id>] [flags]  # set the small slot; no arg prints it
 ```
 
-- `<provider>/<id>` is the same form `crush models` prints. A missing slash is
+- `<provider>/<id>` is the same form `evo models` prints. A missing slash is
   an error. `model add` requires the provider to already exist.
 - `model add` flags: `--name`, `--context-window N`, `--default-max-tokens N`,
   `--thinking always|never|toggleable`, `--supports-images BOOL`,
   `--price-input F`, `--price-output F`, `--price-cache-create F`,
   `--price-cache-hit F`, `--reasoning-effort low|medium|high`,
   `--max-attachments N`.
+- Image input is enabled per model with `--supports-images true`, which maps to
+  `capabilities.vision: true` in `evo.json`. Without it, Evo filters image
+  attachments out before sending the request, so the model only sees text.
+  `--max-attachments N` caps how many attachments the TUI lets you queue for a
+  single request; `0`/omitted means no hard cap.
 - `model large`/`model small` flags: `--think`, `--reasoning-effort`,
   `--max-tokens N`, `--temperature F`, `--top-p F`, `--top-k N`,
   `--frequency-penalty F`, `--presence-penalty F`, `--provider-options JSON`.
@@ -121,7 +126,7 @@ mcp remove <name>                              # alias: rm
 Flags: `--command CMD`, `--args ARG` (repeatable), `--env KEY VALUE`
 (repeatable), `--url URL`, `--header KEY VALUE` (repeatable), `--timeout N`,
 `--disabled BOOL`, `--disabled-tools TOOL` (repeatable), `--enabled-tools TOOL`
-(repeatable), `--oauth BOOL`, `--oauth-client-id ID`, `--oauth-client-secret SECRET`,
+(repeatable), `--sessionless BOOL`, `--oauth BOOL`, `--oauth-client-id ID`, `--oauth-client-secret SECRET`,
 `--oauth-callback-port PORT`, `--channel BOOL` (opt the server in as a
 channel, like `--channels` on the CLI), `--channel-reply JSON` (the
 `channel_reply` routing object).
@@ -162,7 +167,7 @@ intend to remove it later. See [Hooks runtime](#hooks-runtime) for how hooks
 execute (stdin payload, env vars, decisions).
 
 ```bash
-hook add PreToolUse --matcher "^bash$" --command ".crush/hooks/no-haskell.sh" --name no-haskell
+hook add PreToolUse --matcher "^bash$" --command ".evo/hooks/no-haskell.sh" --name no-haskell
 ```
 
 ### permissions
@@ -183,20 +188,22 @@ option reset <list-key>    # clear a list option back to empty
 ```
 
 - **Boolean keys** (value optional, defaults `true`): `debug`, `debug-lsp`,
-  `auto-lsp`, `progress`.
+  `auto-lsp`, `progress`, `pinentry-integrated`.
 - **Boolean keys phrased positively** (stored as the negated field): `metrics`,
   `auto-summarize`, `provider-auto-update`,
   `default-providers`. Example: `option metrics false` disables metrics.
 - **String keys**: `data-directory`, `initialize-as`, `notifications`.
+- **Integer keys**: `request-timeout`, `max-background-jobs`,
+  `pinentry-cache-timeout`.
 - **Attribution keys**: `attribution-trailer-style` (`none`, `co-authored-by`,
   `assisted-by`) and `attribution-generated-with` (boolean).
 - **UI settings**: `option ui compact BOOL`, `option ui diff unified|split`,
   `option ui transparent BOOL`, `option ui mouse BOOL` (default `true`;
   disable to let the terminal/tmux handle selection, copy/paste, and
-  scrolling), `option ui scrollbar default|always|never`,
+  scrolling), `option ui nerd-fonts BOOL`, `option ui scrollbar default|always|never`,
   `option ui exit-banner default|compact|none`,
   `option ui completions-max-depth N`, `option ui completions-max-items N`.
-- **Environment**: `export FOO=bar` in a `evorc` sets `FOO` in Crush's
+- **Environment**: `export FOO=bar` in a `evorc` sets `FOO` in Evo's
   environment on startup (the top-level `env` object in JSON). Only vars
   the script exports or changes count.
 - **Prompt overrides**: `option prompt <name> <path>` replaces a built-in
@@ -206,7 +213,7 @@ option reset <list-key>    # clear a list option back to empty
   replacement must include `{{.AvailSkillXML}}` and a
   `{{range .ContextFiles}}<file path="{{.Path}}">{{.Content}}</file>{{end}}`
   loop (copy the blocks from the built-in `coder.md.tpl`) to keep them. For
-  one run, use `crush --prompt coder=./file.md.tpl` instead.
+  one run, use `evo --prompt coder=./file.md.tpl` instead.
 - **Experimental** (unfinished, may change or disappear in any release):
   `option experimental client-server BOOL` runs the agent in a background
   server the TUI attaches to; `option experimental server-ready-timeout N`,
@@ -230,12 +237,12 @@ option ui exit-banner compact
 ```
 
 > [!IMPORTANT] These skill paths are loaded by default and do NOT need
-> `skill-path`: `.agents/skills`, `.crush/skills`, `.claude/skills`,
+> `skill-path`: `.agents/skills`, `.evo/skills`, `.claude/skills`,
 > `.cursor/skills`.
 
 ## Hooks runtime
 
-Hooks are user-defined shell commands that fire on agent events. Crush supports
+Hooks are user-defined shell commands that fire on agent events. Evo supports
 13 events: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`,
 `PermissionRequest`, `PermissionResult`, `SessionStart`, `SessionEnd`,
 `TurnStart`, `TurnEnd`, `StopFailure`, `Interrupt`, `PreCompact`, and
@@ -319,7 +326,7 @@ stdout holds a JSON object, which is applied anyway.
 
 ### Claude Code compatibility
 
-Crush also accepts the Claude Code hook output formats (`hookSpecificOutput`,
+Evo also accepts the Claude Code hook output formats (`hookSpecificOutput`,
 top-level `decision: "block"` with `reason`, `continue: false`), so existing
 hooks work unchanged:
 
@@ -355,9 +362,12 @@ user-invocable: true
 
 - `EVO_VERSION` — exported into `evorc` at load; the running version (or
   `devel` for local builds).
-- `EVO_GLOBAL_CONFIG` — override global config location.
-- `EVO_GLOBAL_DATA` — override data directory location.
-- `EVO_SKILLS_DIR` — override default skills directory.
+- `EVO_GLOBAL_CONFIG` — override the global config directory (`evorc` and
+  `evo.json` are looked up under it).
+- `EVO_GLOBAL_DATA` — override the machine data directory.
+- `EVO_DATA_DIR` — override the per-project data directory.
+- `EVO_CACHE_DIR` — override the cache directory.
+- `EVO_SKILLS_DIR` — override the default skills directory.
 
 ## Legacy JSON format
 
@@ -366,7 +376,7 @@ user-invocable: true
 
 ```json
 {
-  "$schema": "https://charm.land/evo.json",
+  "$schema": "https://raw.githubusercontent.com/Teresa487/evo/main/schema.json",
   "models": {},
   "providers": {},
   "mcp": {},
@@ -418,9 +428,29 @@ Supported constructs: `$VAR`, `${VAR}`, `${VAR:-default}`, `${VAR:+alt}`,
 `$(command)` is a hard error. A header that resolves to empty is dropped from
 the request.
 
+### Legacy JSON compatibility
+
+Legacy configs usually still load, but some fields are normalized on read:
+
+- `$schema` is only for editor autocomplete. Evo stores it as a plain string and
+  does not validate against it at runtime. A wrong or missing value does not
+  stop config loading; point it at `./schema.json` or the project's raw schema
+  URL if you want autocomplete.
+- Model field `supports_attachments: true` is migrated to
+  `capabilities.vision: true`. Image attachments are filtered out unless
+  `capabilities.vision` is true.
+- Provider type `openai` is normalized to `responses`, and `openai-compat` to
+  `completions`. For ordinary OpenAI-compatible relay endpoints
+  (`/v1/chat/completions`), write `"type": "completions"` explicitly.
+- `permissions.allowed_tools` containing unknown tool names, or `skills_paths`
+  pointing at nonexistent directories, do not fail config loading. The invalid
+  tool simply has no effect and the missing skill path is treated as empty.
+- A `hook` command that points at a script must be executable and exist when the
+  hook fires. Put it under `~/.config/evo/hooks/` and run `chmod +x` on it.
+
 ### Security note
 
 Both formats are trusted code. `evorc` runs entirely, and any `$(...)` in
 `evo.json` runs at load time, with the invoking user's shell privileges,
-before the UI appears. Don't launch Crush in a directory whose config you
+before the UI appears. Don't launch Evo in a directory whose config you
 haven't reviewed.

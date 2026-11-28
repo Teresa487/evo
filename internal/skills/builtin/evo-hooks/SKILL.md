@@ -1,9 +1,9 @@
 ---
 name: evo-hooks
-description: Use when the user wants to add, write, debug, or configure a Crush hook — gating or blocking tool calls, approving or rewriting tool input before execution, injecting context into tool results, or troubleshooting hook behavior in evo.json.
+description: Use when the user wants to add, write, debug, or configure an Evo hook — gating or blocking tool calls, approving or rewriting tool input before execution, injecting context into tool results, or troubleshooting hook behavior in evo.json.
 ---
 
-# Crush Hooks
+# Evo Hooks
 
 Hooks are user-defined commands in `evo.json` that fire at specific points
 during execution, giving deterministic control over tool behavior. They run
@@ -16,7 +16,7 @@ need to author correct hooks.
 
 ## Supported Events
 
-Crush supports 13 hook events: `PreToolUse`, `PostToolUse`,
+Evo supports 13 hook events: `PreToolUse`, `PostToolUse`,
 `PostToolUseFailure`, `PermissionRequest`, `PermissionResult`,
 `SessionStart`, `SessionEnd`, `TurnStart`, `TurnEnd`, `StopFailure`,
 `Interrupt`, `PreCompact`, `PostCompact`. Event names are case-insensitive
@@ -232,14 +232,14 @@ preserved.
 ## Debugging
 
 - Timeouts kill the hook silently and the tool call proceeds. Bump `timeout` if needed.
-- Non-zero exit codes other than 2/49 are logged but don't block — check Crush logs.
+- Non-zero exit codes other than 2/49 are logged but don't block — check Evo logs.
 - Use `echo "debug info" >&2` for logging without corrupting stdout JSON.
 - `matcher` is a regex against the tool name. Use `^bash$` (not `bash`) if you
   don't also want to match `mcp_something_bash`.
 
 ## Claude Code Compatibility
 
-Crush also accepts Claude Code's `hookSpecificOutput` envelope. One intentional
-divergence: Crush treats `updated_input` as shallow-merge, Claude Code replaces.
+Evo also accepts Claude Code's `hookSpecificOutput` envelope. One intentional
+divergence: Evo treats `updated_input` as shallow-merge, Claude Code replaces.
 Existing Claude Code hooks work without modification for the matcher/decision
 parts; revisit any that relied on `updatedInput` fully replacing tool input.

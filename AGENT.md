@@ -116,7 +116,7 @@ evo 是基于 Crush 的二次开发：保留上游的 agent 编排、会话与�
 
 ## internal/skills — 内置技能
 
-- `builtin/` — crush-config、crush-hooks、jq 等内置 SKILL.md
+- `builtin/` — evo-config、evo-hooks、jq 等内置 SKILL.md；配置文件写法、provider/model/MCP/LSP/hooks 等配置说明在 `evo-config/SKILL.md`
 
 ## 其他支撑目录
 
