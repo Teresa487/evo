@@ -39,25 +39,41 @@ func toolCallsReachedLimit(steps []fantasy.StepResult, limit int) bool {
 // hasRepeatedToolCalls 判断 agent 是否卡在循环里：检查最近 windowSize 步，
 // 只要有任一「工具调用签名」出现次数超过 maxRepeats 就返回 true。
 func hasRepeatedToolCalls(steps []fantasy.StepResult, windowSize, maxRepeats int) bool {
+	_, repeats := repeatedToolCall(steps, windowSize, maxRepeats)
+	return repeats > 0
+}
+
+// repeatedToolCall 是 hasRepeatedToolCalls 带诊断信息的版本：命中时一并返回
+// 触发阈值的签名和次数，方便日志里看出卡在哪个调用上。未命中返回 0。
+func repeatedToolCall(steps []fantasy.StepResult, windowSize, maxRepeats int) (sig string, repeats int) {
 	if len(steps) < windowSize {
-		return false
+		return "", 0
 	}
 
 	window := steps[len(steps)-windowSize:]
 	counts := make(map[string]int)
 
 	for _, step := range window {
-		sig := getToolInteractionSignature(step.Content)
-		if sig == "" {
+		stepSig := getToolInteractionSignature(step.Content)
+		if stepSig == "" {
 			continue
 		}
-		counts[sig]++
-		if counts[sig] > maxRepeats {
-			return true
+		counts[stepSig]++
+		if counts[stepSig] > maxRepeats {
+			return stepSig, counts[stepSig]
 		}
 	}
 
-	return false
+	return "", 0
+}
+
+// countToolCalls 统计 steps 里累计的工具调用数，用于在达到上限时报告实际值。
+func countToolCalls(steps []fantasy.StepResult) int {
+	calls := 0
+	for _, step := range steps {
+		calls += len(step.Content.ToolCalls())
+	}
+	return calls
 }
 
 // getToolInteractionSignature 为单步内容里的工具交互计算哈希签名：

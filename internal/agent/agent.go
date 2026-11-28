@@ -1261,13 +1261,16 @@ func (a *sessionAgent) Run(ctx context.Context, call SessionAgentCall) (result *
 			func(steps []fantasy.StepResult) bool {
 				if toolCallsReachedLimit(steps, maxToolCallsPerTurn) {
 					slog.Warn("Turn stopped: tool call limit reached",
-						"session_id", call.SessionID, "limit", maxToolCallsPerTurn)
+						"session_id", call.SessionID,
+						"limit", maxToolCallsPerTurn, "calls", countToolCalls(steps),
+						"steps", len(steps))
 					return true
 				}
-				if hasRepeatedToolCalls(steps, loopDetectionWindowSize, loopDetectionMaxRepeats) {
+				if sig, repeats := repeatedToolCall(steps, loopDetectionWindowSize, loopDetectionMaxRepeats); repeats > 0 {
 					slog.Warn("Turn stopped: repeated tool calls",
 						"session_id", call.SessionID,
-						"window", loopDetectionWindowSize, "max_repeats", loopDetectionMaxRepeats)
+						"window", loopDetectionWindowSize, "max_repeats", loopDetectionMaxRepeats,
+						"repeats", repeats, "signature", sig)
 					return true
 				}
 				return false
@@ -1401,8 +1404,11 @@ func (a *sessionAgent) Run(ctx context.Context, call SessionAgentCall) (result *
 		existing, _ := a.messageQueue.Get(call.SessionID)
 		a.messageQueue.Set(call.SessionID, append(existing, call))
 		continued = true
+		// 记下命中的那一句，线上日志才能判断判定有没有误伤：真被推回的
+		// 是收尾询问，还是正文里恰好出现了同样的字眼。
 		slog.Info("Pushing stalled turn back to work",
-			"session_id", call.SessionID, "nudge", call.stallNudges)
+			"session_id", call.SessionID, "nudge", call.stallNudges,
+			"tail", stallTail(currentAssistant.Content().String()))
 	}
 	finished := currentAssistant != nil && !continued
 
