@@ -1270,7 +1270,7 @@ func hasAWSCredentials(env env.Env) bool {
 
 // migrateDisableNotifications migrates the deprecated disable_notifications
 // 和 notification_style fields 到 unified notifications 字段. 它 checks
-// both 用户 配置 (~/.配置) 和 data 配置 (~/.local) files. If
+// both 用户 配置 (~/.config) 和 data 配置 (~/.local) files. If
 // disable_notifications 是 true, it sets notifications 到 "disabled" 在
 // data 文件. If notification_style 是 set, it moves 值 到 notifications.
 // Regardless 的 值, it removes deprecated fields 从 any 文件 那
@@ -1523,7 +1523,7 @@ func GlobalSkillsDirs() []string {
 		filepath.Join(home.Dir(), ".claude", "skills"),
 	}
 
-	// On Windows, also load 从 app data 在 top 的 `$HOME/.配置/crush`.
+	// On Windows, also load 从 app data 在 top 的 `$HOME/.config/evo`.
 	// 这 是 here mostly 为 backwards compatibility.
 	if runtime.GOOS == "windows" {
 		appData := cmp.Or(

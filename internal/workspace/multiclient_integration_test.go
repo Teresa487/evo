@@ -224,10 +224,10 @@ func TestClientWorkspace_GlobalTogglesRefreshCaches(t *testing.T) {
 			t.Setenv("EVO_DISABLE_PROVIDER_AUTO_UPDATE", "1")
 			// command does 不 exist, 所以 startup 只 records
 			// 错误 和 no MCP 服务端 ever runs.
-			globalCfg := filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "crush", "evo.json")
+			globalCfg := filepath.Join(os.Getenv("XDG_CONFIG_HOME"), "evo", "evo.json")
 			require.NoError(t, os.MkdirAll(filepath.Dir(globalCfg), 0o755))
 			require.NoError(t, os.WriteFile(globalCfg, fmt.Appendf(nil,
-				`{"mcp": {%q: {"type": "stdio", "command": "crush-toggle-probe-missing"}}}`, name), 0o644))
+				`{"mcp": {%q: {"type": "stdio", "command": "evo-toggle-probe-missing"}}}`, name), 0o644))
 
 			rt := newRuntimeServer(t)
 			cwd, dataDir := t.TempDir(), t.TempDir()

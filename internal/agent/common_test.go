@@ -150,7 +150,7 @@ func coderAgent(r *vcr.Recorder, env fakeEnv, large, small fantasy.LanguageModel
 	}
 
 	// NOTE(@andreynering): Set fixed 配置 到 ensure cassettes match
-	// independently 的 用户 配置 在 `$HOME/.配置/crush/crush.json`.
+	// independently 的 用户 配置 在 `$HOME/.config/evo/evo.json`.
 	cfg.Config().Options.Attribution = &config.Attribution{
 		TrailerStyle:  "co-authored-by",
 		GeneratedWith: true,

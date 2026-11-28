@@ -853,7 +853,7 @@ type ThemeSource int
 const (
 	// ThemeSourceBuiltin 是 theme compiled into 二进制.
 	ThemeSourceBuiltin ThemeSource = iota
-	// ThemeSourceUser 是 theme 文件 在 ~/.配置/crush/themes/.
+	// ThemeSourceUser 是 theme 文件 在 ~/.config/evo/themes/.
 	ThemeSourceUser
 )
 

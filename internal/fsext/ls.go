@@ -109,7 +109,7 @@ var gitGlobalIgnorePatterns = sync.OnceValue(func() []gitignore.Pattern {
 })
 
 // evoGlobalIgnorePatterns returns patterns 从 用户's
-// ~/.配置/crush/ignore 文件.
+// ~/.config/evo/ignore 文件.
 var evoGlobalIgnorePatterns = sync.OnceValue(func() []gitignore.Pattern {
 	name := filepath.Join(home.Config(), "crush", "ignore")
 	bts, err := os.ReadFile(name)
